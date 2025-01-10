@@ -1,0 +1,63 @@
+# Design Specification for `DCCreditSender_UInt8` Module
+
+## 1. **Module Name**
+   - `DCCreditSender_UInt8`
+
+## 2. **Module Functions**
+   The `DCCreditSender_UInt8` module is designed to manage credit-based data flow control in a digital system. Its primary function is to regulate data transfer between producer and consumer modules using a credit-based protocol. The module ensures that data is only sent when the receiving side has available credit, thus preventing data overflow and ensuring efficient data handling. It maintains a credit count and adjusts it based on the incoming and outgoing data flow, ensuring synchronization between different parts of a system.
+
+## 3. **Input and Output Port Descriptions**
+
+### Inputs
+1. **clock**: Clock signal (1-bit input).
+   - Drives the sequential logic within the module.
+2. **reset**: Reset signal (1-bit input).
+   - Initializes the module's internal state and registers to a default state.
+3. **io_enq_valid**: Enqueue valid signal (1-bit input).
+   - Indicates that valid data is available for sending.
+4. **io_enq_bits**: Enqueue data bits (8-bit input).
+   - Contains the data to be sent when the module is ready.
+5. **io_deq_credit**: Dequeue credit signal (1-bit input).
+   - Indicates that the receiving side has consumed data and has available credit.
+
+### Outputs
+1. **io_enq_ready**: Enqueue ready signal (1-bit output).
+   - Signals that the module is ready to accept new data for sending.
+2. **io_deq_valid**: Dequeue valid signal (1-bit output).
+   - Indicates that valid data is being sent out.
+3. **io_deq_bits**: Dequeue data bits (8-bit output).
+   - Outputs the data being sent when `io_deq_valid` is asserted.
+4. **io_curCredit**: Current credit count (3-bit output).
+   - Displays the current available credit count within the module.
+
+## 4. **Internal Working Principle**
+The module operates on a credit-based flow control mechanism. It maintains an internal credit count (`curCredit`) that determines whether data can be sent. The credit count is incremented when data is consumed by the receiver (`io_deq_credit` is asserted) and decremented when data is sent out (`io_enq_ready` and `io_enq_valid` are both asserted). The module ensures that data is only sent when there is available credit, thus preventing data overflow.
+
+## 5. **Implementation Logic Explanation**
+The module employs both combinational and sequential logic to manage data flow:
+
+- **Credit Management**: The credit count (`curCredit`) is initialized to a default value of 5 upon reset. It is incremented when `io_deq_credit` is high and no data is being sent, and decremented when data is being sent (`_T` is true, indicating both `io_enq_ready` and `io_enq_valid` are high).
+
+- **Data Handling**: Data to be sent is captured in `dataOut` when `_T` is true, meaning the module is ready and valid data is available. The `validOut` signal is updated to reflect the status of `_T`, indicating whether valid data is present for sending.
+
+- **Output Logic**: The module outputs the current credit count, the readiness to accept new data, the validity of outgoing data, and the data itself. The readiness (`io_enq_ready`) is determined by whether the credit count is greater than zero.
+
+## 6. **Internally Defined Signal Descriptions**
+
+1. **icredit**: Internal credit signal (1-bit).
+   - Latches the `io_deq_credit` signal to manage credit updates.
+2. **curCredit**: Current credit register (3-bit).
+   - Stores the number of available credits, initialized to 5 and updated based on enqueue and dequeue operations.
+3. **_T**: Temporary signal (1-bit).
+   - Represents the logical AND of `io_enq_ready` and `io_enq_valid`, indicating when data is ready to be sent.
+4. **_curCredit_T_1**: Incremented credit value (3-bit).
+   - Represents the value of `curCredit` incremented by one.
+5. **_curCredit_T_3**: Decremented credit value (3-bit).
+   - Represents the value of `curCredit` decremented by one.
+6. **dataOut**: Data output register (8-bit).
+   - Holds the data to be sent out when `io_deq_valid` is asserted.
+7. **validOut**: Validity output register (1-bit).
+   - Indicates whether the data in `dataOut` is valid and ready to be sent.
+
+These internal signals work together to ensure that the module effectively manages credit-based data flow, maintaining synchronization between data producers and consumers.
+

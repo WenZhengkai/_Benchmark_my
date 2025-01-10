@@ -1,0 +1,37 @@
+#### 1. **Module Name**
+   - **MyFir**
+
+#### 2. **Module Functions**
+   - The primary function of the `MyFir` module is to implement a Finite Impulse Response (FIR) filter. This digital filter processes an input signal, `io_in`, and produces a filtered output, `io_out`. The module is designed to perform a series of multiplications and additions on the input signal and its delayed versions to achieve the desired filtering effect. This is commonly used in signal processing applications to enhance or suppress certain aspects of the input signal.
+
+#### 3. **Input and Output Port Descriptions**
+   - **Inputs:**
+     1. `clock`: A clock signal (1-bit input) that synchronizes the operations within the module.
+     2. `reset`: A reset signal (1-bit input) used to initialize or reset the module's internal states.
+     3. `io_in`: A 12-bit input signal representing the data to be filtered.
+   
+   - **Outputs:**
+     1. `io_out`: A 30-bit output signal representing the filtered result of the input signal after processing through the FIR filter.
+
+#### 4. **Internal Working Principle**
+   - The module operates as a shift register-based FIR filter. It uses a series of delay registers to store past input values, which are then multiplied by predefined coefficients. The results of these multiplications are summed to produce the filter's output. This approach leverages the principle of convolution, where the input signal is convolved with the filter's impulse response to produce the output.
+
+#### 5. **Implementation Logic Explanation**
+   - **Sequential Logic:**
+     - The module uses a set of registers (`delays_REG` to `delays_REG_5`) to store the current and past input values. These registers are updated on each rising edge of the clock signal, effectively creating a delay line that holds the previous six samples of the input signal.
+
+   - **Combinational Logic:**
+     - The module performs a series of multiplications between the current and delayed input samples and their respective coefficients. These coefficients are hardcoded in the design and are represented in hexadecimal format (e.g., `9'h148`, `11'h4f6`, etc.).
+     - The results of these multiplications (`mults_0` to `mults_6`) are then summed through a series of addition operations to produce the final result, which is assigned to the `io_out` port.
+
+#### 6. **Internally Defined Signal Descriptions**
+   - **Registers:**
+     - `delays_REG` through `delays_REG_5`: These are 12-bit registers that store the current and previous input values. They form the delay line necessary for FIR filtering.
+
+   - **Intermediate Signals:**
+     - `mults_0` to `mults_6`: These wires represent the results of multiplying the input and delayed samples by their respective coefficients. The bit-width of these signals varies depending on the multiplication result.
+     - `_GEN_0` to `_GEN_3`: These are intermediate signals used to align bit-widths for addition operations.
+     - `_result_T` to `_result_T_4`: These intermediate signals represent the progressive summation of the multiplied results.
+     - `result`: A 29-bit wire that holds the final summation of all multiplied results before being assigned to the output `io_out`.
+
+This module is designed to efficiently perform FIR filtering by leveraging a combination of sequential and combinational logic to process input data and produce a filtered output. The use of delay registers and fixed coefficients allows it to implement a specific filter response tailored to the application requirements.

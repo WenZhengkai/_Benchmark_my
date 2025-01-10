@@ -1,0 +1,39 @@
+## 1. **Module Name**
+   - **Neuron**
+
+## 2. **Module Functions**
+   1. The primary function of the Neuron module is to perform a multiply-accumulate (MAC) operation on a set of inputs and weights. This is a fundamental operation in neural networks where each input is multiplied by a corresponding weight, and the results are summed to produce a single output.
+   2. The module also includes a simple activation function that outputs a fixed value based on whether the MAC result is positive or non-positive.
+   3. It is designed to be a part of a larger neural network system, serving as a single neuron within a layer of the network.
+
+## 3. **Input and Output Port Descriptions**
+   - **Inputs:**
+     1. `clock`: (1-bit) Clock signal for synchronous operations.
+     2. `reset`: (1-bit) Reset signal to initialize the module.
+     3. `io_in_0` to `io_in_7`: (16-bit each) These are the input signals representing the data inputs to the neuron.
+     4. `io_weights_0` to `io_weights_7`: (16-bit each) These inputs represent the weights corresponding to each data input.
+   
+   - **Output:**
+     1. `io_out`: (16-bit) The output signal represents the processed result after the MAC operation and activation function.
+
+## 4. **Internal Working Principle**
+   1. The module performs a MAC operation by multiplying each input with its corresponding weight and summing all the products.
+   2. The MAC result is then passed through a simple threshold-based activation function. If the result is non-positive, the output is set to zero; otherwise, it is set to a fixed positive value.
+   3. The operation is synchronous with the clock signal, ensuring that the output is updated based on the clock cycles.
+
+## 5. **Implementation Logic Explanation**
+   1. **Combinational Logic:**
+      - The inputs and weights are multiplied, and the results are summed using a series of addition operations. This is implemented as a series of wire assignments where each wire represents the partial sum of the MAC operation.
+      - The final sum of all products is computed using a chain of additions.
+   
+   2. **Activation Function:**
+      - A simple comparison is used to determine the output value. If the MAC result is less than or equal to zero, the output is set to zero; otherwise, it is set to a fixed value (256 in decimal, represented as `10'sh100` in Verilog).
+
+## 6. **Internally Defined Signal Descriptions**
+   - `_mac_T`, `_mac_T_1`, ..., `_mac_T_7`: (32-bit each) These wires store the results of the multiplication of each input with its corresponding weight.
+   - `_mac_T_10`, `_mac_T_13`, ..., `_mac_T_25`: (32-bit each) Intermediate wires used to accumulate the sum of the products in a step-by-step manner.
+   - `mac`: (32-bit) The final accumulated MAC result after all input-weight products have been summed.
+   - `_io_out_T_1`: (10-bit) A wire representing the result of the activation function comparison, determining the final output value based on the MAC result.
+   - The final output `io_out` is constructed by extending `_io_out_T_1` to 16 bits, ensuring proper sign extension for the output value.
+
+This specification outlines the design and function of the Neuron module, detailing its role in performing MAC operations and applying a simple activation function, which is crucial for its operation within a neural network.

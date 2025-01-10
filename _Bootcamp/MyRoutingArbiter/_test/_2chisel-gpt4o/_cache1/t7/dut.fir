@@ -1,0 +1,41 @@
+circuit dut :
+  module dut :
+    input clock : Clock
+    input reset : UInt<1>
+    output io : { flip in : { flip ready : UInt<1>, valid : UInt<1>, bits : UInt<8>}[4], out : { flip ready : UInt<1>, valid : UInt<1>, bits : UInt<8>}}
+
+    node _io_out_valid_T = or(io.in[0].valid, io.in[1].valid) @[dut.scala 11:47]
+    node _io_out_valid_T_1 = or(_io_out_valid_T, io.in[2].valid) @[dut.scala 11:47]
+    node _io_out_valid_T_2 = or(_io_out_valid_T_1, io.in[3].valid) @[dut.scala 11:47]
+    io.out.valid <= _io_out_valid_T_2 @[dut.scala 11:16]
+    wire validVec : UInt<1>[4] @[dut.scala 14:25]
+    validVec[0] <= io.in[0].valid @[dut.scala 14:25]
+    validVec[1] <= io.in[1].valid @[dut.scala 14:25]
+    validVec[2] <= io.in[2].valid @[dut.scala 14:25]
+    validVec[3] <= io.in[3].valid @[dut.scala 14:25]
+    wire _selectedChannel_WIRE : UInt<2>[4] @[dut.scala 15:54]
+    _selectedChannel_WIRE[0] <= UInt<1>("h0") @[dut.scala 15:54]
+    _selectedChannel_WIRE[1] <= UInt<1>("h1") @[dut.scala 15:54]
+    _selectedChannel_WIRE[2] <= UInt<2>("h2") @[dut.scala 15:54]
+    _selectedChannel_WIRE[3] <= UInt<2>("h3") @[dut.scala 15:54]
+    node _selectedChannel_T = mux(validVec[2], _selectedChannel_WIRE[2], _selectedChannel_WIRE[3]) @[Mux.scala 47:70]
+    node _selectedChannel_T_1 = mux(validVec[1], _selectedChannel_WIRE[1], _selectedChannel_T) @[Mux.scala 47:70]
+    node selectedChannel = mux(validVec[0], _selectedChannel_WIRE[0], _selectedChannel_T_1) @[Mux.scala 47:70]
+    io.out.bits <= io.in[selectedChannel].bits @[dut.scala 18:15]
+    node _io_in_0_ready_T = eq(selectedChannel, UInt<1>("h0")) @[dut.scala 22:56]
+    node _io_in_0_ready_T_1 = and(io.out.ready, _io_in_0_ready_T) @[dut.scala 22:36]
+    node _io_in_0_ready_T_2 = and(_io_in_0_ready_T_1, io.in[0].valid) @[dut.scala 22:65]
+    io.in[0].ready <= _io_in_0_ready_T_2 @[dut.scala 22:20]
+    node _io_in_1_ready_T = eq(selectedChannel, UInt<1>("h1")) @[dut.scala 22:56]
+    node _io_in_1_ready_T_1 = and(io.out.ready, _io_in_1_ready_T) @[dut.scala 22:36]
+    node _io_in_1_ready_T_2 = and(_io_in_1_ready_T_1, io.in[1].valid) @[dut.scala 22:65]
+    io.in[1].ready <= _io_in_1_ready_T_2 @[dut.scala 22:20]
+    node _io_in_2_ready_T = eq(selectedChannel, UInt<2>("h2")) @[dut.scala 22:56]
+    node _io_in_2_ready_T_1 = and(io.out.ready, _io_in_2_ready_T) @[dut.scala 22:36]
+    node _io_in_2_ready_T_2 = and(_io_in_2_ready_T_1, io.in[2].valid) @[dut.scala 22:65]
+    io.in[2].ready <= _io_in_2_ready_T_2 @[dut.scala 22:20]
+    node _io_in_3_ready_T = eq(selectedChannel, UInt<2>("h3")) @[dut.scala 22:56]
+    node _io_in_3_ready_T_1 = and(io.out.ready, _io_in_3_ready_T) @[dut.scala 22:36]
+    node _io_in_3_ready_T_2 = and(_io_in_3_ready_T_1, io.in[3].valid) @[dut.scala 22:65]
+    io.in[3].ready <= _io_in_3_ready_T_2 @[dut.scala 22:20]
+

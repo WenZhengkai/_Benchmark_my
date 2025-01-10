@@ -1,0 +1,38 @@
+#### 1. Module Name
+   - **Allocator**
+
+#### 2. Module Functions
+   1. The primary function of the Allocator module is to determine the allocation way for a given request based on metadata and hit signals.
+   2. It is responsible for deciding whether to write metadata in a specific way or use a computed allocation based on the input tags.
+   3. The module plays a crucial role in managing memory or resource allocation within a broader system, likely in a cache or resource management unit.
+
+#### 3. Input and Output Port Descriptions
+   - **Inputs:**
+     1. `clock`: A standard clock signal for synchronous operations.
+     2. `reset`: A reset signal to initialize or reset the module's state.
+     3. `io_s1_req_rmeta_0_0_tag` (32 bits): A metadata tag input used in the allocation decision process.
+     4. `io_s1_req_rmeta_0_1_tag` (32 bits): Another metadata tag input used for allocation decisions.
+     5. `io_s1_req_rmeta_1_0_tag` (32 bits): Additional metadata tag input for allocation logic.
+     6. `io_s1_req_rmeta_1_1_tag` (32 bits): Further metadata tag input influencing allocation.
+     7. `io_s1_req_tag` (32 bits): The request tag which is a key component in determining the allocation way.
+     8. `io_s1_hits_0` (1 bit): A hit signal indicating a successful match or hit in the first set.
+     9. `io_s1_hits_1` (1 bit): A hit signal indicating a successful match or hit in the second set.
+
+   - **Outputs:**
+     1. `io_s1_meta_write_way` (1 bit): The output signal indicating the chosen way for metadata writing, either a default way or a computed allocation way.
+
+#### 4. Internal Working Principle
+   1. The module concatenates several input metadata tags and the request tag into a single wide signal (`alloc_way_r_metas`).
+   2. It processes this concatenated signal to compute an allocation way based on a series of XOR operations across the bits of the concatenated signal.
+   3. The module uses hit signals to determine whether to use a default write way (`1'h0`) or the computed allocation way.
+
+#### 5. Implementation Logic Explanation
+   1. **Concatenation Logic:** The input tags are concatenated into a 160-bit wide signal (`alloc_way_r_metas`), which forms the basis for further processing.
+   2. **XOR Reduction Logic:** The module divides this wide signal into 160 single-bit chunks (`alloc_way_chunks_0` to `alloc_way_chunks_159`). It then performs a series of XOR operations to reduce these chunks into a single bit (`alloc_way`), which represents the computed allocation way.
+   3. **Decision Logic:** The final allocation decision is made based on the hit signals. If either `io_s1_hits_0` or `io_s1_hits_1` is asserted, the output `io_s1_meta_write_way` is set to `0`. Otherwise, the computed allocation way (`alloc_way`) is used.
+
+#### 6. Internally Defined Signal Descriptions
+   1. **`alloc_way_r_metas` (160 bits):** A wide signal formed by concatenating the input tags, serving as the primary data structure for allocation computation.
+   2. **`alloc_way_chunks_0` to `alloc_way_chunks_159` (1 bit each):** Individual bits extracted from `alloc_way_r_metas`, used for XOR reduction to compute the allocation way.
+   3. **`_alloc_way_T_29`, `_alloc_way_T_59`, `_alloc_way_T_89`, `_alloc_way_T_119`, `_alloc_way_T_149`:** Intermediate XOR results used to progressively reduce the 160 bits to a single allocation way bit.
+   4. **`alloc_way` (1 bit):** The final computed allocation way derived from XOR operations across all chunks, used in the final decision logic for metadata writing.

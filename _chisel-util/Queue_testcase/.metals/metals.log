@@ -1,0 +1,96 @@
+2025.01.04 10:24:06 INFO  tracing is disabled for protocol LSP, to enable tracing of incoming and outgoing JSON messages create an empty file at /home/kai/ChiselProject/Benchmarks/_Benchmark_my/_chisel-util/Queue_testcase/.metals/lsp.trace.json or /home/kai/.cache/metals/lsp.trace.json
+2025.01.04 10:24:07 INFO  logging to file /home/kai/ChiselProject/Benchmarks/_Benchmark_my/_chisel-util/Queue_testcase/.metals/metals.log
+2025.01.04 10:24:07 INFO  Started: Metals version 0.11.4 in workspace '/home/kai/ChiselProject/Benchmarks/_Benchmark_my/_chisel-util/Queue_testcase' for client Visual Studio Code 1.96.0.
+2025.01.04 10:24:07 INFO  time: initialize in 0.64s
+2025.01.04 10:24:07 WARN  Flyway upgrade recommended: H2 2.1.212 is newer than this version of Flyway and support has not been tested. The latest supported version of H2 is 2.1.210.
+2025.01.04 10:24:07 WARN  Build server is not auto-connectable.
+2025.01.04 10:24:07 WARN  no build tool detected in workspace '/home/kai/ChiselProject/Benchmarks/_Benchmark_my/_chisel-util/Queue_testcase'. The most common cause for this problem is that the editor was opened in the wrong working directory, for example if you use sbt then the workspace directory should contain build.sbt. 
+2025.01.04 10:24:08 WARN  no build target for: /home/kai/ChiselProject/Benchmarks/_Benchmark_my/_chisel-util/Queue_testcase/_chisel-gloden/src/main/scala/golden.scala
+2025.01.04 10:24:09 INFO  no build target found for /home/kai/ChiselProject/Benchmarks/_Benchmark_my/_chisel-util/Queue_testcase/_chisel-gloden/src/main/scala/golden.scala. Using presentation compiler with project's scala-library version: 3.1.2
+2025.01.04 10:24:10 INFO  time: code lens generation in 1.82s
+2025.01.04 10:24:50 WARN  no build target for: /home/kai/ChiselProject/Benchmarks/_Benchmark_my/_chisel-util/Queue_testcase/_chisel-gloden/src/main/scala/golden.scala
+2025.01.04 10:48:42 WARN  no build target for: /home/kai/ChiselProject/Benchmarks/_Benchmark_my/_chisel-util/Queue_testcase/_testcase-chisel-temp-script/dut/dut0.scala
+2025.01.04 10:49:21 WARN  no build target for: /home/kai/ChiselProject/Benchmarks/_Benchmark_my/_chisel-util/Queue_testcase/_testcase-chisel-temp-script/dut/dut0.scala
+Jan 04, 2025 10:49:21 AM org.eclipse.lsp4j.jsonrpc.RemoteEndpoint fallbackResponseError
+SEVERE: Internal error: file:///home/kai/ChiselProject/Benchmarks/_Benchmark_my/_chisel-util/Queue_testcase/_testcase-chisel-temp-script/dut/dut0.scala:3: error: empty quoted identifier
+```scala
+^
+java.util.concurrent.CompletionException: file:///home/kai/ChiselProject/Benchmarks/_Benchmark_my/_chisel-util/Queue_testcase/_testcase-chisel-temp-script/dut/dut0.scala:3: error: empty quoted identifier
+```scala
+^
+	at java.util.concurrent.CompletableFuture.encodeThrowable(CompletableFuture.java:292)
+	at java.util.concurrent.CompletableFuture.completeThrowable(CompletableFuture.java:308)
+	at java.util.concurrent.CompletableFuture.uniAccept(CompletableFuture.java:661)
+	at java.util.concurrent.CompletableFuture$UniAccept.tryFire(CompletableFuture.java:646)
+	at java.util.concurrent.CompletableFuture.postComplete(CompletableFuture.java:488)
+	at java.util.concurrent.CompletableFuture.completeExceptionally(CompletableFuture.java:1990)
+	at scala.meta.internal.metals.CancelTokens$.$anonfun$future$1(CancelTokens.scala:40)
+	at scala.meta.internal.metals.CancelTokens$.$anonfun$future$1$adapted(CancelTokens.scala:38)
+	at scala.concurrent.impl.Promise$Transformation.run(Promise.scala:484)
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1149)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:624)
+	at java.lang.Thread.run(Thread.java:748)
+Caused by: file:///home/kai/ChiselProject/Benchmarks/_Benchmark_my/_chisel-util/Queue_testcase/_testcase-chisel-temp-script/dut/dut0.scala:3: error: empty quoted identifier
+```scala
+^
+	at scala.meta.internal.tokenizers.Reporter.syntaxError(Reporter.scala:23)
+	at scala.meta.internal.tokenizers.Reporter.syntaxError$(Reporter.scala:23)
+	at scala.meta.internal.tokenizers.Reporter$$anon$1.syntaxError(Reporter.scala:33)
+	at scala.meta.internal.tokenizers.Reporter.syntaxError(Reporter.scala:25)
+	at scala.meta.internal.tokenizers.Reporter.syntaxError$(Reporter.scala:25)
+	at scala.meta.internal.tokenizers.Reporter$$anon$1.syntaxError(Reporter.scala:33)
+	at scala.meta.internal.tokenizers.LegacyScanner.getBackquotedIdent(LegacyScanner.scala:515)
+	at scala.meta.internal.tokenizers.LegacyScanner.fetchToken(LegacyScanner.scala:369)
+	at scala.meta.internal.tokenizers.LegacyScanner.nextToken(LegacyScanner.scala:245)
+	at scala.meta.internal.mtags.ScalaToplevelMtags.loop(ScalaToplevelMtags.scala:142)
+	at scala.meta.internal.mtags.ScalaToplevelMtags.indexRoot(ScalaToplevelMtags.scala:50)
+	at scala.meta.internal.mtags.MtagsIndexer.index(MtagsIndexer.scala:19)
+	at scala.meta.internal.mtags.MtagsIndexer.index$(MtagsIndexer.scala:18)
+	at scala.meta.internal.mtags.ScalaToplevelMtags.index(ScalaToplevelMtags.scala:40)
+	at scala.meta.internal.mtags.Mtags$.allToplevels(Mtags.scala:96)
+	at scala.meta.internal.metals.DefinitionProvider.fromMtags(DefinitionProvider.scala:269)
+	at scala.meta.internal.metals.DefinitionProvider.$anonfun$positionOccurrence$3(DefinitionProvider.scala:202)
+	at scala.Option.orElse(Option.scala:477)
+	at scala.meta.internal.metals.DefinitionProvider.$anonfun$positionOccurrence$1(DefinitionProvider.scala:202)
+	at scala.Option.flatMap(Option.scala:283)
+	at scala.meta.internal.metals.DefinitionProvider.positionOccurrence(DefinitionProvider.scala:197)
+	at scala.meta.internal.metals.DocumentHighlightProvider.$anonfun$documentHighlight$1(DocumentHighlightProvider.scala:33)
+	at scala.collection.immutable.List.map(List.scala:246)
+	at scala.meta.internal.metals.DocumentHighlightProvider.documentHighlight(DocumentHighlightProvider.scala:29)
+	at scala.meta.internal.metals.MetalsLanguageServer.$anonfun$documentHighlights$1(MetalsLanguageServer.scala:1467)
+	at scala.meta.internal.metals.CancelTokens$.$anonfun$apply$2(CancelTokens.scala:26)
+	at scala.concurrent.Future$.$anonfun$apply$1(Future.scala:678)
+	at scala.concurrent.impl.Promise$Transformation.run(Promise.scala:467)
+	... 3 more
+
+2025.01.04 10:49:33 WARN  no build target for: /home/kai/ChiselProject/Benchmarks/_Benchmark_my/_chisel-util/Queue_testcase/_testcase-chisel-temp-script/dut/dut0.scala
+2025.01.04 10:49:47 WARN  no build target for: /home/kai/ChiselProject/Benchmarks/_Benchmark_my/_chisel-util/Queue_testcase/_testcase-chisel-temp-script/dut/dut1.scala
+2025.01.04 10:49:49 WARN  no build target for: /home/kai/ChiselProject/Benchmarks/_Benchmark_my/_chisel-util/Queue_testcase/_testcase-chisel-temp-script/dut/dut1.scala
+2025.01.04 10:49:49 WARN  no build target for: /home/kai/ChiselProject/Benchmarks/_Benchmark_my/_chisel-util/Queue_testcase/_testcase-chisel-temp-script/dut/dut1.scala
+2025.01.04 10:49:55 WARN  no build target for: /home/kai/ChiselProject/Benchmarks/_Benchmark_my/_chisel-util/Queue_testcase/_testcase-chisel-temp-script/dut/dut1.scala
+2025.01.04 10:49:57 WARN  no build target for: /home/kai/ChiselProject/Benchmarks/_Benchmark_my/_chisel-util/Queue_testcase/_testcase-chisel-temp-script/dut/dut2.scala
+2025.01.04 10:50:00 WARN  no build target for: /home/kai/ChiselProject/Benchmarks/_Benchmark_my/_chisel-util/Queue_testcase/_testcase-chisel-temp-script/dut/dut2.scala
+2025.01.04 10:50:08 WARN  no build target for: /home/kai/ChiselProject/Benchmarks/_Benchmark_my/_chisel-util/Queue_testcase/_testcase-chisel-temp-script/dut/dut2.scala
+2025.01.04 10:50:09 WARN  no build target for: /home/kai/ChiselProject/Benchmarks/_Benchmark_my/_chisel-util/Queue_testcase/_testcase-chisel-temp-script/dut/dut3.scala
+2025.01.04 10:50:12 WARN  no build target for: /home/kai/ChiselProject/Benchmarks/_Benchmark_my/_chisel-util/Queue_testcase/_testcase-chisel-temp-script/dut/dut3.scala
+2025.01.04 10:50:12 WARN  no build target for: /home/kai/ChiselProject/Benchmarks/_Benchmark_my/_chisel-util/Queue_testcase/_testcase-chisel-temp-script/dut/dut3.scala
+2025.01.04 10:50:17 WARN  no build target for: /home/kai/ChiselProject/Benchmarks/_Benchmark_my/_chisel-util/Queue_testcase/_testcase-chisel-temp-script/dut/dut3.scala
+2025.01.04 10:50:19 WARN  no build target for: /home/kai/ChiselProject/Benchmarks/_Benchmark_my/_chisel-util/Queue_testcase/_testcase-chisel-temp-script/dut/dut4.scala
+2025.01.04 10:50:22 WARN  no build target for: /home/kai/ChiselProject/Benchmarks/_Benchmark_my/_chisel-util/Queue_testcase/_testcase-chisel-temp-script/dut/dut4.scala
+2025.01.04 10:50:27 WARN  no build target for: /home/kai/ChiselProject/Benchmarks/_Benchmark_my/_chisel-util/Queue_testcase/_testcase-chisel-temp-script/dut/dut4.scala
+2025.01.04 10:50:29 WARN  no build target for: /home/kai/ChiselProject/Benchmarks/_Benchmark_my/_chisel-util/Queue_testcase/_testcase-chisel-temp-script/dut/dut5.scala
+2025.01.04 10:50:31 WARN  no build target for: /home/kai/ChiselProject/Benchmarks/_Benchmark_my/_chisel-util/Queue_testcase/_testcase-chisel-temp-script/dut/dut5.scala
+2025.01.04 10:50:37 WARN  no build target for: /home/kai/ChiselProject/Benchmarks/_Benchmark_my/_chisel-util/Queue_testcase/_testcase-chisel-temp-script/dut/dut6.scala
+2025.01.04 10:50:40 WARN  no build target for: /home/kai/ChiselProject/Benchmarks/_Benchmark_my/_chisel-util/Queue_testcase/_testcase-chisel-temp-script/dut/dut6.scala
+2025.01.04 10:50:40 WARN  no build target for: /home/kai/ChiselProject/Benchmarks/_Benchmark_my/_chisel-util/Queue_testcase/_testcase-chisel-temp-script/dut/dut6.scala
+2025.01.04 10:50:44 WARN  no build target for: /home/kai/ChiselProject/Benchmarks/_Benchmark_my/_chisel-util/Queue_testcase/_testcase-chisel-temp-script/dut/dut7.scala
+2025.01.04 10:50:46 WARN  no build target for: /home/kai/ChiselProject/Benchmarks/_Benchmark_my/_chisel-util/Queue_testcase/_testcase-chisel-temp-script/dut/dut7.scala
+2025.01.04 10:50:47 WARN  no build target for: /home/kai/ChiselProject/Benchmarks/_Benchmark_my/_chisel-util/Queue_testcase/_testcase-chisel-temp-script/dut/dut7.scala
+2025.01.04 10:50:52 WARN  no build target for: /home/kai/ChiselProject/Benchmarks/_Benchmark_my/_chisel-util/Queue_testcase/_testcase-chisel-temp-script/dut/dut7.scala
+2025.01.04 10:50:54 WARN  no build target for: /home/kai/ChiselProject/Benchmarks/_Benchmark_my/_chisel-util/Queue_testcase/_testcase-chisel-temp-script/dut/dut8.scala
+2025.01.04 10:50:57 WARN  no build target for: /home/kai/ChiselProject/Benchmarks/_Benchmark_my/_chisel-util/Queue_testcase/_testcase-chisel-temp-script/dut/dut8.scala
+2025.01.04 10:50:57 WARN  no build target for: /home/kai/ChiselProject/Benchmarks/_Benchmark_my/_chisel-util/Queue_testcase/_testcase-chisel-temp-script/dut/dut8.scala
+2025.01.04 10:51:00 WARN  no build target for: /home/kai/ChiselProject/Benchmarks/_Benchmark_my/_chisel-util/Queue_testcase/_testcase-chisel-temp-script/dut/dut9.scala
+2025.01.04 10:51:03 WARN  no build target for: /home/kai/ChiselProject/Benchmarks/_Benchmark_my/_chisel-util/Queue_testcase/_testcase-chisel-temp-script/dut/dut9.scala
+2025.01.04 10:51:08 WARN  no build target for: /home/kai/ChiselProject/Benchmarks/_Benchmark_my/_chisel-util/Queue_testcase/_testcase-chisel-temp-script/dut/dut9.scala
+2025.01.04 10:59:27 INFO  shutting down Metals

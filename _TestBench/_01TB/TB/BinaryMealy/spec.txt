@@ -1,0 +1,31 @@
+### 1. Module Name
+   - **BinaryMealy**
+
+### 2. Module Functions
+   - The `BinaryMealy` module is a finite state machine (FSM) designed to process a binary input stream and produce a binary output based on the state transitions dictated by the input sequence. It is a Mealy-type FSM, meaning that the output is determined by both the current state and the current input. The primary function of this module is to transition through a series of states based on the input `io_in` and produce an output `io_out` that becomes high when a specific state (`3'h4`) is reached.
+
+### 3. Input and Output Port Descriptions
+   - **Inputs:**
+     1. `clock`: A clock signal (1-bit) that synchronizes the state transitions within the FSM.
+     2. `reset`: An asynchronous reset signal (1-bit) that initializes the FSM to its starting state (`3'h0`).
+     3. `io_in`: A binary input signal (1-bit) that influences the state transitions of the FSM.
+
+   - **Outputs:**
+     1. `io_out`: A binary output signal (1-bit) that is asserted high when the FSM reaches state `3'h4`.
+
+### 4. Internal Working Principle
+   - The `BinaryMealy` module operates as a finite state machine with a defined set of states. It transitions between these states based on the input `io_in` and the current state. The FSM starts in an initial state (`3'h0`) upon reset and moves through a series of states (`3'h1`, `3'h2`, `3'h3`, `3'h4`) depending on the input. The output `io_out` is asserted when the FSM reaches state `3'h4`, indicating a specific sequence of inputs has been received.
+
+### 5. Implementation Logic Explanation
+   - The FSM is implemented using a sequential logic block that updates the state on the rising edge of the `clock` signal. The transitions are defined as follows:
+     - From state `3'h0`, the FSM moves to state `3'h1` if `io_in` is high, or to state `3'h2` if `io_in` is low.
+     - From state `3'h1`, the FSM moves to state `3'h3` if `io_in` is high, or back to state `3'h0` if `io_in` is low.
+     - From state `3'h2`, the FSM moves to state `3'h4` if `io_in` is high, or to state `3'h3` if `io_in` is low.
+     - From state `3'h3`, the FSM moves to state `3'h4` if `io_in` is high, or back to state `3'h0` if `io_in` is low.
+     - From state `3'h4`, the FSM resets to state `3'h0` or `3'h1` based on the input `io_in`.
+
+### 6. Internally Defined Signal Descriptions
+   - **`state` (3 bits):** A register that holds the current state of the FSM. It determines the next state and influences the output `io_out`.
+   - **`_GEN_2`, `_GEN_4`, `_GEN_5`, `_GEN_7`:** Intermediate wires used to calculate the next state based on the current state and `io_in`. These wires encapsulate the logic for state transitions and are derived from the conditions specified for each state.
+
+This specification outlines the intended operation and internal structure of the `BinaryMealy` module, providing a clear understanding of its role and functionality within a digital system.

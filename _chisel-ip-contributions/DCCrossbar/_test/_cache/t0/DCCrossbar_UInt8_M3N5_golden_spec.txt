@@ -1,0 +1,56 @@
+# Design Specification for `DCCrossbar_UInt8_M3N5_golden` Module
+
+## 1. **Module Name**
+   - `DCCrossbar_UInt8_M3N5_golden`
+
+## 2. **Module Functions**
+   The `DCCrossbar_UInt8_M3N5_golden` module is designed to act as a crossbar switch that routes data from multiple input channels to multiple output channels based on selection signals. It integrates demultiplexers and arbiters to manage data flow efficiently, ensuring that data from three input channels is correctly routed to five output channels. This module is particularly useful in systems requiring dynamic routing of data streams, such as network switches or data processing pipelines.
+
+## 3. **Input and Output Port Descriptions**
+
+### Inputs
+1. **clock**: Clock signal (1-bit input).
+   - Synchronizes the operations within the module.
+2. **reset**: Active high reset signal (1-bit input).
+   - Resets internal states and registers to a known state.
+3. **io_sel_0, io_sel_1, io_sel_2**: Selection signals (3-bit each).
+   - Determine the output channel for data from each respective input channel.
+4. **io_c_0_valid, io_c_1_valid, io_c_2_valid**: Valid signals for input channels (1-bit each).
+   - Indicate the validity of data on the corresponding input channels.
+5. **io_c_0_bits, io_c_1_bits, io_c_2_bits**: Data input buses (8-bit each).
+   - Contain the data elements to be routed through the crossbar.
+6. **io_p_0_ready, io_p_1_ready, io_p_2_ready, io_p_3_ready, io_p_4_ready**: Ready signals for output channels (1-bit each).
+   - Indicate readiness of the respective output channels to receive data.
+
+### Outputs
+1. **io_c_0_ready, io_c_1_ready, io_c_2_ready**: Ready signals for input channels (1-bit each).
+   - Indicate whether the corresponding input channels can send data.
+2. **io_p_0_valid, io_p_1_valid, io_p_2_valid, io_p_3_valid, io_p_4_valid**: Valid signals for output channels (1-bit each).
+   - Indicate the validity of data on the corresponding output channels.
+3. **io_p_0_bits, io_p_1_bits, io_p_2_bits, io_p_3_bits, io_p_4_bits**: Data output buses (8-bit each).
+   - Contain the routed data elements for each respective output channel.
+
+## 4. **Internal Working Principle**
+The `DCCrossbar_UInt8_M3N5_golden` module operates by first demultiplexing the data from each input channel based on the selection signals, directing it to one of the five output channels. Each demultiplexer is paired with an arbiter that determines which data from multiple demultiplexed inputs should be sent to the output channel, based on the readiness and validity of the data. The module ensures that data is routed efficiently without conflicts, maintaining data integrity and order.
+
+## 5. **Implementation Logic Explanation**
+The module is composed of multiple instances of `DCDemux_UInt8` and `DCArbiter_UInt8` submodules:
+- **Demultiplexing**: Each input channel is connected to a `DCDemux_UInt8` instance, which uses the selection signal to route the input data to one of its five outputs. The demultiplexers handle the routing logic based on the `io_sel` inputs, ensuring data is directed to the correct output path.
+- **Arbitration**: Each output channel is managed by a `DCArbiter_UInt8` instance, which arbitrates between multiple potential inputs (from different demultiplexers) to decide which data is sent out. The arbiter checks the validity of incoming data and the readiness of the output, using a round-robin or priority-based scheme to prevent data loss or collision.
+- **Data Flow Control**: Ready and valid signals are used extensively to manage the data flow, ensuring that data is only sent when both the sender and receiver are prepared, thus preventing overflow or underflow conditions.
+
+## 6. **Internally Defined Signal Descriptions**
+
+1. **demuxList_0_io_sel, demuxList_1_io_sel, demuxList_2_io_sel**: Selection signals for demultiplexers (3-bit each).
+   - Direct data from input channels to specific output paths within each demultiplexer.
+2. **demuxList_0_io_c_ready, demuxList_1_io_c_ready, demuxList_2_io_c_ready**: Ready signals from demultiplexers (1-bit each).
+   - Indicate whether the demultiplexer can accept more data.
+3. **arbList_0_io_p_ready, arbList_1_io_p_ready, arbList_2_io_p_ready, arbList_3_io_p_ready, arbList_4_io_p_ready**: Ready signals for arbiters (1-bit each).
+   - Indicate whether the arbiter's output channel is ready to accept data.
+4. **arbList_0_io_p_valid, arbList_1_io_p_valid, arbList_2_io_p_valid, arbList_3_io_p_valid, arbList_4_io_p_valid**: Valid signals from arbiters (1-bit each).
+   - Indicate whether the arbiter has valid data to send to the output channel.
+5. **arbList_0_io_p_bits, arbList_1_io_p_bits, arbList_2_io_p_bits, arbList_3_io_p_bits, arbList_4_io_p_bits**: Data signals from arbiters (8-bit each).
+   - Contain the data to be sent from the arbiter to the respective output channel.
+
+These internal signals facilitate the coordination between demultiplexers and arbiters, ensuring that data is routed correctly and efficiently across the crossbar switch.
+

@@ -1,0 +1,46 @@
+### 1. Module Name
+   - **CircularBuffer**
+
+### 2. Module Functions
+   - **Primary Role**: The CircularBuffer module is designed to implement a circular buffer, which is a data structure that uses a single, fixed-size buffer as if it were connected end-to-end. This module manages data flow with enqueue (io_enq) and dequeue (io_deq) operations, indicating buffer status with full (io_full) and empty (io_empty) signals.
+   - **System Context**: Within a larger system, this module is typically used for buffering data between components operating at different rates, ensuring smooth data transfer without data loss or overflow.
+
+### 3. Input and Output Port Descriptions
+   - **Inputs**:
+     1. `clock` (input): Clock signal for synchronizing operations within the module.
+     2. `reset` (input): Active-high reset signal to initialize or reset the module's state.
+     3. `io_enq` (input): Signal to enqueue data into the buffer. When high, data is added to the buffer if it is not full.
+     4. `io_deq` (input): Signal to dequeue data from the buffer. When high, data is removed from the buffer if it is not empty.
+
+   - **Outputs**:
+     1. `io_full` (output): Indicates if the buffer is full. When high, no more data can be enqueued.
+     2. `io_empty` (output): Indicates if the buffer is empty. When high, no data can be dequeued.
+     3. `io_head` (output, 32 bits): Represents the current head position in the buffer.
+     4. `io_tail` (output, 128 bits): Represents the current tail position in the buffer.
+
+### 4. Internal Working Principle
+   - The CircularBuffer module operates by maintaining a head and a tail pointer within a fixed-size buffer. The head pointer indicates where data is to be dequeued from, and the tail pointer indicates where new data is to be enqueued. The module uses these pointers to manage the circular nature of the buffer, wrapping around when reaching the end of the buffer space.
+
+### 5. Implementation Logic Explanation
+   - **Sequential Logic**:
+     - The module uses a clocked process to update the `head`, `tail`, and `maybe_full` registers on the rising edge of the clock.
+     - On reset, the head is initialized to `32'h1`, the tail to `128'h1`, and `maybe_full` to `1'b0`.
+
+   - **Combinational Logic**:
+     - The module calculates whether the buffer is full or empty based on the comparison between the head and tail pointers and the `maybe_full` flag.
+     - The `do_enq` signal determines if an enqueue operation can proceed, taking into account the current state of the buffer and potential head collisions.
+     - The `might_hit_head` and `at_head` signals are calculated using bitwise operations to detect potential overlaps between the head and tail positions.
+
+### 6. Internally Defined Signal Descriptions
+   - `head` (reg, 32 bits): Tracks the position in the buffer from which data will be dequeued.
+   - `tail` (reg, 128 bits): Tracks the position in the buffer where new data will be enqueued.
+   - `maybe_full` (reg, 1 bit): A flag indicating a potential full state of the buffer.
+   - `_might_hit_head_T_*` (wire, 32 bits): Intermediate signals used to calculate the potential overlap of the head and tail positions.
+   - `do_enq` (wire, 1 bit): Determines if an enqueue operation can proceed.
+   - `_GEN_4` (wire, 128 bits): An intermediate signal used in calculating the buffer's empty state.
+   - `_T_3` (wire, 1 bit): Used to determine if the buffer is empty based on the head and tail positions.
+   - `_head_T_2` (wire, 32 bits): Represents the next head position in a circular fashion.
+   - `might_hit_head` (wire, 1 bit): Indicates if the head might be hit by the tail, signaling a potential buffer full condition.
+   - `at_head` (wire, 1 bit): Indicates if the current tail position is at the head, used in determining buffer state transitions.
+
+This design specification provides a comprehensive overview of the CircularBuffer module, detailing its functionality, inputs and outputs, internal workings, and the logic used to implement its operations.

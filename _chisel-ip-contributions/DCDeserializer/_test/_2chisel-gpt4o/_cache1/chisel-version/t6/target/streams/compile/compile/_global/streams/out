@@ -1,0 +1,10 @@
+[0m[[0m[31merror[0m] [0m[0m/home/kai/ChiselProject/Benchmarks/_Benchmark_my/_chisel-ip-contributions/DCDeserializer/chisel-version/t6/src/main/scala/dut.scala:23:22: ambiguous reference to overloaded definition,[0m
+[0m[[0m[31merror[0m] [0m[0mboth macro method apply in object VecInit of type [T <: chisel3.Data](elt0: T, elts: T*)chisel3.Vec[T][0m
+[0m[[0m[31merror[0m] [0m[0mand  macro method apply in object VecInit of type [T <: chisel3.Data](elts: Seq[T])chisel3.Vec[T][0m
+[0m[[0m[31merror[0m] [0m[0mmatch argument types (chisel3.Vec[chisel3.UInt])[0m
+[0m[[0m[31merror[0m] [0m[0m  val fullDataWire = VecInit(dataSelect).asUInt // Concatenate all segments into a wide wire[0m
+[0m[[0m[31merror[0m] [0m[0m                     ^[0m
+[0m[[0m[31merror[0m] [0m[0m/home/kai/ChiselProject/Benchmarks/_Benchmark_my/_chisel-ip-contributions/DCDeserializer/chisel-version/t6/src/main/scala/dut.scala:28:37: value fromBits is not a member of type parameter D[0m
+[0m[[0m[31merror[0m] [0m[0m  io.dataOut.bits := data.cloneType.fromBits(fullDataWire) // Convert concatenated wire back to target type[0m
+[0m[[0m[31merror[0m] [0m[0m                                    ^[0m
+[0m[[0m[31merror[0m] [0m[0mtwo errors found[0m

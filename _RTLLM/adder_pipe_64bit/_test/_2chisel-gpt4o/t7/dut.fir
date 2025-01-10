@@ -1,0 +1,91 @@
+circuit dut :
+  module dut :
+    input clock : Clock
+    input reset : UInt<1>
+    output io : { flip i_en : UInt<1>, flip adda : UInt<64>, flip addb : UInt<64>, result : UInt<65>, o_en : UInt<1>}
+
+    wire _stageRegs_WIRE : UInt<17>[4] @[dut.scala 16:34]
+    _stageRegs_WIRE[0] <= UInt<17>("h0") @[dut.scala 16:34]
+    _stageRegs_WIRE[1] <= UInt<17>("h0") @[dut.scala 16:34]
+    _stageRegs_WIRE[2] <= UInt<17>("h0") @[dut.scala 16:34]
+    _stageRegs_WIRE[3] <= UInt<17>("h0") @[dut.scala 16:34]
+    reg stageRegs : UInt<17>[4], clock with :
+      reset => (reset, _stageRegs_WIRE) @[dut.scala 16:26]
+    wire _enableRegs_WIRE : UInt<1>[4] @[dut.scala 17:35]
+    _enableRegs_WIRE[0] <= UInt<1>("h0") @[dut.scala 17:35]
+    _enableRegs_WIRE[1] <= UInt<1>("h0") @[dut.scala 17:35]
+    _enableRegs_WIRE[2] <= UInt<1>("h0") @[dut.scala 17:35]
+    _enableRegs_WIRE[3] <= UInt<1>("h0") @[dut.scala 17:35]
+    reg enableRegs : UInt<1>[4], clock with :
+      reset => (reset, _enableRegs_WIRE) @[dut.scala 17:27]
+    node _addaParts_T = bits(io.adda, 15, 0) @[dut.scala 20:38]
+    node _addaParts_T_1 = bits(io.adda, 31, 16) @[dut.scala 20:54]
+    node _addaParts_T_2 = bits(io.adda, 47, 32) @[dut.scala 20:71]
+    node _addaParts_T_3 = bits(io.adda, 63, 48) @[dut.scala 20:88]
+    wire addaParts : UInt<16>[4] @[dut.scala 20:26]
+    addaParts[0] <= _addaParts_T @[dut.scala 20:26]
+    addaParts[1] <= _addaParts_T_1 @[dut.scala 20:26]
+    addaParts[2] <= _addaParts_T_2 @[dut.scala 20:26]
+    addaParts[3] <= _addaParts_T_3 @[dut.scala 20:26]
+    node _addbParts_T = bits(io.addb, 15, 0) @[dut.scala 21:38]
+    node _addbParts_T_1 = bits(io.addb, 31, 16) @[dut.scala 21:54]
+    node _addbParts_T_2 = bits(io.addb, 47, 32) @[dut.scala 21:71]
+    node _addbParts_T_3 = bits(io.addb, 63, 48) @[dut.scala 21:88]
+    wire addbParts : UInt<16>[4] @[dut.scala 21:26]
+    addbParts[0] <= _addbParts_T @[dut.scala 21:26]
+    addbParts[1] <= _addbParts_T_1 @[dut.scala 21:26]
+    addbParts[2] <= _addbParts_T_2 @[dut.scala 21:26]
+    addbParts[3] <= _addbParts_T_3 @[dut.scala 21:26]
+    node _sum0_T = add(addaParts[0], addbParts[0]) @[dut.scala 24:35]
+    reg sum0 : UInt, clock with :
+      reset => (UInt<1>("h0"), sum0) @[dut.scala 24:21]
+    sum0 <= _sum0_T @[dut.scala 24:21]
+    reg enableRegs_0_REG : UInt<1>, clock with :
+      reset => (UInt<1>("h0"), enableRegs_0_REG) @[dut.scala 25:27]
+    enableRegs_0_REG <= io.i_en @[dut.scala 25:27]
+    enableRegs[0] <= enableRegs_0_REG @[dut.scala 25:17]
+    node _sum1_T = add(addaParts[1], addbParts[1]) @[dut.scala 28:35]
+    node _sum1_T_1 = bits(sum0, 16, 16) @[dut.scala 28:57]
+    node _sum1_T_2 = add(_sum1_T, _sum1_T_1) @[dut.scala 28:51]
+    node _sum1_T_3 = tail(_sum1_T_2, 1) @[dut.scala 28:51]
+    reg sum1 : UInt, clock with :
+      reset => (UInt<1>("h0"), sum1) @[dut.scala 28:21]
+    sum1 <= _sum1_T_3 @[dut.scala 28:21]
+    reg enableRegs_1_REG : UInt<1>, clock with :
+      reset => (UInt<1>("h0"), enableRegs_1_REG) @[dut.scala 29:27]
+    enableRegs_1_REG <= enableRegs[0] @[dut.scala 29:27]
+    enableRegs[1] <= enableRegs_1_REG @[dut.scala 29:17]
+    node _sum2_T = add(addaParts[2], addbParts[2]) @[dut.scala 32:35]
+    node _sum2_T_1 = bits(sum1, 16, 16) @[dut.scala 32:57]
+    node _sum2_T_2 = add(_sum2_T, _sum2_T_1) @[dut.scala 32:51]
+    node _sum2_T_3 = tail(_sum2_T_2, 1) @[dut.scala 32:51]
+    reg sum2 : UInt, clock with :
+      reset => (UInt<1>("h0"), sum2) @[dut.scala 32:21]
+    sum2 <= _sum2_T_3 @[dut.scala 32:21]
+    reg enableRegs_2_REG : UInt<1>, clock with :
+      reset => (UInt<1>("h0"), enableRegs_2_REG) @[dut.scala 33:27]
+    enableRegs_2_REG <= enableRegs[1] @[dut.scala 33:27]
+    enableRegs[2] <= enableRegs_2_REG @[dut.scala 33:17]
+    node _sum3_T = add(addaParts[3], addbParts[3]) @[dut.scala 36:35]
+    node _sum3_T_1 = bits(sum2, 16, 16) @[dut.scala 36:57]
+    node _sum3_T_2 = add(_sum3_T, _sum3_T_1) @[dut.scala 36:51]
+    node _sum3_T_3 = tail(_sum3_T_2, 1) @[dut.scala 36:51]
+    reg sum3 : UInt, clock with :
+      reset => (UInt<1>("h0"), sum3) @[dut.scala 36:21]
+    sum3 <= _sum3_T_3 @[dut.scala 36:21]
+    reg enableRegs_3_REG : UInt<1>, clock with :
+      reset => (UInt<1>("h0"), enableRegs_3_REG) @[dut.scala 37:27]
+    enableRegs_3_REG <= enableRegs[2] @[dut.scala 37:27]
+    enableRegs[3] <= enableRegs_3_REG @[dut.scala 37:17]
+    node _io_result_T = bits(sum3, 16, 16) @[dut.scala 40:24]
+    node _io_result_T_1 = bits(sum3, 15, 0) @[dut.scala 40:34]
+    node _io_result_T_2 = bits(sum2, 15, 0) @[dut.scala 40:47]
+    node _io_result_T_3 = bits(sum1, 15, 0) @[dut.scala 40:60]
+    node _io_result_T_4 = bits(sum0, 15, 0) @[dut.scala 40:73]
+    node io_result_lo = cat(_io_result_T_3, _io_result_T_4) @[Cat.scala 33:92]
+    node io_result_hi_hi = cat(_io_result_T, _io_result_T_1) @[Cat.scala 33:92]
+    node io_result_hi = cat(io_result_hi_hi, _io_result_T_2) @[Cat.scala 33:92]
+    node _io_result_T_5 = cat(io_result_hi, io_result_lo) @[Cat.scala 33:92]
+    io.result <= _io_result_T_5 @[dut.scala 40:13]
+    io.o_en <= enableRegs[3] @[dut.scala 43:11]
+

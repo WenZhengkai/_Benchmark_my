@@ -1,0 +1,31 @@
+[
+  {
+    "class":"firrtl.EmitCircuitAnnotation",
+    "emitter":"firrtl.VerilogEmitter"
+  },
+  {
+    "class":"firrtl.transforms.BlackBoxTargetDirAnno",
+    "targetDir":"generated"
+  },
+  {
+    "class":"firrtl.transforms.CombinationalPath",
+    "sink":"~DCSerializer|DCSerializer>io_dataOut_valid",
+    "sources":[
+      "~DCSerializer|DCSerializer>io_dataIn_valid"
+    ]
+  },
+  {
+    "class":"firrtl.transforms.CombinationalPath",
+    "sink":"~DCSerializer|DCSerializer>io_dataIn_ready",
+    "sources":[
+      "~DCSerializer|DCSerializer>io_dataOut_ready"
+    ]
+  },
+  {
+    "class":"firrtl.transforms.CombinationalPath",
+    "sink":"~DCSerializer|DCSerializer>io_dataOut_bits",
+    "sources":[
+      "~DCSerializer|DCSerializer>io_dataIn_bits"
+    ]
+  }
+]

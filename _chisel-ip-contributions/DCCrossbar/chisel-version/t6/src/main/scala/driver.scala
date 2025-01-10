@@ -1,0 +1,7 @@
+import chisel3._
+import chisel3.util._
+// Generate the Verilog code
+object Driver extends App {
+  val dir = "../../_test/_cache/t6"
+  emitVerilog(new dut(UInt(8.W),3,5), Array("--target-dir", dir))
+}

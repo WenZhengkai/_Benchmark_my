@@ -1,0 +1,46 @@
+circuit dut :
+  module dut :
+    input clock : Clock
+    input reset : UInt<1>
+    output io : { flip in : UInt<12>, out : UInt<30>}
+
+    wire _delayLine_WIRE : UInt<12>[7] @[dut.scala 15:34]
+    _delayLine_WIRE[0] <= UInt<12>("h0") @[dut.scala 15:34]
+    _delayLine_WIRE[1] <= UInt<12>("h0") @[dut.scala 15:34]
+    _delayLine_WIRE[2] <= UInt<12>("h0") @[dut.scala 15:34]
+    _delayLine_WIRE[3] <= UInt<12>("h0") @[dut.scala 15:34]
+    _delayLine_WIRE[4] <= UInt<12>("h0") @[dut.scala 15:34]
+    _delayLine_WIRE[5] <= UInt<12>("h0") @[dut.scala 15:34]
+    _delayLine_WIRE[6] <= UInt<12>("h0") @[dut.scala 15:34]
+    reg delayLine : UInt<12>[7], clock with :
+      reset => (reset, _delayLine_WIRE) @[dut.scala 15:26]
+    delayLine[6] <= delayLine[5] @[dut.scala 19:18]
+    delayLine[5] <= delayLine[4] @[dut.scala 19:18]
+    delayLine[4] <= delayLine[3] @[dut.scala 19:18]
+    delayLine[3] <= delayLine[2] @[dut.scala 19:18]
+    delayLine[2] <= delayLine[1] @[dut.scala 19:18]
+    delayLine[1] <= delayLine[0] @[dut.scala 19:18]
+    delayLine[0] <= io.in @[dut.scala 21:16]
+    node _mults_T = mul(delayLine[0], UInt<1>("h0")) @[dut.scala 24:62]
+    node _mults_T_1 = mul(delayLine[1], UInt<11>("h555")) @[dut.scala 24:62]
+    node _mults_T_2 = mul(delayLine[2], UInt<12>("haab")) @[dut.scala 24:62]
+    node _mults_T_3 = mul(delayLine[3], UInt<13>("h1000")) @[dut.scala 24:62]
+    node _mults_T_4 = mul(delayLine[4], UInt<12>("haab")) @[dut.scala 24:62]
+    node _mults_T_5 = mul(delayLine[5], UInt<11>("h555")) @[dut.scala 24:62]
+    node _mults_T_6 = mul(delayLine[6], UInt<1>("h0")) @[dut.scala 24:62]
+    wire mults : UInt<25>[7] @[dut.scala 24:22]
+    mults[0] <= _mults_T @[dut.scala 24:22]
+    mults[1] <= _mults_T_1 @[dut.scala 24:22]
+    mults[2] <= _mults_T_2 @[dut.scala 24:22]
+    mults[3] <= _mults_T_3 @[dut.scala 24:22]
+    mults[4] <= _mults_T_4 @[dut.scala 24:22]
+    mults[5] <= _mults_T_5 @[dut.scala 24:22]
+    mults[6] <= _mults_T_6 @[dut.scala 24:22]
+    node _sumResult_T = add(mults[0], mults[1]) @[dut.scala 27:34]
+    node _sumResult_T_1 = add(_sumResult_T, mults[2]) @[dut.scala 27:34]
+    node _sumResult_T_2 = add(_sumResult_T_1, mults[3]) @[dut.scala 27:34]
+    node _sumResult_T_3 = add(_sumResult_T_2, mults[4]) @[dut.scala 27:34]
+    node _sumResult_T_4 = add(_sumResult_T_3, mults[5]) @[dut.scala 27:34]
+    node sumResult = add(_sumResult_T_4, mults[6]) @[dut.scala 27:34]
+    io.out <= sumResult @[dut.scala 30:10]
+

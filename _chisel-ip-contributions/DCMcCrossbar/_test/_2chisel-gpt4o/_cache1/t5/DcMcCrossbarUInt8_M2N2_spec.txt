@@ -1,0 +1,72 @@
+# Design Specification for `DcMcCrossbarUInt8_M2N2` Module
+
+## 1. **Module Name**
+   - `DcMcCrossbarUInt8_M2N2`
+
+## 2. **Module Functions**
+   The `DcMcCrossbarUInt8_M2N2` module is designed to function as a crossbar switch for digital communication, handling data routing between multiple sources and destinations. It consists of demultiplexers and arbiters to manage data flow, allowing for dynamic selection of data paths. This module is particularly useful in systems requiring flexible data routing, such as network-on-chip (NoC) architectures, where it facilitates efficient data exchange between different components.
+
+## 3. **Input and Output Port Descriptions**
+
+### Inputs
+1. **clock**: Clock signal (1-bit input).
+   - Synchronizes operations within the module.
+2. **reset**: Reset signal (1-bit input).
+   - Resets the internal states and registers to a known state.
+3. **io_sel_0**: Selection signal for demux 0 (2-bit input).
+   - Determines the destination path for the first input channel.
+4. **io_sel_1**: Selection signal for demux 1 (2-bit input).
+   - Determines the destination path for the second input channel.
+5. **io_c_0_valid**: Valid signal for input channel 0 (1-bit input).
+   - Indicates that the data on channel 0 is valid.
+6. **io_c_0_bits**: Data bits for input channel 0 (8-bit input).
+   - Carries the data for channel 0.
+7. **io_c_1_valid**: Valid signal for input channel 1 (1-bit input).
+   - Indicates that the data on channel 1 is valid.
+8. **io_c_1_bits**: Data bits for input channel 1 (8-bit input).
+   - Carries the data for channel 1.
+9. **io_p_0_ready**: Ready signal for output channel 0 (1-bit input).
+   - Indicates that output channel 0 is ready to accept data.
+10. **io_p_1_ready**: Ready signal for output channel 1 (1-bit input).
+    - Indicates that output channel 1 is ready to accept data.
+
+### Outputs
+1. **io_c_0_ready**: Ready signal for input channel 0 (1-bit output).
+   - Indicates that the module is ready to receive data on channel 0.
+2. **io_c_1_ready**: Ready signal for input channel 1 (1-bit output).
+   - Indicates that the module is ready to receive data on channel 1.
+3. **io_p_0_valid**: Valid signal for output channel 0 (1-bit output).
+   - Indicates that the data on output channel 0 is valid.
+4. **io_p_0_bits**: Data bits for output channel 0 (8-bit output).
+   - Carries the data for output channel 0.
+5. **io_p_1_valid**: Valid signal for output channel 1 (1-bit output).
+   - Indicates that the data on output channel 1 is valid.
+6. **io_p_1_bits**: Data bits for output channel 1 (8-bit output).
+   - Carries the data for output channel 1.
+
+## 4. **Internal Working Principle**
+The `DcMcCrossbarUInt8_M2N2` module operates by utilizing two demultiplexers (`DCMirror_UInt8_N2`) and two arbiters (`DCArbiter_UInt8`). Each demultiplexer directs incoming data to one of two possible output paths based on selection signals (`io_sel_0` and `io_sel_1`). The arbiters then manage the data flow from these paths to the output channels, ensuring that only one data source is active per output at any time. This setup allows for dynamic routing of data between multiple sources and destinations.
+
+## 5. **Implementation Logic Explanation**
+The module is structured around the interaction of demultiplexers and arbiters:
+- **Demultiplexers**: Each demultiplexer receives data from an input channel and uses the selection signal to determine which output path to activate. They handle the data validation and readiness signals to manage flow control.
+- **Arbiters**: Each arbiter receives data from two potential sources and decides which data to forward to the output channel based on availability and readiness signals. The arbitration logic ensures fair and efficient data transfer, preventing conflicts.
+- The module employs both combinational and sequential logic to manage data flow, with clock and reset signals synchronizing operations and state transitions.
+
+## 6. **Internally Defined Signal Descriptions**
+
+1. **demuxList_0_io_dst, demuxList_1_io_dst**: (2-bit each)
+   - Selection signals for the demultiplexers, determining the output path for the respective input channels.
+2. **demuxList_0_io_c_ready, demuxList_1_io_c_ready**: (1-bit each)
+   - Ready signals indicating if the demultiplexers are ready to accept data from the input channels.
+3. **demuxList_0_io_p_0_ready, demuxList_0_io_p_1_ready, demuxList_1_io_p_0_ready, demuxList_1_io_p_1_ready**: (1-bit each)
+   - Ready signals for the output paths of the demultiplexers, connected to the arbiter inputs.
+4. **arbList_0_io_c_0_ready, arbList_0_io_c_1_ready, arbList_1_io_c_0_ready, arbList_1_io_c_1_ready**: (1-bit each)
+   - Ready signals indicating if the arbiters are ready to accept data from the demultiplexers.
+5. **arbList_0_io_p_ready, arbList_1_io_p_ready**: (1-bit each)
+   - Signals indicating if the output channels are ready to accept data from the arbiters.
+6. **toBeGranted_mskReq, toBeGranted_tmpGrant, toBeGranted_tmpGrant2, toBeGranted_rv**: (2-bit each)
+   - Internal signals used in the arbitration logic to determine which data source should be granted access to the output channels.
+
+These internal signals facilitate the coordination and control necessary for the crossbar's operation, ensuring data is routed efficiently and correctly between inputs and outputs.
+

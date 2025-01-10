@@ -1,0 +1,40 @@
+circuit dut :
+  module dut :
+    input clock : Clock
+    input reset : UInt<1>
+    output io : { flip sel : UInt<3>, flip c : { flip ready : UInt<1>, valid : UInt<1>, bits : UInt<8>}, p : { flip ready : UInt<1>, valid : UInt<1>, bits : UInt<8>}[5]}
+
+    io.p[0].valid <= UInt<1>("h0") @[dut.scala 15:19]
+    io.p[0].bits <= io.c.bits @[dut.scala 16:18]
+    io.p[1].valid <= UInt<1>("h0") @[dut.scala 15:19]
+    io.p[1].bits <= io.c.bits @[dut.scala 16:18]
+    io.p[2].valid <= UInt<1>("h0") @[dut.scala 15:19]
+    io.p[2].bits <= io.c.bits @[dut.scala 16:18]
+    io.p[3].valid <= UInt<1>("h0") @[dut.scala 15:19]
+    io.p[3].bits <= io.c.bits @[dut.scala 16:18]
+    io.p[4].valid <= UInt<1>("h0") @[dut.scala 15:19]
+    io.p[4].bits <= io.c.bits @[dut.scala 16:18]
+    io.p[io.sel].valid <= io.c.valid @[dut.scala 20:22]
+    io.c.ready <= io.p[io.sel].ready @[dut.scala 21:14]
+    node _T = and(io.c.valid, io.p[io.sel].ready) @[dut.scala 24:19]
+    when _T : @[dut.scala 24:42]
+      io.c.ready <= UInt<1>("h1") @[dut.scala 25:16]
+    else :
+      io.c.ready <= UInt<1>("h0") @[dut.scala 27:16]
+    node _T_1 = neq(UInt<1>("h0"), io.sel) @[dut.scala 32:14]
+    when _T_1 : @[dut.scala 32:26]
+      io.p[0].valid <= UInt<1>("h0") @[dut.scala 33:21]
+    node _T_2 = neq(UInt<1>("h1"), io.sel) @[dut.scala 32:14]
+    when _T_2 : @[dut.scala 32:26]
+      io.p[1].valid <= UInt<1>("h0") @[dut.scala 33:21]
+    node _T_3 = neq(UInt<2>("h2"), io.sel) @[dut.scala 32:14]
+    when _T_3 : @[dut.scala 32:26]
+      io.p[2].valid <= UInt<1>("h0") @[dut.scala 33:21]
+    node _T_4 = neq(UInt<2>("h3"), io.sel) @[dut.scala 32:14]
+    when _T_4 : @[dut.scala 32:26]
+      io.p[3].valid <= UInt<1>("h0") @[dut.scala 33:21]
+    node _T_5 = neq(UInt<3>("h4"), io.sel) @[dut.scala 32:14]
+    when _T_5 : @[dut.scala 32:26]
+      io.p[4].valid <= UInt<1>("h0") @[dut.scala 33:21]
+
+

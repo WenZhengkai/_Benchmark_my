@@ -1,0 +1,15 @@
+[0m[[0m[31merror[0m] [0m[0m/home/kai/ChiselProject/Benchmarks/_Benchmark_my/_chisel-util/Queue_testcase/chisel-version/t2/src/main/scala/dut.scala:8:15: inferred type arguments [Option[chisel3.Bool]] do not conform to method apply's type parameter bounds [T <: chisel3.Data][0m
+[0m[[0m[31merror[0m] [0m[0m  val flush = Input(Option(Bool()))[0m
+[0m[[0m[31merror[0m] [0m[0m              ^[0m
+[0m[[0m[31merror[0m] [0m[0m/home/kai/ChiselProject/Benchmarks/_Benchmark_my/_chisel-util/Queue_testcase/chisel-version/t2/src/main/scala/dut.scala:8:27: type mismatch;[0m
+[0m[[0m[31merror[0m] [0m[0m found   : Option[chisel3.Bool][0m
+[0m[[0m[31merror[0m] [0m[0m required: T[0m
+[0m[[0m[31merror[0m] [0m[0m  val flush = Input(Option(Bool()))[0m
+[0m[[0m[31merror[0m] [0m[0m                          ^[0m
+[0m[[0m[31merror[0m] [0m[0m/home/kai/ChiselProject/Benchmarks/_Benchmark_my/_chisel-util/Queue_testcase/chisel-version/t2/src/main/scala/dut.scala:53:20: value getOrElse is not a member of type parameter T[0m
+[0m[[0m[31merror[0m] [0m[0m    when (io.flush.getOrElse(false.B)) {[0m
+[0m[[0m[31merror[0m] [0m[0m                   ^[0m
+[0m[[0m[31merror[0m] [0m[0m/home/kai/ChiselProject/Benchmarks/_Benchmark_my/_chisel-util/Queue_testcase/chisel-version/t2/src/main/scala/dut.scala:70:21: value isDefined is not a member of type parameter T[0m
+[0m[[0m[31merror[0m] [0m[0m  assert(!(io.flush.isDefined && !hasFlush), "Flush signal provided while hasFlush is false")[0m
+[0m[[0m[31merror[0m] [0m[0m                    ^[0m
+[0m[[0m[31merror[0m] [0m[0mfour errors found[0m

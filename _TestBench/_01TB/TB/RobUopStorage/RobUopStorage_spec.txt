@@ -1,0 +1,53 @@
+## 1. Module Name
+- **RobUopStorage**
+
+## 2. Module Functions
+1. The `RobUopStorage` module is designed to store and manage micro-operations (uops) within a Reorder Buffer (ROB) in a processor pipeline.
+2. It facilitates the enqueueing and dequeueing of micro-operations, ensuring that they are processed in the correct order.
+3. The module supports two uops being enqueued simultaneously and provides outputs for two uops that are ready to be committed.
+4. It is responsible for managing the head and tail pointers of the ROB, ensuring data integrity and correct sequencing of operations.
+
+## 3. Input and Output Port Descriptions
+
+### Inputs
+1. **clock (input)**: Clock signal for synchronizing the operations of the module.
+2. **reset (input)**: Active high reset signal to initialize the module state.
+3. **io_enq_uops_0_valid (input)**: Validity signal for the first micro-operation to be enqueued.
+4. **io_enq_uops_0_pc (input [31:0])**: Program counter of the first micro-operation.
+5. **io_enq_uops_0_opcode (input [6:0])**: Opcode of the first micro-operation.
+6. **io_enq_uops_0_dst (input [4:0])**: Destination register of the first micro-operation.
+7. **io_enq_uops_1_valid (input)**: Validity signal for the second micro-operation to be enqueued.
+8. **io_enq_uops_1_pc (input [31:0])**: Program counter of the second micro-operation.
+9. **io_enq_uops_1_opcode (input [6:0])**: Opcode of the second micro-operation.
+10. **io_enq_uops_1_dst (input [4:0])**: Destination register of the second micro-operation.
+11. **io_enq_valids_0 (input)**: Indicates if the first uop is valid for enqueueing.
+12. **io_enq_valids_1 (input)**: Indicates if the second uop is valid for enqueueing.
+13. **io_rob_tail (input)**: Current tail position in the ROB.
+14. **io_next_rob_head (input)**: Next head position in the ROB, indicating the next uop to be committed.
+
+### Outputs
+1. **io_rob_compact_uop_rdata_0_valid (output)**: Validity of the first uop ready to be committed.
+2. **io_rob_compact_uop_rdata_0_opcode (output [6:0])**: Opcode of the first uop ready to be committed.
+3. **io_rob_compact_uop_rdata_0_dst (output [4:0])**: Destination register of the first uop ready to be committed.
+4. **io_rob_compact_uop_rdata_1_valid (output)**: Validity of the second uop ready to be committed.
+5. **io_rob_compact_uop_rdata_1_opcode (output [6:0])**: Opcode of the second uop ready to be committed.
+6. **io_rob_compact_uop_rdata_1_dst (output [4:0])**: Destination register of the second uop ready to be committed.
+
+## 4. Internal Working Principle
+- The module maintains two memory arrays to store the compacted uops, each capable of holding two uops.
+- The module uses head and tail pointers to manage the order of uops in the ROB.
+- It employs bypass logic to handle scenarios where the head of the ROB is updated before the corresponding data is written back to the memory arrays.
+- The module ensures that the outputs reflect the most recent and correct uops ready for commitment.
+
+## 5. Implementation Logic Explanation
+- **Sequential Logic**: The module uses registers to store the head and tail pointers, as well as to maintain the state of bypassed uops.
+- **Combinational Logic**: The module uses combinational logic to determine the outputs based on the current state of the ROB and the bypassed uops.
+- **Memory Arrays**: Two memory arrays (`rob_compact_uop_mem_0` and `rob_compact_uop_mem_1`) are used to store the compacted uops. These are accessed and updated based on the enqueue signals and the current tail position.
+- **Bypass Logic**: This logic ensures that if the head of the ROB is updated before the memory write completes, the correct data is still output by using bypass registers.
+
+## 6. Internally Defined Signal Descriptions
+1. **rob_compact_uop_mem_0 and rob_compact_uop_mem_1**: Arrays that store the compacted uops, indexed by the ROB tail pointer.
+2. **rob_head**: Register that tracks the current head position in the ROB.
+3. **rob_compact_uop_bypassed_REG, rob_compact_uop_bypassed_REG_1, etc.**: Registers used to store bypassed uops and their associated validity and control signals.
+4. **rob_compact_uop_wdata_0 and rob_compact_uop_wdata_1**: Wires that concatenate the validity, opcode, and destination of the enqueued uops for storage.
+5. **_rob_compact_uop_bypassed_T_4, _rob_compact_uop_bypassed_T_5, etc.**: Intermediate wires used in the bypass logic to determine the correct uop data to output based on the current head position and bypass conditions.

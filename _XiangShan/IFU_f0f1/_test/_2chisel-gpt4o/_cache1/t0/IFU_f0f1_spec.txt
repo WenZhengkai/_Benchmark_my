@@ -1,0 +1,92 @@
+# Design Specification for `IFU_f0f1` Module
+
+## 1. **Module Name**
+   - `IFU_f0f1`
+
+## 2. **Module Functions**
+   The `IFU_f0f1` module serves as a part of the instruction fetch unit (IFU) in a processor architecture. Its primary function is to manage the fetching of instruction addresses from the Fetch Target Queue (FTQ) and prepare them for subsequent stages in the pipeline. The module handles requests from the FTQ, processes them, and generates a series of program counters (PCs) and other related outputs necessary for instruction fetching and execution. It ensures that instructions are fetched efficiently, even in the presence of flush signals, which are typically used to handle branch mispredictions or other control flow changes.
+
+## 3. **Input and Output Port Descriptions**
+
+### Inputs
+1. **clock**: Clock signal (1-bit input).
+   - Synchronizes the operations within the module.
+2. **reset**: Reset signal (1-bit input).
+   - Resets the internal state of the module.
+3. **io_f2_flush**: Flush signal from stage F2 (1-bit input).
+   - Indicates that the current fetch should be invalidated due to a misprediction or other pipeline control event.
+4. **io_fromFtq_req_valid**: FTQ request valid signal (1-bit input).
+   - Indicates that there is a valid request from the FTQ.
+5. **io_fromFtq_req_bits_startAddr**: Start address from FTQ (32-bit input).
+   - Provides the starting address for instruction fetching from the FTQ.
+6. **io_f2_ready**: Ready signal from stage F2 (1-bit input).
+   - Indicates that stage F2 is ready to accept new instructions.
+
+### Outputs
+1. **io_fromFtq_req_ready**: FTQ request ready signal (1-bit output).
+   - Indicates that the module is ready to accept a new request from the FTQ.
+2. **io_f1_valid**: F1 stage valid signal (1-bit output).
+   - Indicates that the outputs for the F1 stage are valid and ready for use.
+3. **io_f1_pc_0**: Program counter 0 (32-bit output).
+   - The first calculated program counter for the F1 stage.
+4. **io_f1_pc_1**: Program counter 1 (32-bit output).
+   - The second calculated program counter for the F1 stage.
+5. **io_f1_pc_2**: Program counter 2 (32-bit output).
+   - The third calculated program counter for the F1 stage.
+6. **io_f1_pc_3**: Program counter 3 (32-bit output).
+   - The fourth calculated program counter for the F1 stage.
+7. **io_f1_half_snpc_0**: Half step next program counter 0 (32-bit output).
+   - A calculated half-step next program counter for speculative execution.
+8. **io_f1_half_snpc_1**: Half step next program counter 1 (32-bit output).
+   - A calculated half-step next program counter for speculative execution.
+9. **io_f1_half_snpc_2**: Half step next program counter 2 (32-bit output).
+   - A calculated half-step next program counter for speculative execution.
+10. **io_f1_half_snpc_3**: Half step next program counter 3 (32-bit output).
+    - A calculated half-step next program counter for speculative execution.
+11. **io_f1_cut_ptr_0**: Cut pointer 0 (5-bit output).
+    - A pointer used for internal addressing or selection within the module.
+12. **io_f1_cut_ptr_1**: Cut pointer 1 (5-bit output).
+    - A pointer used for internal addressing or selection within the module.
+13. **io_f1_cut_ptr_2**: Cut pointer 2 (5-bit output).
+    - A pointer used for internal addressing or selection within the module.
+14. **io_f1_cut_ptr_3**: Cut pointer 3 (5-bit output).
+    - A pointer used for internal addressing or selection within the module.
+15. **io_f1_cut_ptr_4**: Cut pointer 4 (5-bit output).
+    - A pointer used for internal addressing or selection within the module.
+
+## 4. **Internal Working Principle**
+The `IFU_f0f1` module operates by receiving requests from the FTQ, which provide a starting address for instruction fetching. The module calculates multiple program counters and half-step next program counters based on this starting address. It manages the validity of these outputs based on signals from the pipeline, such as flush signals and ready signals from subsequent stages. The module uses a combination of combinational logic to calculate addresses and sequential logic to manage state transitions and output validity.
+
+## 5. **Implementation Logic Explanation**
+The module uses a combination of combinational and sequential logic to perform its functions:
+- **Combinational Logic**: 
+  - Computes program counters (`io_f1_pc_0` to `io_f1_pc_3`) by incrementing the starting address.
+  - Computes half-step next program counters (`io_f1_half_snpc_0` to `io_f1_half_snpc_3`) for speculative execution.
+  - Computes cut pointers (`io_f1_cut_ptr_0` to `io_f1_cut_ptr_4`) for internal addressing.
+- **Sequential Logic**:
+  - Manages the `f1_valid` signal to indicate the validity of the current fetch stage.
+  - Uses `f0_fire` and `f1_fire` signals to control the state transitions based on FTQ request readiness and flush conditions.
+
+## 6. **Internally Defined Signal Descriptions**
+
+1. **f0_fire**: FTQ fire signal (1-bit).
+   - Indicates that a new request from the FTQ has been successfully accepted.
+2. **f1_valid**: F1 stage valid register (1-bit).
+   - Stores the validity state of the F1 stage outputs.
+3. **f1_ftq_req_startAddr**: Start address register (32-bit).
+   - Holds the starting address from the FTQ for the current instruction fetch.
+4. **f1_fire**: F1 fire signal (1-bit).
+   - Indicates that the F1 stage has completed its current operation and is ready for the next.
+5. **_GEN_1**: Intermediate signal for valid state logic (1-bit).
+   - Used to determine the next state of `f1_valid`.
+6. **_GEN_2**: Intermediate signal for valid state logic (1-bit).
+   - Combines flush logic with the state transition logic for `f1_valid`.
+7. **_T_2**: Intermediate signal for address calculation (33-bit).
+   - Used to extend the address for calculation purposes.
+8. **_T_19**: Intermediate signal for cut pointer calculation (6-bit).
+   - Used to derive cut pointers from the starting address.
+9. **_T_20** to **_T_37**: Intermediate signals for cut pointer incrementation (6-bit).
+   - Used to calculate successive cut pointers by incrementing `_T_19`. 
+
+The module efficiently manages instruction fetch requests and prepares necessary outputs for the next pipeline stage, ensuring smooth operation even in the presence of control signals like flush and ready.
+

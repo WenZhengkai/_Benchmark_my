@@ -1,0 +1,64 @@
+# Design Specification for `RegFifo` Module
+
+## 1. **Module Name**
+   - `RegFifo`
+
+## 2. **Module Functions**
+   The `RegFifo` module is designed to function as a simple register-based First-In-First-Out (FIFO) queue. It allows for temporary storage and retrieval of 8-bit data elements, supporting enqueue and dequeue operations. The FIFO is particularly useful in scenarios where data needs to be buffered between producer and consumer processes, ensuring smooth data flow without data loss or overflow. The module is capable of handling up to 10 elements, making it suitable for small-scale buffering applications.
+
+## 3. **Input and Output Port Descriptions**
+
+### Inputs
+1. **clock**: Clock signal (1-bit input).
+   - Synchronizes all operations within the module.
+2. **reset**: Reset signal (1-bit input).
+   - Resets the internal state of the FIFO, clearing all stored data and pointers.
+3. **io_enq_valid**: Enqueue valid signal (1-bit input).
+   - Indicates that the input data (`io_enq_bits`) is valid and ready to be enqueued.
+4. **io_enq_bits**: Enqueue data bits (8-bit input).
+   - The data to be enqueued into the FIFO.
+5. **io_deq_ready**: Dequeue ready signal (1-bit input).
+   - Indicates that the consumer is ready to receive data from the FIFO.
+
+### Outputs
+1. **io_enq_ready**: Enqueue ready signal (1-bit output).
+   - Indicates that the FIFO is ready to accept new data.
+2. **io_deq_valid**: Dequeue valid signal (1-bit output).
+   - Indicates that valid data is available for dequeue.
+3. **io_deq_bits**: Dequeue data bits (8-bit output).
+   - The data being dequeued from the FIFO.
+
+## 4. **Internal Working Principle**
+The `RegFifo` module operates as a circular buffer using a pair of pointers: `readPtr` and `writePtr`. These pointers track the positions for reading and writing data within the FIFO's internal memory registers (`memReg_0` to `memReg_9`). The FIFO is empty when the `readPtr` equals the `writePtr` and the `emptyReg` is set, while it is full when the `writePtr` catches up to the `readPtr` and the `fullReg` is set. The module manages these states and transitions based on the `io_enq_valid` and `io_deq_ready` signals.
+
+## 5. **Implementation Logic Explanation**
+The FIFO is implemented using a combination of sequential and combinational logic:
+- **Sequential Logic**: The module uses a clocked process to update the `readPtr`, `writePtr`, `emptyReg`, and `fullReg` based on the current operation (`enqueue` or `dequeue`). The data registers (`memReg_0` to `memReg_9`) are also updated during enqueue operations.
+- **Combinational Logic**: The module determines the next states of pointers and flags using combinational logic. It calculates whether to increment the pointers and updates the full and empty status based on the current operation.
+- **State Management**: The logic ensures that the FIFO never simultaneously reports both full and empty states, maintaining data integrity and preventing overflow or underflow.
+
+## 6. **Internally Defined Signal Descriptions**
+
+1. **memReg_0 to memReg_9**: Data registers (8-bit each).
+   - Store the data elements in the FIFO buffer.
+2. **readPtr**: Read pointer (4-bit).
+   - Points to the current location in the buffer from which data will be read.
+3. **writePtr**: Write pointer (4-bit).
+   - Points to the current location in the buffer where new data will be written.
+4. **emptyReg**: Empty status register (1-bit).
+   - Indicates whether the FIFO is empty.
+5. **fullReg**: Full status register (1-bit).
+   - Indicates whether the FIFO is full.
+6. **nextRead**: Next read pointer value (4-bit).
+   - Calculated next value of the `readPtr` in the circular buffer.
+7. **nextWrite**: Next write pointer value (4-bit).
+   - Calculated next value of the `writePtr` in the circular buffer.
+8. **op**: Operation mode (2-bit).
+   - Combines `io_enq_valid` and `io_deq_ready` to determine the current operation.
+9. **incrRead**: Increment read pointer signal (1-bit).
+   - Determines if the `readPtr` should be incremented.
+10. **incrWrite**: Increment write pointer signal (1-bit).
+    - Determines if the `writePtr` should be incremented.
+
+These internal signals work together to manage the FIFO's state and ensure correct data handling. The design is robust, handling various edge cases such as simultaneous enqueue and dequeue operations efficiently.
+

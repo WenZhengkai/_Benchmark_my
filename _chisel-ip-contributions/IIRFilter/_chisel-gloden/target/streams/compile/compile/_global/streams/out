@@ -1,0 +1,30 @@
+[0m[[0m[31merror[0m] [0m[0m/home/kai/ChiselProject/Benchmarks/_Benchmark_my/_chisel-ip-contributions/RegFifo/_chisel-gloden/src/main/scala/golden.scala:11:54: not found: type Fifo[0m
+[0m[[0m[31merror[0m] [0m[0mclass RegFifo[T <: Data](gen: T, depth: Int) extends Fifo(gen: T, depth: Int) {[0m
+[0m[[0m[31merror[0m] [0m[0m                                                     ^[0m
+[0m[[0m[31merror[0m] [0m[0m/home/kai/ChiselProject/Benchmarks/_Benchmark_my/_chisel-ip-contributions/RegFifo/_chisel-gloden/src/main/scala/golden.scala:11:62: no arguments allowed for nullary constructor Object: ()Object[0m
+[0m[[0m[31merror[0m] [0m[0mclass RegFifo[T <: Data](gen: T, depth: Int) extends Fifo(gen: T, depth: Int) {[0m
+[0m[[0m[31merror[0m] [0m[0m                                                             ^[0m
+[0m[[0m[31merror[0m] [0m[0m/home/kai/ChiselProject/Benchmarks/_Benchmark_my/_chisel-ip-contributions/RegFifo/_chisel-gloden/src/main/scala/golden.scala:33:15: object enq is not a member of package io[0m
+[0m[[0m[31merror[0m] [0m[0m  val op = io.enq.valid ## io.deq.ready[0m
+[0m[[0m[31merror[0m] [0m[0m              ^[0m
+[0m[[0m[31merror[0m] [0m[0m/home/kai/ChiselProject/Benchmarks/_Benchmark_my/_chisel-ip-contributions/RegFifo/_chisel-gloden/src/main/scala/golden.scala:33:31: object deq is not a member of package io[0m
+[0m[[0m[31merror[0m] [0m[0m  val op = io.enq.valid ## io.deq.ready[0m
+[0m[[0m[31merror[0m] [0m[0m                              ^[0m
+[0m[[0m[31merror[0m] [0m[0m/home/kai/ChiselProject/Benchmarks/_Benchmark_my/_chisel-ip-contributions/RegFifo/_chisel-gloden/src/main/scala/golden.scala:77:28: object enq is not a member of package io[0m
+[0m[[0m[31merror[0m] [0m[0m    memReg(writePtr) := io.enq.bits[0m
+[0m[[0m[31merror[0m] [0m[0m                           ^[0m
+[0m[[0m[31merror[0m] [0m[0m/home/kai/ChiselProject/Benchmarks/_Benchmark_my/_chisel-ip-contributions/RegFifo/_chisel-gloden/src/main/scala/golden.scala:80:6: object deq is not a member of package io[0m
+[0m[[0m[31merror[0m] [0m[0m  io.deq.bits := memReg(readPtr)[0m
+[0m[[0m[31merror[0m] [0m[0m     ^[0m
+[0m[[0m[31merror[0m] [0m[0m/home/kai/ChiselProject/Benchmarks/_Benchmark_my/_chisel-ip-contributions/RegFifo/_chisel-gloden/src/main/scala/golden.scala:81:6: object enq is not a member of package io[0m
+[0m[[0m[31merror[0m] [0m[0m  io.enq.ready := !fullReg[0m
+[0m[[0m[31merror[0m] [0m[0m     ^[0m
+[0m[[0m[31merror[0m] [0m[0m/home/kai/ChiselProject/Benchmarks/_Benchmark_my/_chisel-ip-contributions/RegFifo/_chisel-gloden/src/main/scala/golden.scala:82:6: object deq is not a member of package io[0m
+[0m[[0m[31merror[0m] [0m[0m  io.deq.valid := !emptyReg[0m
+[0m[[0m[31merror[0m] [0m[0m     ^[0m
+[0m[[0m[31merror[0m] [0m[0m/home/kai/ChiselProject/Benchmarks/_Benchmark_my/_chisel-ip-contributions/RegFifo/_chisel-gloden/src/main/scala/golden.scala:109:15: type mismatch;[0m
+[0m[[0m[31merror[0m] [0m[0m found   : RegFifo[chisel3.UInt][0m
+[0m[[0m[31merror[0m] [0m[0m required: chisel3.RawModule[0m
+[0m[[0m[31merror[0m] [0m[0m  emitVerilog(new RegFifo(UInt(8.W),10), Array("--target-dir", "generated"))[0m
+[0m[[0m[31merror[0m] [0m[0m              ^[0m
+[0m[[0m[31merror[0m] [0m[0m9 errors found[0m

@@ -1,0 +1,81 @@
+# Design Specification for `Arbiter4_UInt8_golden` Module
+
+## 1. **Module Name**
+   - `Arbiter4_UInt8_golden`
+
+## 2. **Module Functions**
+   The `Arbiter4_UInt8_golden` module is designed to function as a 4-input arbiter for 8-bit unsigned integer data streams. Its primary role is to manage and prioritize multiple input data streams, selecting one to forward to the output based on a fixed priority scheme. The module ensures that only one input is granted access to the output at any given time, with a priority order from input 0 to input 3. This arbitration logic is crucial in systems where multiple data sources need to be serialized into a single output stream, such as in communication interfaces or data processing pipelines.
+
+## 3. **Input and Output Port Descriptions**
+
+### Inputs
+1. **clock**: Clock signal (1-bit input).
+   - Synchronizes operations within the module.
+2. **reset**: Reset signal (1-bit input).
+   - Resets the internal state of the module.
+3. **io_in_0_valid**: Valid signal for input 0 (1-bit input).
+   - Indicates the validity of the data on `io_in_0_bits`.
+4. **io_in_0_bits**: Data bits for input 0 (8-bit input).
+   - Carries the 8-bit data from input 0.
+5. **io_in_1_valid**: Valid signal for input 1 (1-bit input).
+   - Indicates the validity of the data on `io_in_1_bits`.
+6. **io_in_1_bits**: Data bits for input 1 (8-bit input).
+   - Carries the 8-bit data from input 1.
+7. **io_in_2_valid**: Valid signal for input 2 (1-bit input).
+   - Indicates the validity of the data on `io_in_2_bits`.
+8. **io_in_2_bits**: Data bits for input 2 (8-bit input).
+   - Carries the 8-bit data from input 2.
+9. **io_in_3_valid**: Valid signal for input 3 (1-bit input).
+   - Indicates the validity of the data on `io_in_3_bits`.
+10. **io_in_3_bits**: Data bits for input 3 (8-bit input).
+    - Carries the 8-bit data from input 3.
+11. **io_out_ready**: Ready signal for output (1-bit input).
+    - Indicates that the output can accept new data.
+
+### Outputs
+1. **io_in_0_ready**: Ready signal for input 0 (1-bit output).
+   - Indicates if input 0 can send data.
+2. **io_in_1_ready**: Ready signal for input 1 (1-bit output).
+   - Indicates if input 1 can send data.
+3. **io_in_2_ready**: Ready signal for input 2 (1-bit output).
+   - Indicates if input 2 can send data.
+4. **io_in_3_ready**: Ready signal for input 3 (1-bit output).
+   - Indicates if input 3 can send data.
+5. **io_out_valid**: Valid signal for output (1-bit output).
+   - Indicates the validity of the data on `io_out_bits`.
+6. **io_out_bits**: Data bits for output (8-bit output).
+   - Carries the 8-bit arbitrated data to the output.
+7. **io_chosen**: Chosen input indicator (2-bit output).
+   - Indicates which input is currently granted access to the output.
+
+## 4. **Internal Working Principle**
+The module operates on a priority-based arbitration mechanism. It checks the validity of each input starting from input 0 up to input 3. The first valid input encountered is granted access to the output. The arbitration logic ensures that the highest priority input (lowest index) is selected when multiple inputs are valid simultaneously. The module also considers the `io_out_ready` signal to determine if the output can accept new data, thereby controlling the `ready` signals for each input accordingly.
+
+## 5. **Implementation Logic Explanation**
+The module employs combinational logic to determine which input should be granted access to the output based on the validity of the inputs and the readiness of the output. The priority logic is implemented using a series of conditional checks:
+- If `io_in_0_valid` is true, input 0 is selected.
+- If `io_in_0_valid` is false and `io_in_1_valid` is true, input 1 is selected.
+- If both `io_in_0_valid` and `io_in_1_valid` are false and `io_in_2_valid` is true, input 2 is selected.
+- If none of the above are valid and `io_in_3_valid` is true, input 3 is selected.
+
+The `ready` signals for the inputs are controlled by the `io_out_ready` signal and the grant conditions. The `io_out_valid` signal is asserted if any input is selected, indicating valid data on the output.
+
+## 6. **Internally Defined Signal Descriptions**
+
+1. **_GEN_0**: Intermediate signal (2-bit).
+   - Holds the chosen input index between inputs 2 and 3.
+2. **_GEN_1**: Intermediate signal (8-bit).
+   - Holds the data bits for the chosen input between inputs 2 and 3.
+3. **_GEN_2**: Intermediate signal (2-bit).
+   - Holds the chosen input index between inputs 1 and the result of `_GEN_0`.
+4. **_GEN_3**: Intermediate signal (8-bit).
+   - Holds the data bits for the chosen input between inputs 1 and the result of `_GEN_1`.
+5. **grant_1**: Grant condition for input 1 (1-bit).
+   - True if input 0 is not valid.
+6. **grant_2**: Grant condition for input 2 (1-bit).
+   - True if neither input 0 nor input 1 is valid.
+7. **grant_3**: Grant condition for input 3 (1-bit).
+   - True if inputs 0, 1, and 2 are not valid.
+
+These internal signals facilitate the arbitration logic by determining which input is selected based on the priority hierarchy and controlling the data flow to the output.
+

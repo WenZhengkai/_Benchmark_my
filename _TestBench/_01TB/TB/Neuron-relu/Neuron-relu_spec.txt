@@ -1,0 +1,40 @@
+### 1. Module Name
+The name of this RTL module is **Neuron**.
+
+### 2. Module Functions
+1. **Primary Objective**: The Neuron module simulates the behavior of a biological neuron by performing a weighted sum of its inputs followed by an activation function. It is designed to be a component of a neural network, contributing to the network's ability to learn and make predictions.
+   
+2. **Role in System**: Within a broader neural network system, this module takes multiple input signals and their corresponding weights, computes a weighted sum, and applies a rectified linear unit (ReLU) activation function. The output is a processed signal that can be used by subsequent layers in the network.
+
+### 3. Input and Output Port Descriptions
+- **Inputs**:
+  - `clock`: A clock signal input (1-bit). It is used to synchronize the operations within the module.
+  - `reset`: A reset signal input (1-bit). This signal is used to reset the internal states of the module if necessary.
+  - `io_in_0` to `io_in_7`: Eight 16-bit signed input signals. These represent the inputs to the neuron, akin to dendritic inputs in a biological neuron.
+  - `io_weights_0` to `io_weights_7`: Eight 16-bit signed input signals. These represent the weights associated with each input, analogous to synaptic strengths.
+
+- **Outputs**:
+  - `io_out`: A 16-bit signed output signal. This represents the output of the neuron after processing the inputs through weighted summation and activation.
+
+### 4. Internal Working Principle
+1. **Weighted Summation**: The module computes a weighted sum of its inputs. Each input is multiplied by its corresponding weight, and the results are summed together to form a net input to the neuron.
+   
+2. **Activation Function**: The module applies a ReLU activation function to the weighted sum. This function outputs zero if the sum is negative and outputs the sum itself if it is positive, introducing non-linearity into the network.
+
+### 5. Implementation Logic Explanation
+1. **Multiplication**: Each input (`io_in_0` to `io_in_7`) is multiplied by its respective weight (`io_weights_0` to `io_weights_7`). The products are computed as 32-bit signed values to accommodate potential overflow from the 16-bit inputs.
+
+2. **Accumulation**: The products are summed together in a sequential manner to form the final weighted sum (`mac`). The accumulation is performed using a series of addition operations, maintaining a 32-bit signed representation throughout.
+
+3. **ReLU Activation**: The ReLU activation function is implemented using a conditional operation. If the accumulated sum (`mac`) is less than or equal to zero, the output is set to zero; otherwise, the output is the accumulated sum itself.
+
+4. **Output Scaling**: The final result of the ReLU operation is scaled down by taking the upper 24 bits and assigning the most significant 16 bits to `io_out`. This scaling is likely intended to fit the output back into a 16-bit range.
+
+### 6. Internally Defined Signal Descriptions
+- **_mac_T to _mac_T_7**: Intermediate 32-bit signed signals representing the product of each input and its corresponding weight.
+- **_mac_T_10 to _mac_T_25**: Intermediate 32-bit signed signals used in the accumulation process. Each signal represents the sum of previous products, building up to the final weighted sum (`mac`).
+- **mac**: A 32-bit signed signal representing the final weighted sum of all input-weight products before activation.
+- **_io_out_T_1**: A 32-bit signed signal that holds the result of the ReLU activation function applied to `mac`.
+- **_GEN_0**: A 24-bit signal capturing the upper bits of `_io_out_T_1`, from which the most significant 16 bits are used to form the final output `io_out`.
+
+This design specification provides a detailed understanding of the Neuron module's structure, functionality, and internal operations, facilitating its integration and use within a larger digital system.

@@ -1,0 +1,24 @@
+[
+  {
+    "class":"firrtl.EmitCircuitAnnotation",
+    "emitter":"firrtl.VerilogEmitter"
+  },
+  {
+    "class":"firrtl.transforms.BlackBoxTargetDirAnno",
+    "targetDir":"generated"
+  },
+  {
+    "class":"firrtl.transforms.CombinationalPath",
+    "sink":"~DCInput_UInt8_golden|DCInput_UInt8_golden>io_deq_valid",
+    "sources":[
+      "~DCInput_UInt8_golden|DCInput_UInt8_golden>io_enq_valid"
+    ]
+  },
+  {
+    "class":"firrtl.transforms.CombinationalPath",
+    "sink":"~DCInput_UInt8_golden|DCInput_UInt8_golden>io_deq_bits",
+    "sources":[
+      "~DCInput_UInt8_golden|DCInput_UInt8_golden>io_enq_bits"
+    ]
+  }
+]

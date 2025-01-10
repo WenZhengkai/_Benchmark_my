@@ -1,0 +1,50 @@
+#### 1. Module Name
+- **BusyTable**
+
+#### 2. Module Functions
+1. **Primary Objective**: The BusyTable module is designed to manage and track the busy status of resources in a processor pipeline. It monitors wake-up signals and speculative execution states to update a busy table, which indicates the availability of resources for future operations.
+2. **Role in System**: This module plays a crucial role in scheduling and resource allocation within a processor, ensuring that dependencies are resolved efficiently and that resources are utilized optimally.
+
+#### 3. Input and Output Port Descriptions
+
+- **Inputs**:
+  1. `clock` (input): Clock signal for synchronizing the module operations.
+  2. `reset` (input): Reset signal to initialize or reset the module state.
+  3. `io_wakeups_0_valid` (input): Valid signal for the first wake-up event.
+  4. `io_wakeups_0_bits_uop_pdst` (input [7:0]): Destination physical register identifier for the first wake-up.
+  5. `io_wakeups_0_bits_speculative_mask` (input [7:0]): Speculative mask for the first wake-up event.
+  6. `io_wakeups_0_bits_rebusy` (input): Rebusy signal indicating if the first wake-up should be marked busy again.
+  7. `io_wakeups_1_valid` (input): Valid signal for the second wake-up event.
+  8. `io_wakeups_1_bits_uop_pdst` (input [7:0]): Destination physical register identifier for the second wake-up.
+  9. `io_wakeups_1_bits_speculative_mask` (input [7:0]): Speculative mask for the second wake-up event.
+  10. `io_wakeups_1_bits_rebusy` (input): Rebusy signal indicating if the second wake-up should be marked busy again.
+  11. `io_ren_uops_0_pdst` (input [7:0]): Destination physical register identifier for the first read-enable operation.
+  12. `io_ren_uops_1_pdst` (input [7:0]): Destination physical register identifier for the second read-enable operation.
+  13. `io_rebusy_reqs_0` (input): Rebusy request for the first read-enable operation.
+  14. `io_rebusy_reqs_1` (input): Rebusy request for the second read-enable operation.
+  15. `io_child_rebusys` (input [1:0]): Child rebusy signals for further processing.
+
+- **Outputs**:
+  1. `io_busy_table` (output [1:0]): Output representing the busy status of resources, indicating the availability for future operations.
+
+#### 4. Internal Working Principle
+1. **Wake-up Handling**: The module processes wake-up events to update the busy status of resources. It uses valid and speculative mask signals to determine whether a resource should be marked as available or remain busy.
+2. **Rebusy Logic**: It incorporates rebusy signals to handle scenarios where resources need to be marked busy again after a wake-up event, ensuring accurate tracking of resource availability.
+3. **Bitwise Operations**: The module employs bitwise operations to manipulate the busy table, utilizing shifts and logical operations to update the resource status based on the inputs.
+
+#### 5. Implementation Logic Explanation
+1. **Sequential Logic**: The module uses sequential logic to store and update the state of wake-up events and rebusy signals. Registers are used to hold the current state of these signals, updated on each clock cycle.
+2. **Combinational Logic**: It employs combinational logic to compute the next state of the busy table. This involves bitwise AND, OR, and shift operations to determine which resources are busy or available.
+3. **One-Hot Encoding**: The module uses one-hot encoding to represent the busy status of resources, where each bit in a 256-bit vector corresponds to a resource, and a set bit indicates a busy state.
+
+#### 6. Internally Defined Signal Descriptions
+1. `wakeups_wu_valid_REG`, `wakeups_wu_valid_REG_2`: Registers to hold the valid signals for wake-up events, capturing whether the events are active.
+2. `wakeups_wu_valid_REG_1`, `wakeups_wu_valid_REG_3`: Registers for speculative mask values, used to determine the speculative execution state.
+3. `wakeups_wu_bits_REG_uop_pdst`, `wakeups_wu_bits_REG_1_uop_pdst`: Registers holding the destination physical register identifiers for wake-up events.
+4. `wakeups_wu_bits_REG_rebusy`, `wakeups_wu_bits_REG_1_rebusy`: Registers indicating if a resource should be marked busy again after a wake-up event.
+5. `_busy_table_wb_T`, `_busy_table_wb_T_6`: Intermediate signals representing one-hot encoded values for wake-up events.
+6. `_busy_table_next_T`, `_busy_table_next_T_4`: Signals for one-hot encoding of read-enable operations.
+7. `_busy_table_next_T_2`, `_busy_table_next_T_6`: Signals representing rebusy requests encoded into a 2-bit format.
+8. `busy_table_next`: The computed next state of the busy table, combining all updates from wake-up and rebusy logic.
+
+This design specification provides a comprehensive overview of the BusyTable module, detailing its purpose, functionality, and internal operations within a digital IC design context.

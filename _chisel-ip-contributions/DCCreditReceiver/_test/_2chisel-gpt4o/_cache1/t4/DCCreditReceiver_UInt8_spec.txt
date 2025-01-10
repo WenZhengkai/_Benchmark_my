@@ -1,0 +1,118 @@
+# Design Specification for `Queue` and `DCCreditReceiver_UInt8` Modules
+
+## 1. **Module Name**
+   - `Queue`
+   - `DCCreditReceiver_UInt8`
+
+## 2. **Module Functions**
+
+### `Queue`
+1. The `Queue` module implements a FIFO (First-In-First-Out) queue with a fixed depth of 5 elements.
+2. It manages data flow between producers and consumers by providing ready/valid handshake signals.
+3. The module tracks the number of elements in the queue and provides this information via an output port.
+
+### `DCCreditReceiver_UInt8`
+1. The `DCCreditReceiver_UInt8` module serves as a credit-based receiver for data packets.
+2. It interfaces with an internal `Queue` to buffer incoming data and manages credit signaling for flow control.
+3. It ensures data integrity and flow by synchronizing data reception with availability of credits and readiness of the downstream module.
+
+## 3. **Input and Output Port Descriptions**
+
+### `Queue`
+
+#### Inputs
+1. **clock**: Clock signal (1-bit input)
+   - Synchronizes the operations within the module.
+2. **reset**: Reset signal (1-bit input)
+   - Resets the internal states and registers to a known state.
+3. **io_enq_valid**: Enqueue valid signal (1-bit input)
+   - Indicates that valid data is present on the `io_enq_bits` input.
+4. **io_enq_bits**: Enqueue data (8-bit input)
+   - The data to be enqueued into the FIFO.
+5. **io_deq_ready**: Dequeue ready signal (1-bit input)
+   - Indicates that the consumer is ready to accept data.
+
+#### Outputs
+1. **io_enq_ready**: Enqueue ready signal (1-bit output)
+   - Indicates that the queue is ready to accept new data.
+2. **io_deq_valid**: Dequeue valid signal (1-bit output)
+   - Indicates that valid data is available on the `io_deq_bits` output.
+3. **io_deq_bits**: Dequeue data (8-bit output)
+   - The data being dequeued from the FIFO.
+4. **io_count**: Queue count (3-bit output)
+   - The number of elements currently stored in the queue.
+
+### `DCCreditReceiver_UInt8`
+
+#### Inputs
+1. **clock**: Clock signal (1-bit input)
+   - Synchronizes the operations within the module.
+2. **reset**: Reset signal (1-bit input)
+   - Resets the internal states and registers to a known state.
+3. **io_enq_valid**: Enqueue valid signal (1-bit input)
+   - Indicates that valid data is present on the `io_enq_bits` input.
+4. **io_enq_bits**: Enqueue data (8-bit input)
+   - The data to be enqueued into the internal queue.
+5. **io_deq_ready**: Dequeue ready signal (1-bit input)
+   - Indicates that the consumer is ready to accept data.
+
+#### Outputs
+1. **io_enq_credit**: Enqueue credit signal (1-bit output)
+   - Indicates credit availability for sending more data.
+2. **io_deq_valid**: Dequeue valid signal (1-bit output)
+   - Indicates that valid data is available on the `io_deq_bits` output.
+3. **io_deq_bits**: Dequeue data (8-bit output)
+   - The data being dequeued from the internal queue.
+4. **io_fifoCount**: FIFO count (3-bit output)
+   - The number of elements currently stored in the internal queue.
+
+## 4. **Internal Working Principle**
+
+### `Queue`
+- The `Queue` module operates as a circular buffer with pointers for enqueue (`enq_ptr_value`) and dequeue (`deq_ptr_value`) operations.
+- It uses a `maybe_full` flag to differentiate between full and empty states when the pointers match.
+- The module supports concurrent enqueue and dequeue operations, provided the queue is neither full nor empty.
+
+### `DCCreditReceiver_UInt8`
+- The `DCCreditReceiver_UInt8` module buffers incoming data using an instance of the `Queue` module.
+- It manages credits based on the readiness of the downstream consumer and the availability of data in the queue.
+- The module ensures that data is only dequeued when valid and ready signals are asserted, maintaining data integrity.
+
+## 5. **Implementation Logic Explanation**
+
+### `Queue`
+- **Enqueue Logic**: Data is written to the RAM at the location pointed to by `enq_ptr_value` when `io_enq_ready` and `io_enq_valid` are asserted. The pointer wraps around when it reaches the end of the buffer.
+- **Dequeue Logic**: Data is read from the RAM at the location pointed to by `deq_ptr_value` when `io_deq_ready` and `io_deq_valid` are asserted. The pointer wraps around similarly.
+- **Pointer Management**: The `enq_ptr_value` and `deq_ptr_value` are updated based on the enqueue and dequeue operations, respectively.
+- **Full/Empty Detection**: The `full` and `empty` states are determined by comparing the pointers and the `maybe_full` flag.
+
+### `DCCreditReceiver_UInt8`
+- **Data Handling**: Incoming data is buffered in the queue, and credits are managed based on the queue's status and downstream readiness.
+- **Credit Management**: The `ocredit` signal is updated based on the internal queue's state and the downstream module's readiness, ensuring proper flow control.
+
+## 6. **Internally Defined Signal Descriptions**
+
+### `Queue`
+1. **ram**: Memory array (5x8-bit)
+   - Stores the data elements in the queue.
+2. **enq_ptr_value**: Enqueue pointer (3-bit)
+   - Tracks the position for the next enqueue operation.
+3. **deq_ptr_value**: Dequeue pointer (3-bit)
+   - Tracks the position for the next dequeue operation.
+4. **maybe_full**: Full state indicator (1-bit)
+   - Differentiates between full and empty when pointers match.
+5. **ptr_match**: Pointer match flag (1-bit)
+   - Indicates if `enq_ptr_value` and `deq_ptr_value` are equal.
+6. **empty/full**: Empty/Full state signals (1-bit each)
+   - Determine if the queue is empty or full.
+
+### `DCCreditReceiver_UInt8`
+1. **ivalid**: Input valid register (1-bit)
+   - Stores the validity of the current input data.
+2. **idata**: Input data register (8-bit)
+   - Stores the current input data.
+3. **ocredit**: Output credit register (1-bit)
+   - Manages the credit signaling for data flow control.
+4. **outFifo**: Instance of `Queue`
+   - Manages the internal buffering of data.
+

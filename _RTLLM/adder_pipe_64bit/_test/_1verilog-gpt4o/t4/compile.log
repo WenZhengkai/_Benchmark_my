@@ -1,0 +1,62 @@
+Command: vcs -cpp /usr/bin/g++-4.4 -cc /usr/bin/gcc-4.4 -sverilog +v2k -timescale=1ns/1ns \
+-debug_all -l compile.log +plusarg_save +libext+.v+.V+.sv+.svh -sverilog +memcbk \
+-P /home/kai/synopsys_tools/Verdi_2018/verdi/Verdi_O-2018.09-SP2/share/PLI/VCS/LINUX64/novas.tab \
+/home/kai/synopsys_tools/Verdi_2018/verdi/Verdi_O-2018.09-SP2/share/PLI/VCS/LINUX64/pli.a \
+-kdb -lca dut.v testbench.v
+*** Using c compiler /usr/bin/gcc-4.4 instead of cc ...
+                         Chronologic VCS (TM)
+       Version O-2018.09-SP2_Full64 -- Wed Dec 25 16:37:20 2024
+               Copyright (c) 1991-2018 by Synopsys Inc.
+                         ALL RIGHTS RESERVED
+
+This program is proprietary and confidential information of Synopsys Inc.
+and may be used and disclosed only as authorized in a license agreement
+controlling such use and disclosure.
+
+
+Warning-[LCA_FEATURES_ENABLED] Usage warning
+  LCA features enabled by '-lca' argument on the command line.  For more 
+  information regarding list of LCA features please refer to Chapter "LCA 
+  features" in the VCS/VCS-MX Release Notes
+
+
+Warning-[DEBUG_DEP] Option will be deprecated
+  The option '-debug_all' will be deprecated in a future release.  Please use 
+  '-debug_acc+all -debug_region+cell+encrypt' instead.
+
+Parsing design file 'dut.v'
+Parsing design file 'testbench.v'
+Top Level Modules:
+       tb_adder64
+
+Warning-[AOUP] Attempt to override undefined parameter
+testbench.v, 69
+  Attempting to override undefined parameter "DATA_WIDTH", will ignore it.
+
+
+Warning-[AOUP] Attempt to override undefined parameter
+testbench.v, 69
+  Attempting to override undefined parameter "STG_WIDTH", will ignore it.
+
+TimeScale is 1 ns / 1 ns
+
+Error-[IRIPS] Illegal range in part select
+dut.v, 46
+  The range of the part select is illegal:
+  Unknown range in part select.adda[((16 * i) + 31):((16 * i) + 16)]
+
+
+Error-[IRIPS] Illegal range in part select
+dut.v, 47
+  The range of the part select is illegal:
+  Unknown range in part select.addb[((16 * i) + 31):((16 * i) + 16)]
+
+4 warnings
+2 errors
+
+Warning-[KDB-ELAB-W] Verdi KDB elaboration with warning
+  Verdi KDB elaboration finished with 0 error(s) and 2 warning(s).
+  Please look at this Verdi elaboration log file for details. 
+  /home/kai/ChiselProject/Benchmarks/_Benchmark_my/_RTLLM/adder_pipe_64bit/_test/t4/simv.daidir/elabcomLog/compiler.log
+
+CPU time: .121 seconds to compile

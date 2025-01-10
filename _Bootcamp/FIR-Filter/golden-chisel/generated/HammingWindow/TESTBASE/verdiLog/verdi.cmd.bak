@@ -1,0 +1,32 @@
+simSetSimulator "-vcssv" -exec "/home/kai/ChiselProject/Benchmarks/TESTBASE/simv" \
+           -args "-ucli"
+debImport "-dbdir" "/home/kai/ChiselProject/Benchmarks/TESTBASE/simv.daidir"
+debLoadSimResult /home/kai/ChiselProject/Benchmarks/TESTBASE/dump.fsdb
+wvCreateWindow
+srcHBSelect "testbench.golden_model" -win $_nTrace1
+srcHBDrag -win $_nTrace1
+wvRenameGroup -win $_nWave2 {G1} {golden_model}
+wvAddSignal -win $_nWave2 "/testbench/golden_model/clock" \
+           "/testbench/golden_model/reset" \
+           "/testbench/golden_model/io_remap_ldsts_oh_0_0" \
+           "/testbench/golden_model/io_remap_ldsts_oh_0_1" \
+           "/testbench/golden_model/io_remap_pdsts_0" \
+           "/testbench/golden_model/io_com_remap_ldsts_oh_0_0" \
+           "/testbench/golden_model/io_com_remap_ldsts_oh_0_1" \
+           "/testbench/golden_model/io_com_remap_pdsts_0" \
+           "/testbench/golden_model/io_remap_table_out_0_0" \
+           "/testbench/golden_model/io_remap_table_out_0_1" \
+           "/testbench/golden_model/io_remap_table_out_1_0" \
+           "/testbench/golden_model/io_remap_table_out_1_1" \
+           "/testbench/golden_model/io_com_remap_table_out_0_0" \
+           "/testbench/golden_model/io_com_remap_table_out_0_1" \
+           "/testbench/golden_model/io_com_remap_table_out_1_0" \
+           "/testbench/golden_model/io_com_remap_table_out_1_1"
+wvSetPosition -win $_nWave2 {("golden_model" 0)}
+wvSetPosition -win $_nWave2 {("golden_model" 16)}
+wvSetPosition -win $_nWave2 {("golden_model" 16)}
+wvZoomOut -win $_nWave2
+wvZoomOut -win $_nWave2
+wvZoomOut -win $_nWave2
+wvZoomOut -win $_nWave2
+debExit

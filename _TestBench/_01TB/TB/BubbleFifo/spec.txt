@@ -1,0 +1,45 @@
+#### 1. **Module Name**
+   - **Buffer** and **BubbleFifo**
+
+#### 2. **Module Functions**
+   - **Buffer Module**: 
+     - The Buffer module serves as a single-entry, single-exit buffer that temporarily holds data. It is designed to manage the flow of data between producers and consumers, ensuring that data is stored when the consumer is not ready to receive it and only forwarded when the consumer is ready.
+   - **BubbleFifo Module**:
+     - The BubbleFifo module is a FIFO (First-In-First-Out) queue implemented using multiple Buffer modules in series. It manages the sequential flow of data, ensuring that data is dequeued in the same order it was enqueued. This module is crucial for buffering data streams in a pipeline, allowing for smooth data flow between stages that may operate at different speeds.
+
+#### 3. **Input and Output Port Descriptions**
+   - **Buffer Module**:
+     - `clock` (input): The clock signal for synchronizing the operations of the buffer.
+     - `reset` (input): A reset signal to initialize the buffer state.
+     - `io_enq_ready` (output): Indicates if the buffer is ready to accept new data.
+     - `io_enq_valid` (input): Signals that valid data is available for enqueuing.
+     - `io_enq_bits` (input, 16 bits): The data bits to be enqueued into the buffer.
+     - `io_deq_ready` (input): Indicates that the consumer is ready to dequeue data.
+     - `io_deq_valid` (output): Signals that valid data is available for dequeuing.
+     - `io_deq_bits` (output, 16 bits): The data bits dequeued from the buffer.
+
+   - **BubbleFifo Module**:
+     - Similar port definitions as the Buffer module but interconnected to form a FIFO structure. The enqueue and dequeue signals are passed through each Buffer instance to form a pipeline.
+
+#### 4. **Internal Working Principle**
+   - **Buffer Module**:
+     - The buffer uses a `fullReg` register to track whether it currently holds data. When `io_enq_valid` is asserted and the buffer is not full, data is captured into `dataReg`. The buffer signals readiness to accept new data through `io_enq_ready` when it is not full. Conversely, it signals the availability of data through `io_deq_valid` when it is full. Data is dequeued when `io_deq_ready` is asserted, clearing the buffer.
+
+   - **BubbleFifo Module**:
+     - The BubbleFifo module connects multiple Buffer modules in series. Each Buffer's dequeue readiness is connected to the next Buffer's enqueue readiness, forming a chain that allows data to flow from the first to the last Buffer. This setup creates a FIFO queue where data is processed in a first-in-first-out manner.
+
+#### 5. **Implementation Logic Explanation**
+   - **Buffer Module**:
+     - The buffer's logic is centered around the `fullReg` and `dataReg` registers. The `fullReg` is set when data is enqueued and cleared when data is dequeued. The `dataReg` holds the actual data bits. The module uses simple combinational logic to derive the `io_enq_ready` and `io_deq_valid` signals based on the state of `fullReg`.
+
+   - **BubbleFifo Module**:
+     - The FIFO logic is implemented by cascading Buffer modules. Each Buffer's enqueue and dequeue signals are connected to the adjacent Buffers, creating a pipeline. The first Buffer's `io_enq_ready` and the last Buffer's `io_deq_valid` and `io_deq_bits` are connected to the module's external ports, facilitating data entry and exit.
+
+#### 6. **Internally Defined Signal Descriptions**
+   - **Buffer Module**:
+     - `fullReg` (reg): A register indicating whether the buffer currently holds data.
+     - `dataReg` (reg, 16 bits): A register holding the data bits currently stored in the buffer.
+     - `_GEN_1` (wire): An intermediate signal used to determine the next state of `fullReg`.
+
+   - **BubbleFifo Module**:
+     - Each Buffer instance has its own set of internal signals (e.g., `Buffer_io_enq_ready`, `Buffer_io_deq_valid`) that manage the flow of data between the Buffers. These signals ensure that data is passed correctly from one Buffer to the next, maintaining the FIFO order.

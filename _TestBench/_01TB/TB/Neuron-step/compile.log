@@ -1,0 +1,414 @@
+Command: vcs -full64 -sverilog +v2k -sverilog -debug_access+all -f dut.f -timescale=1ns/1ns \
+-debug_all -cm line+cond+tgl+fsm+assert+branch -cm_dir coverage/cov.vdb -l compile.log \
+
+                         Chronologic VCS (TM)
+       Version O-2018.09-SP2_Full64 -- Sun Dec  1 13:43:25 2024
+               Copyright (c) 1991-2018 by Synopsys Inc.
+                         ALL RIGHTS RESERVED
+
+This program is proprietary and confidential information of Synopsys Inc.
+and may be used and disclosed only as authorized in a license agreement
+controlling such use and disclosure.
+
+
+Warning-[DEBUG_DEP] Option will be deprecated
+  The option '-debug_all' will be deprecated in a future release.  Please use 
+  '-debug_acc+all -debug_region+cell+encrypt' instead.
+
+Parsing design file './Neuron-step.v'
+Parsing design file './Neuron-step_golden.v'
+Parsing design file './testbench.sv'
+Top Level Modules:
+       testbench
+TimeScale is 1 ns / 1 ps
+VCS Coverage Metrics Release O-2018.09-SP2_Full64 Copyright (c) 1991-2018 by Synopsys Inc.
+Starting vcs inline pass...
+1 module and 0 UDP read.
+recompiling module testbench
+make[1]: Entering directory '/home/kai/ChiselProject/Benchmarks/TB2/TB/Neuron-step/csrc' \
+
+rm -f _csrc*.so pre_vcsobj_*.so share_vcsobj_*.so
+if [ -x ../simv ]; then chmod -x ../simv; fi
+g++  -o ../simv -no-pie    -Wl,-rpath-link=./ -Wl,-rpath='$ORIGIN'/simv.daidir/ -Wl,-rpath=./simv.daidir/ \
+-Wl,-rpath='$ORIGIN'/simv.daidir//scsim.db.dir  -rdynamic  -Wl,-rpath=/home/kai/synopsys_tools/VCS_2018_SP2/vcs-mx/O-2018.09-SP2/linux64/lib \
+-L/home/kai/synopsys_tools/VCS_2018_SP2/vcs-mx/O-2018.09-SP2/linux64/lib   objs/amcQw_d.o \
+_20782_archive_1.so  SIM_l.o       rmapats_mop.o rmapats.o rmar.o rmar_nd.o  rmar_llvm_0_1.o \
+rmar_llvm_0_0.o          -lzerosoft_rt_stubs -lvirsim -lerrorinf -lsnpsmalloc -lvfs \
+-lvcsnew -lsimprofile -lreader_common /home/kai/synopsys_tools/VCS_2018_SP2/vcs-mx/O-2018.09-SP2/linux64/lib/libBA.a \
+-luclinative /home/kai/synopsys_tools/VCS_2018_SP2/vcs-mx/O-2018.09-SP2/linux64/lib/vcs_tls.o \
+-Wl,-whole-archive -lvcsucli -Wl,-no-whole-archive          /home/kai/synopsys_tools/VCS_2018_SP2/vcs-mx/O-2018.09-SP2/linux64/lib/vcs_save_restore_new.o \
+-ldl  -lc -lm -lpthread -ldl 
+/usr/bin/ld: /home/kai/synopsys_tools/VCS_2018_SP2/vcs-mx/O-2018.09-SP2/linux64/lib/libvcsnew.so: \
+undefined reference to `vfs_set_dir_map'
+/usr/bin/ld: /home/kai/synopsys_tools/VCS_2018_SP2/vcs-mx/O-2018.09-SP2/linux64/lib/libvcsnew.so: \
+undefined reference to `snpsReallocFunc'
+/usr/bin/ld: /home/kai/synopsys_tools/VCS_2018_SP2/vcs-mx/O-2018.09-SP2/linux64/lib/libvcsnew.so: \
+undefined reference to `snps_mem_get_info'
+/usr/bin/ld: /home/kai/synopsys_tools/VCS_2018_SP2/vcs-mx/O-2018.09-SP2/linux64/lib/libvcsnew.so: \
+undefined reference to `snpsCheckStrdupFunc'
+/usr/bin/ld: /home/kai/synopsys_tools/VCS_2018_SP2/vcs-mx/O-2018.09-SP2/linux64/lib/libvcsnew.so: \
+undefined reference to `ZsExecuteNBAs'
+/usr/bin/ld: /home/kai/synopsys_tools/VCS_2018_SP2/vcs-mx/O-2018.09-SP2/linux64/lib/libvcsnew.so: \
+undefined reference to `vfs_fread'
+/usr/bin/ld: /home/kai/synopsys_tools/VCS_2018_SP2/vcs-mx/O-2018.09-SP2/linux64/lib/libvcsnew.so: \
+undefined reference to `snpsGetMemBytes'
+/usr/bin/ld: /home/kai/synopsys_tools/VCS_2018_SP2/vcs-mx/O-2018.09-SP2/linux64/lib/libvcsnew.so: \
+undefined reference to `vfs::getDirMap()'
+/usr/bin/ld: /home/kai/synopsys_tools/VCS_2018_SP2/vcs-mx/O-2018.09-SP2/linux64/lib/libvcsnew.so: \
+undefined reference to `vfs::fclose(vfs::CFile*)'
+/usr/bin/ld: /home/kai/synopsys_tools/VCS_2018_SP2/vcs-mx/O-2018.09-SP2/linux64/lib/libvcsnew.so: \
+undefined reference to `vfs_stat'
+/usr/bin/ld: /home/kai/synopsys_tools/VCS_2018_SP2/vcs-mx/O-2018.09-SP2/linux64/lib/libvcsucli.so: \
+undefined reference to `isUcliEngineStarted'
+/usr/bin/ld: /home/kai/synopsys_tools/VCS_2018_SP2/vcs-mx/O-2018.09-SP2/linux64/lib/libvcsnew.so: \
+undefined reference to `vfs::vfsGetNextVirtualFile(VFILE_LIST*, bool)'
+/usr/bin/ld: /home/kai/synopsys_tools/VCS_2018_SP2/vcs-mx/O-2018.09-SP2/linux64/lib/libvcsnew.so: \
+undefined reference to `ZsAddBorderInstance'
+/usr/bin/ld: /home/kai/synopsys_tools/VCS_2018_SP2/vcs-mx/O-2018.09-SP2/linux64/lib/libvcsnew.so: \
+undefined reference to `snpsMemGroupSetThreadPrivate'
+/usr/bin/ld: /home/kai/synopsys_tools/VCS_2018_SP2/vcs-mx/O-2018.09-SP2/linux64/lib/libvcsucli.so: \
+undefined reference to `setEnvPair'
+/usr/bin/ld: /home/kai/synopsys_tools/VCS_2018_SP2/vcs-mx/O-2018.09-SP2/linux64/lib/libvcsnew.so: \
+undefined reference to `snpsMemGroupEnableLocks'
+/usr/bin/ld: /home/kai/synopsys_tools/VCS_2018_SP2/vcs-mx/O-2018.09-SP2/linux64/lib/libvcsucli.so: \
+undefined reference to `waitForUserInput'
+/usr/bin/ld: /home/kai/synopsys_tools/VCS_2018_SP2/vcs-mx/O-2018.09-SP2/linux64/lib/libvcsnew.so: \
+undefined reference to `vfs_fseek'
+/usr/bin/ld: /home/kai/synopsys_tools/VCS_2018_SP2/vcs-mx/O-2018.09-SP2/linux64/lib/libvcsucli.so: \
+undefined reference to `initNativeUcli'
+/usr/bin/ld: /home/kai/synopsys_tools/VCS_2018_SP2/vcs-mx/O-2018.09-SP2/linux64/lib/libvcsucli.so: \
+undefined reference to `execMhpiTclCommand'
+/usr/bin/ld: /home/kai/synopsys_tools/VCS_2018_SP2/vcs-mx/O-2018.09-SP2/linux64/lib/libvcsnew.so: \
+undefined reference to `snps_mem_calloc'
+/usr/bin/ld: /home/kai/synopsys_tools/VCS_2018_SP2/vcs-mx/O-2018.09-SP2/linux64/lib/libvcsnew.so: \
+undefined reference to `snps_mem_named_pop_context'
+/usr/bin/ld: /home/kai/synopsys_tools/VCS_2018_SP2/vcs-mx/O-2018.09-SP2/linux64/lib/libvcsnew.so: \
+undefined reference to `vfs_enable_multi_process_support'
+/usr/bin/ld: /home/kai/synopsys_tools/VCS_2018_SP2/vcs-mx/O-2018.09-SP2/linux64/lib/libvcsnew.so: \
+undefined reference to `vfs::getTtDbType()'
+/usr/bin/ld: /home/kai/synopsys_tools/VCS_2018_SP2/vcs-mx/O-2018.09-SP2/linux64/lib/libvcsucli.so: \
+undefined reference to `execMhpiTclCommandNoPrint'
+/usr/bin/ld: /home/kai/synopsys_tools/VCS_2018_SP2/vcs-mx/O-2018.09-SP2/linux64/lib/libvcsnew.so: \
+undefined reference to `vfs_timestamp'
+/usr/bin/ld: /home/kai/synopsys_tools/VCS_2018_SP2/vcs-mx/O-2018.09-SP2/linux64/lib/libvcsnew.so: \
+undefined reference to `snps_mem_named_push_group'
+/usr/bin/ld: /home/kai/synopsys_tools/VCS_2018_SP2/vcs-mx/O-2018.09-SP2/linux64/lib/libvcsnew.so: \
+undefined reference to `snps_mem_recycle_freed_pages'
+/usr/bin/ld: /home/kai/synopsys_tools/VCS_2018_SP2/vcs-mx/O-2018.09-SP2/linux64/lib/libvcsnew.so: \
+undefined reference to `vfs_restore_native_fp'
+/usr/bin/ld: /home/kai/synopsys_tools/VCS_2018_SP2/vcs-mx/O-2018.09-SP2/linux64/lib/libvcsnew.so: \
+undefined reference to `vfs_fflush'
+/usr/bin/ld: /home/kai/synopsys_tools/VCS_2018_SP2/vcs-mx/O-2018.09-SP2/linux64/lib/libvcsnew.so: \
+undefined reference to `vfs_fprintf'
+/usr/bin/ld: /home/kai/synopsys_tools/VCS_2018_SP2/vcs-mx/O-2018.09-SP2/linux64/lib/libvcsnew.so: \
+undefined reference to `snps_mem_named_push_context'
+/usr/bin/ld: /home/kai/synopsys_tools/VCS_2018_SP2/vcs-mx/O-2018.09-SP2/linux64/lib/libvcsnew.so: \
+undefined reference to `snps_mem_malloc'
+/usr/bin/ld: /home/kai/synopsys_tools/VCS_2018_SP2/vcs-mx/O-2018.09-SP2/linux64/lib/libvcsnew.so: \
+undefined reference to `snps_mem_vprintf'
+/usr/bin/ld: /home/kai/synopsys_tools/VCS_2018_SP2/vcs-mx/O-2018.09-SP2/linux64/lib/libvcsnew.so: \
+undefined reference to `vfs_stdout'
+/usr/bin/ld: /home/kai/synopsys_tools/VCS_2018_SP2/vcs-mx/O-2018.09-SP2/linux64/lib/libvcsnew.so: \
+undefined reference to `snpsCheckMallocFunc'
+/usr/bin/ld: /home/kai/synopsys_tools/VCS_2018_SP2/vcs-mx/O-2018.09-SP2/linux64/lib/libvcsnew.so: \
+undefined reference to `snps_mem_check_all'
+/usr/bin/ld: /home/kai/synopsys_tools/VCS_2018_SP2/vcs-mx/O-2018.09-SP2/linux64/lib/libvcsnew.so: \
+undefined reference to `vfs::fread(void*, unsigned long, unsigned long, vfs::CFile*)' \
+
+/usr/bin/ld: /home/kai/synopsys_tools/VCS_2018_SP2/vcs-mx/O-2018.09-SP2/linux64/lib/libvcsnew.so: \
+undefined reference to `vfs::fwrite(void const*, unsigned long, unsigned long, vfs::CFile*)' \
+
+/usr/bin/ld: /home/kai/synopsys_tools/VCS_2018_SP2/vcs-mx/O-2018.09-SP2/linux64/lib/libvcsnew.so: \
+undefined reference to `vfs::CHostFile::detach()'
+/usr/bin/ld: /home/kai/synopsys_tools/VCS_2018_SP2/vcs-mx/O-2018.09-SP2/linux64/lib/libvcsnew.so: \
+undefined reference to `snps_mem_realloc'
+/usr/bin/ld: /home/kai/synopsys_tools/VCS_2018_SP2/vcs-mx/O-2018.09-SP2/linux64/lib/libvcsnew.so: \
+undefined reference to `vfs::unlinkSingleDb(char const*, char const*)'
+/usr/bin/ld: /home/kai/synopsys_tools/VCS_2018_SP2/vcs-mx/O-2018.09-SP2/linux64/lib/libvcsnew.so: \
+undefined reference to `snps_mem_unmap_freed_pages'
+/usr/bin/ld: /home/kai/synopsys_tools/VCS_2018_SP2/vcs-mx/O-2018.09-SP2/linux64/lib/libvcsnew.so: \
+undefined reference to `vfs_fwrite'
+/usr/bin/ld: /home/kai/synopsys_tools/VCS_2018_SP2/vcs-mx/O-2018.09-SP2/linux64/lib/libvcsnew.so: \
+undefined reference to `vfs_set_vir_dbtype'
+/usr/bin/ld: /home/kai/synopsys_tools/VCS_2018_SP2/vcs-mx/O-2018.09-SP2/linux64/lib/libvcsnew.so: \
+undefined reference to `vfs::setTtDbType(vcsfs_t)'
+/usr/bin/ld: /home/kai/synopsys_tools/VCS_2018_SP2/vcs-mx/O-2018.09-SP2/linux64/lib/libvcsnew.so: \
+undefined reference to `ZsEvaluateDeltaCycle'
+/usr/bin/ld: /home/kai/synopsys_tools/VCS_2018_SP2/vcs-mx/O-2018.09-SP2/linux64/lib/libvcsnew.so: \
+undefined reference to `snpsFreeGroup'
+/usr/bin/ld: /home/kai/synopsys_tools/VCS_2018_SP2/vcs-mx/O-2018.09-SP2/linux64/lib/libvcsucli.so: \
+undefined reference to `storeSimLogFileHandle'
+/usr/bin/ld: /home/kai/synopsys_tools/VCS_2018_SP2/vcs-mx/O-2018.09-SP2/linux64/lib/libvcsnew.so: \
+undefined reference to `snpsGroupGetActive'
+/usr/bin/ld: /home/kai/synopsys_tools/VCS_2018_SP2/vcs-mx/O-2018.09-SP2/linux64/lib/libvcsnew.so: \
+undefined reference to `vfs_enable_sdb_lock'
+/usr/bin/ld: /home/kai/synopsys_tools/VCS_2018_SP2/vcs-mx/O-2018.09-SP2/linux64/lib/libvcsnew.so: \
+undefined reference to `vfs::fgets(char*, int, vfs::CFile*)'
+/usr/bin/ld: /home/kai/synopsys_tools/VCS_2018_SP2/vcs-mx/O-2018.09-SP2/linux64/lib/libvcsucli.so: \
+undefined reference to `executeTclProc'
+/usr/bin/ld: /home/kai/synopsys_tools/VCS_2018_SP2/vcs-mx/O-2018.09-SP2/linux64/lib/libvcsucli.so: \
+undefined reference to `setIclCmd_ResVars'
+/usr/bin/ld: /home/kai/synopsys_tools/VCS_2018_SP2/vcs-mx/O-2018.09-SP2/linux64/lib/libvcsnew.so: \
+undefined reference to `ZsRegisterIfcSignal'
+/usr/bin/ld: /home/kai/synopsys_tools/VCS_2018_SP2/vcs-mx/O-2018.09-SP2/linux64/lib/libvcsnew.so: \
+undefined reference to `snps_mem_set_trace_text'
+/usr/bin/ld: /home/kai/synopsys_tools/VCS_2018_SP2/vcs-mx/O-2018.09-SP2/linux64/lib/libvcsnew.so: \
+undefined reference to `ZsMarkIfcSignalAsDirty'
+/usr/bin/ld: /home/kai/synopsys_tools/VCS_2018_SP2/vcs-mx/O-2018.09-SP2/linux64/lib/libvcsnew.so: \
+undefined reference to `ZsSetVcsValue'
+/usr/bin/ld: /home/kai/synopsys_tools/VCS_2018_SP2/vcs-mx/O-2018.09-SP2/linux64/lib/libvcsnew.so: \
+undefined reference to `ZsInitCheck'
+/usr/bin/ld: /home/kai/synopsys_tools/VCS_2018_SP2/vcs-mx/O-2018.09-SP2/linux64/lib/libvcsnew.so: \
+undefined reference to `snps_mem_realloc_from_group'
+/usr/bin/ld: /home/kai/synopsys_tools/VCS_2018_SP2/vcs-mx/O-2018.09-SP2/linux64/lib/libvcsnew.so: \
+undefined reference to `snps_mem_set_out_of_memory_routine'
+/usr/bin/ld: /home/kai/synopsys_tools/VCS_2018_SP2/vcs-mx/O-2018.09-SP2/linux64/lib/libvcsnew.so: \
+undefined reference to `snps_mem_dump_hwm_file'
+/usr/bin/ld: /home/kai/synopsys_tools/VCS_2018_SP2/vcs-mx/O-2018.09-SP2/linux64/lib/libvcsnew.so: \
+undefined reference to `vfs_fopen_ex'
+/usr/bin/ld: /home/kai/synopsys_tools/VCS_2018_SP2/vcs-mx/O-2018.09-SP2/linux64/lib/libvcsnew.so: \
+undefined reference to `vfs_set_enable_multi_thread_read'
+/usr/bin/ld: /home/kai/synopsys_tools/VCS_2018_SP2/vcs-mx/O-2018.09-SP2/linux64/lib/libvcsnew.so: \
+undefined reference to `snpsMemInitialize'
+/usr/bin/ld: /home/kai/synopsys_tools/VCS_2018_SP2/vcs-mx/O-2018.09-SP2/linux64/lib/libvcsnew.so: \
+undefined reference to `snpsReallocFromGroup'
+/usr/bin/ld: /home/kai/synopsys_tools/VCS_2018_SP2/vcs-mx/O-2018.09-SP2/linux64/lib/libvcsnew.so: \
+undefined reference to `snps__StrdupFunc'
+/usr/bin/ld: /home/kai/synopsys_tools/VCS_2018_SP2/vcs-mx/O-2018.09-SP2/linux64/lib/libvcsnew.so: \
+undefined reference to `vfs_unload_sdb'
+/usr/bin/ld: /home/kai/synopsys_tools/VCS_2018_SP2/vcs-mx/O-2018.09-SP2/linux64/lib/libvcsnew.so: \
+undefined reference to `vfs::fgetc(vfs::CFile*)'
+/usr/bin/ld: /home/kai/synopsys_tools/VCS_2018_SP2/vcs-mx/O-2018.09-SP2/linux64/lib/libvcsnew.so: \
+undefined reference to `vfs::fseek(vfs::CFile*, long, int)'
+/usr/bin/ld: /home/kai/synopsys_tools/VCS_2018_SP2/vcs-mx/O-2018.09-SP2/linux64/lib/libvcsnew.so: \
+undefined reference to `snps_mem_named_allocate_group'
+/usr/bin/ld: /home/kai/synopsys_tools/VCS_2018_SP2/vcs-mx/O-2018.09-SP2/linux64/lib/libvcsnew.so: \
+undefined reference to `snpsNamedPushGroup'
+/usr/bin/ld: /home/kai/synopsys_tools/VCS_2018_SP2/vcs-mx/O-2018.09-SP2/linux64/lib/libvcsnew.so: \
+undefined reference to `snps_mem_get_current_group'
+/usr/bin/ld: /home/kai/synopsys_tools/VCS_2018_SP2/vcs-mx/O-2018.09-SP2/linux64/lib/libvcsnew.so: \
+undefined reference to `ZsGetValueLocation'
+/usr/bin/ld: /home/kai/synopsys_tools/VCS_2018_SP2/vcs-mx/O-2018.09-SP2/linux64/lib/libvcsnew.so: \
+undefined reference to `vfs::ftell(vfs::CFile*)'
+/usr/bin/ld: /home/kai/synopsys_tools/VCS_2018_SP2/vcs-mx/O-2018.09-SP2/linux64/lib/libvcsnew.so: \
+undefined reference to `vfs::getVloganVirDbType()'
+/usr/bin/ld: /home/kai/synopsys_tools/VCS_2018_SP2/vcs-mx/O-2018.09-SP2/linux64/lib/libvcsnew.so: \
+undefined reference to `vfs::vfsGetVirtualFileList(char const*, char const*, int)' \
+
+/usr/bin/ld: /home/kai/synopsys_tools/VCS_2018_SP2/vcs-mx/O-2018.09-SP2/linux64/lib/libvcsnew.so: \
+undefined reference to `snps_mem_free_group'
+/usr/bin/ld: /home/kai/synopsys_tools/VCS_2018_SP2/vcs-mx/O-2018.09-SP2/linux64/lib/libvcsnew.so: \
+undefined reference to `vfs::feof(vfs::CFile*)'
+/usr/bin/ld: /home/kai/synopsys_tools/VCS_2018_SP2/vcs-mx/O-2018.09-SP2/linux64/lib/libvcsnew.so: \
+undefined reference to `ZsInitStrengthTables'
+/usr/bin/ld: /home/kai/synopsys_tools/VCS_2018_SP2/vcs-mx/O-2018.09-SP2/linux64/lib/libvcsnew.so: \
+undefined reference to `snpsMemManagerIsActive'
+/usr/bin/ld: /home/kai/synopsys_tools/VCS_2018_SP2/vcs-mx/O-2018.09-SP2/linux64/lib/libvcsucli.so: \
+undefined reference to `vcsRunUcliErrorScript'
+/usr/bin/ld: /home/kai/synopsys_tools/VCS_2018_SP2/vcs-mx/O-2018.09-SP2/linux64/lib/libvcsnew.so: \
+undefined reference to `snpsHighMemory'
+/usr/bin/ld: /home/kai/synopsys_tools/VCS_2018_SP2/vcs-mx/O-2018.09-SP2/linux64/lib/libvcsnew.so: \
+undefined reference to `registerOutOfMemHandle'
+/usr/bin/ld: /home/kai/synopsys_tools/VCS_2018_SP2/vcs-mx/O-2018.09-SP2/linux64/lib/libvcsnew.so: \
+undefined reference to `snpsCheckMallocFromGroupFunc'
+/usr/bin/ld: /home/kai/synopsys_tools/VCS_2018_SP2/vcs-mx/O-2018.09-SP2/linux64/lib/libvcsnew.so: \
+undefined reference to `snpsCheckCallocFromGroupFunc'
+/usr/bin/ld: /home/kai/synopsys_tools/VCS_2018_SP2/vcs-mx/O-2018.09-SP2/linux64/lib/libvcsnew.so: \
+undefined reference to `snps_mem_set_current_group'
+/usr/bin/ld: /home/kai/synopsys_tools/VCS_2018_SP2/vcs-mx/O-2018.09-SP2/linux64/lib/libvcsnew.so: \
+undefined reference to `vfs_filesize'
+/usr/bin/ld: /home/kai/synopsys_tools/VCS_2018_SP2/vcs-mx/O-2018.09-SP2/linux64/lib/libvcsnew.so: \
+undefined reference to `vfs_set_tt_dbtype'
+/usr/bin/ld: /home/kai/synopsys_tools/VCS_2018_SP2/vcs-mx/O-2018.09-SP2/linux64/lib/libvcsnew.so: \
+undefined reference to `vfs_invalidate_dirstat_cache'
+/usr/bin/ld: /home/kai/synopsys_tools/VCS_2018_SP2/vcs-mx/O-2018.09-SP2/linux64/lib/libvcsnew.so: \
+undefined reference to `snps_mem_display_stack'
+/usr/bin/ld: /home/kai/synopsys_tools/VCS_2018_SP2/vcs-mx/O-2018.09-SP2/linux64/lib/libvcsnew.so: \
+undefined reference to `snps_mem_pop_small_allocation_size'
+/usr/bin/ld: /home/kai/synopsys_tools/VCS_2018_SP2/vcs-mx/O-2018.09-SP2/linux64/lib/libvcsnew.so: \
+undefined reference to `vfs_get_virtual_file_list'
+/usr/bin/ld: /home/kai/synopsys_tools/VCS_2018_SP2/vcs-mx/O-2018.09-SP2/linux64/lib/libvcsnew.so: \
+undefined reference to `vfs_get_readonly'
+/usr/bin/ld: /home/kai/synopsys_tools/VCS_2018_SP2/vcs-mx/O-2018.09-SP2/linux64/lib/libvcsnew.so: \
+undefined reference to `snps_mem_malloc_from_group'
+/usr/bin/ld: /home/kai/synopsys_tools/VCS_2018_SP2/vcs-mx/O-2018.09-SP2/linux64/lib/libvcsnew.so: \
+undefined reference to `snpsStrdupFunc'
+/usr/bin/ld: /home/kai/synopsys_tools/VCS_2018_SP2/vcs-mx/O-2018.09-SP2/linux64/lib/libvcsnew.so: \
+undefined reference to `ZsReadDfsInstFile'
+/usr/bin/ld: /home/kai/synopsys_tools/VCS_2018_SP2/vcs-mx/O-2018.09-SP2/linux64/lib/libvcsucli.so: \
+undefined reference to `vfs_get_sdb_native_file_descr'
+/usr/bin/ld: /home/kai/synopsys_tools/VCS_2018_SP2/vcs-mx/O-2018.09-SP2/linux64/lib/libvcsnew.so: \
+undefined reference to `snpsLowMemory'
+/usr/bin/ld: /home/kai/synopsys_tools/VCS_2018_SP2/vcs-mx/O-2018.09-SP2/linux64/lib/libvcsnew.so: \
+undefined reference to `ZsOnDKIRegistrationFinished'
+/usr/bin/ld: /home/kai/synopsys_tools/VCS_2018_SP2/vcs-mx/O-2018.09-SP2/linux64/lib/libvcsnew.so: \
+undefined reference to `snpsCheckReallocFunc'
+/usr/bin/ld: /home/kai/synopsys_tools/VCS_2018_SP2/vcs-mx/O-2018.09-SP2/linux64/lib/libvcsucli.so: \
+undefined reference to `breakNativeTclLoop'
+/usr/bin/ld: /home/kai/synopsys_tools/VCS_2018_SP2/vcs-mx/O-2018.09-SP2/linux64/lib/libvcsnew.so: \
+undefined reference to `vfs::CFile::open(char const*, char const*, char const*, vcsfs_t, \
+unsigned int)'
+/usr/bin/ld: /home/kai/synopsys_tools/VCS_2018_SP2/vcs-mx/O-2018.09-SP2/linux64/lib/libvcsnew.so: \
+undefined reference to `vfs_fscanf'
+/usr/bin/ld: /home/kai/synopsys_tools/VCS_2018_SP2/vcs-mx/O-2018.09-SP2/linux64/lib/libvcsnew.so: \
+undefined reference to `ZsGetDfsInstId'
+/usr/bin/ld: /home/kai/synopsys_tools/VCS_2018_SP2/vcs-mx/O-2018.09-SP2/linux64/lib/libvcsnew.so: \
+undefined reference to `snpsPosix_MemalignFunc'
+/usr/bin/ld: /home/kai/synopsys_tools/VCS_2018_SP2/vcs-mx/O-2018.09-SP2/linux64/lib/libvcsnew.so: \
+undefined reference to `ZsGetHdlVariableHandleByName'
+/usr/bin/ld: /home/kai/synopsys_tools/VCS_2018_SP2/vcs-mx/O-2018.09-SP2/linux64/lib/libvcsnew.so: \
+undefined reference to `snpsNamedPopGroup'
+/usr/bin/ld: /home/kai/synopsys_tools/VCS_2018_SP2/vcs-mx/O-2018.09-SP2/linux64/lib/libvcsnew.so: \
+undefined reference to `vfs::isVirDatabaseOpt()'
+/usr/bin/ld: /home/kai/synopsys_tools/VCS_2018_SP2/vcs-mx/O-2018.09-SP2/linux64/lib/libvcsnew.so: \
+undefined reference to `ZsSetNextSimulationTimeIfc'
+/usr/bin/ld: /home/kai/synopsys_tools/VCS_2018_SP2/vcs-mx/O-2018.09-SP2/linux64/lib/libvcsnew.so: \
+undefined reference to `snpsCallocFromGroup'
+/usr/bin/ld: /home/kai/synopsys_tools/VCS_2018_SP2/vcs-mx/O-2018.09-SP2/linux64/lib/libvcsnew.so: \
+undefined reference to `snpsMallocFunc'
+/usr/bin/ld: /home/kai/synopsys_tools/VCS_2018_SP2/vcs-mx/O-2018.09-SP2/linux64/lib/libvcsnew.so: \
+undefined reference to `snps_mem_named_pop_group'
+/usr/bin/ld: /home/kai/synopsys_tools/VCS_2018_SP2/vcs-mx/O-2018.09-SP2/linux64/lib/libvcsnew.so: \
+undefined reference to `vfs::vfsErrno()'
+/usr/bin/ld: /home/kai/synopsys_tools/VCS_2018_SP2/vcs-mx/O-2018.09-SP2/linux64/lib/libvcsnew.so: \
+undefined reference to `vfs::accessSingleDb(char const*, char const*, int)'
+/usr/bin/ld: /home/kai/synopsys_tools/VCS_2018_SP2/vcs-mx/O-2018.09-SP2/linux64/lib/libvcsnew.so: \
+undefined reference to `snpsSetSmallCaching'
+/usr/bin/ld: /home/kai/synopsys_tools/VCS_2018_SP2/vcs-mx/O-2018.09-SP2/linux64/lib/libvcsnew.so: \
+undefined reference to `ZsSetLogicValue'
+/usr/bin/ld: /home/kai/synopsys_tools/VCS_2018_SP2/vcs-mx/O-2018.09-SP2/linux64/lib/libvcsnew.so: \
+undefined reference to `snps_mem_group_set_thread_private'
+/usr/bin/ld: /home/kai/synopsys_tools/VCS_2018_SP2/vcs-mx/O-2018.09-SP2/linux64/lib/libvcsucli.so: \
+undefined reference to `printIclEndMarker'
+/usr/bin/ld: /home/kai/synopsys_tools/VCS_2018_SP2/vcs-mx/O-2018.09-SP2/linux64/lib/libvcsnew.so: \
+undefined reference to `vfs_dirstat_cache'
+/usr/bin/ld: /home/kai/synopsys_tools/VCS_2018_SP2/vcs-mx/O-2018.09-SP2/linux64/lib/libvcsnew.so: \
+undefined reference to `vfs_fclose'
+/usr/bin/ld: /home/kai/synopsys_tools/VCS_2018_SP2/vcs-mx/O-2018.09-SP2/linux64/lib/libvcsnew.so: \
+undefined reference to `snpsValloc'
+/usr/bin/ld: /home/kai/synopsys_tools/VCS_2018_SP2/vcs-mx/O-2018.09-SP2/linux64/lib/libvcsnew.so: \
+undefined reference to `vfs_unlink'
+/usr/bin/ld: /home/kai/synopsys_tools/VCS_2018_SP2/vcs-mx/O-2018.09-SP2/linux64/lib/libvcsnew.so: \
+undefined reference to `snpsMemalignFunc'
+/usr/bin/ld: /home/kai/synopsys_tools/VCS_2018_SP2/vcs-mx/O-2018.09-SP2/linux64/lib/libvcsnew.so: \
+undefined reference to `vfs::CHostFile::open(_IO_FILE*, bool)'
+/usr/bin/ld: /home/kai/synopsys_tools/VCS_2018_SP2/vcs-mx/O-2018.09-SP2/linux64/lib/libvcsnew.so: \
+undefined reference to `vfs_ftell'
+/usr/bin/ld: /home/kai/synopsys_tools/VCS_2018_SP2/vcs-mx/O-2018.09-SP2/linux64/lib/libvcsnew.so: \
+undefined reference to `snpsGroupSize'
+/usr/bin/ld: /home/kai/synopsys_tools/VCS_2018_SP2/vcs-mx/O-2018.09-SP2/linux64/lib/libvcsnew.so: \
+undefined reference to `snpsFreeFunc'
+/usr/bin/ld: /home/kai/synopsys_tools/VCS_2018_SP2/vcs-mx/O-2018.09-SP2/linux64/lib/libvcsnew.so: \
+undefined reference to `snpsSetHook'
+/usr/bin/ld: /home/kai/synopsys_tools/VCS_2018_SP2/vcs-mx/O-2018.09-SP2/linux64/lib/libvcsucli.so: \
+undefined reference to `printIclBeginMarker'
+/usr/bin/ld: /home/kai/synopsys_tools/VCS_2018_SP2/vcs-mx/O-2018.09-SP2/linux64/lib/libvcsucli.so: \
+undefined reference to `shutDownNativeUcli'
+/usr/bin/ld: /home/kai/synopsys_tools/VCS_2018_SP2/vcs-mx/O-2018.09-SP2/linux64/lib/libvcsnew.so: \
+undefined reference to `ZsGetNumUscopes'
+/usr/bin/ld: /home/kai/synopsys_tools/VCS_2018_SP2/vcs-mx/O-2018.09-SP2/linux64/lib/libvcsnew.so: \
+undefined reference to `snpsSetOutOfMemoryRoutine'
+/usr/bin/ld: /home/kai/synopsys_tools/VCS_2018_SP2/vcs-mx/O-2018.09-SP2/linux64/lib/libvcsnew.so: \
+undefined reference to `vfs::mfprintf(vfs::CFile*, char const*, ...)'
+/usr/bin/ld: /home/kai/synopsys_tools/VCS_2018_SP2/vcs-mx/O-2018.09-SP2/linux64/lib/libvcsucli.so: \
+undefined reference to `registerPreRestartFunc'
+/usr/bin/ld: /home/kai/synopsys_tools/VCS_2018_SP2/vcs-mx/O-2018.09-SP2/linux64/lib/libvcsnew.so: \
+undefined reference to `miHeapProf_init'
+/usr/bin/ld: /home/kai/synopsys_tools/VCS_2018_SP2/vcs-mx/O-2018.09-SP2/linux64/lib/libvcsnew.so: \
+undefined reference to `snpsOutOfMem'
+/usr/bin/ld: /home/kai/synopsys_tools/VCS_2018_SP2/vcs-mx/O-2018.09-SP2/linux64/lib/libvcsnew.so: \
+undefined reference to `vfs_feof'
+/usr/bin/ld: /home/kai/synopsys_tools/VCS_2018_SP2/vcs-mx/O-2018.09-SP2/linux64/lib/libvcsnew.so: \
+undefined reference to `snpsCheckFreeFunc'
+/usr/bin/ld: /home/kai/synopsys_tools/VCS_2018_SP2/vcs-mx/O-2018.09-SP2/linux64/lib/libvcsnew.so: \
+undefined reference to `snps_mem_free'
+/usr/bin/ld: /home/kai/synopsys_tools/VCS_2018_SP2/vcs-mx/O-2018.09-SP2/linux64/lib/libvcsnew.so: \
+undefined reference to `vfs::isSdbOptEnabled()'
+/usr/bin/ld: /home/kai/synopsys_tools/VCS_2018_SP2/vcs-mx/O-2018.09-SP2/linux64/lib/libvcsnew.so: \
+undefined reference to `vfs_cleanup'
+/usr/bin/ld: /home/kai/synopsys_tools/VCS_2018_SP2/vcs-mx/O-2018.09-SP2/linux64/lib/libvcsnew.so: \
+undefined reference to `vfs::CFile::access(char const*, char const*, int, vcsfs_t, \
+unsigned int)'
+/usr/bin/ld: /home/kai/synopsys_tools/VCS_2018_SP2/vcs-mx/O-2018.09-SP2/linux64/lib/libvcsnew.so: \
+undefined reference to `ZsGetHdlVariableHandleByNameAndId'
+/usr/bin/ld: /home/kai/synopsys_tools/VCS_2018_SP2/vcs-mx/O-2018.09-SP2/linux64/lib/libvcsnew.so: \
+undefined reference to `vfs_release_virtual_file_list'
+/usr/bin/ld: /home/kai/synopsys_tools/VCS_2018_SP2/vcs-mx/O-2018.09-SP2/linux64/lib/libvcsnew.so: \
+undefined reference to `ZsCloseDfsInstFile'
+/usr/bin/ld: /home/kai/synopsys_tools/VCS_2018_SP2/vcs-mx/O-2018.09-SP2/linux64/lib/libvcsucli.so: \
+undefined reference to `vfs_get_sdb_native_file_num'
+/usr/bin/ld: /home/kai/synopsys_tools/VCS_2018_SP2/vcs-mx/O-2018.09-SP2/linux64/lib/libvcsnew.so: \
+undefined reference to `vfs::fileno(vfs::CFile*)'
+/usr/bin/ld: /home/kai/synopsys_tools/VCS_2018_SP2/vcs-mx/O-2018.09-SP2/linux64/lib/libvcsnew.so: \
+undefined reference to `snpsMemSetLogFileHandle'
+/usr/bin/ld: /home/kai/synopsys_tools/VCS_2018_SP2/vcs-mx/O-2018.09-SP2/linux64/lib/libvcsnew.so: \
+undefined reference to `snps_mem_group_get_free'
+/usr/bin/ld: /home/kai/synopsys_tools/VCS_2018_SP2/vcs-mx/O-2018.09-SP2/linux64/lib/libvcsnew.so: \
+undefined reference to `ZsInitModule'
+/usr/bin/ld: /home/kai/synopsys_tools/VCS_2018_SP2/vcs-mx/O-2018.09-SP2/linux64/lib/libvcsnew.so: \
+undefined reference to `miHeapOn'
+/usr/bin/ld: /home/kai/synopsys_tools/VCS_2018_SP2/vcs-mx/O-2018.09-SP2/linux64/lib/libvcsnew.so: \
+undefined reference to `snpsMallocFromGroup'
+/usr/bin/ld: /home/kai/synopsys_tools/VCS_2018_SP2/vcs-mx/O-2018.09-SP2/linux64/lib/libvcsnew.so: \
+undefined reference to `snps_mem_get_group_name'
+/usr/bin/ld: /home/kai/synopsys_tools/VCS_2018_SP2/vcs-mx/O-2018.09-SP2/linux64/lib/libvcsnew.so: \
+undefined reference to `snps_mem_group_get_active'
+/usr/bin/ld: /home/kai/synopsys_tools/VCS_2018_SP2/vcs-mx/O-2018.09-SP2/linux64/lib/libvcsnew.so: \
+undefined reference to `vfs_map_file'
+/usr/bin/ld: /home/kai/synopsys_tools/VCS_2018_SP2/vcs-mx/O-2018.09-SP2/linux64/lib/libvcsnew.so: \
+undefined reference to `snps_mem_set_group_name'
+/usr/bin/ld: /home/kai/synopsys_tools/VCS_2018_SP2/vcs-mx/O-2018.09-SP2/linux64/lib/libvcsnew.so: \
+undefined reference to `vfs_init'
+/usr/bin/ld: /home/kai/synopsys_tools/VCS_2018_SP2/vcs-mx/O-2018.09-SP2/linux64/lib/libvcsnew.so: \
+undefined reference to `snpsPrintf'
+/usr/bin/ld: /home/kai/synopsys_tools/VCS_2018_SP2/vcs-mx/O-2018.09-SP2/linux64/lib/libvcsnew.so: \
+undefined reference to `snpsDoStackUnwind'
+/usr/bin/ld: /home/kai/synopsys_tools/VCS_2018_SP2/vcs-mx/O-2018.09-SP2/linux64/lib/libvcsnew.so: \
+undefined reference to `vfs_fgets'
+/usr/bin/ld: /home/kai/synopsys_tools/VCS_2018_SP2/vcs-mx/O-2018.09-SP2/linux64/lib/libvcsnew.so: \
+undefined reference to `snpsNamedAllocateGroup'
+/usr/bin/ld: /home/kai/synopsys_tools/VCS_2018_SP2/vcs-mx/O-2018.09-SP2/linux64/lib/libvcsnew.so: \
+undefined reference to `snpsCheckCallocFunc'
+/usr/bin/ld: /home/kai/synopsys_tools/VCS_2018_SP2/vcs-mx/O-2018.09-SP2/linux64/lib/libvcsnew.so: \
+undefined reference to `snps_mem_group_size'
+/usr/bin/ld: /home/kai/synopsys_tools/VCS_2018_SP2/vcs-mx/O-2018.09-SP2/linux64/lib/libvcsnew.so: \
+undefined reference to `vfs_get_next_virtual_file'
+/usr/bin/ld: /home/kai/synopsys_tools/VCS_2018_SP2/vcs-mx/O-2018.09-SP2/linux64/lib/libvcsnew.so: \
+undefined reference to `snps_mem_calloc_from_group'
+/usr/bin/ld: /home/kai/synopsys_tools/VCS_2018_SP2/vcs-mx/O-2018.09-SP2/linux64/lib/libvcsnew.so: \
+undefined reference to `vfs::vfsReleaseVirtualFileList(VFILE_LIST*)'
+/usr/bin/ld: /home/kai/synopsys_tools/VCS_2018_SP2/vcs-mx/O-2018.09-SP2/linux64/lib/libvcsnew.so: \
+undefined reference to `snpsGetHook'
+/usr/bin/ld: /home/kai/synopsys_tools/VCS_2018_SP2/vcs-mx/O-2018.09-SP2/linux64/lib/libvcsnew.so: \
+undefined reference to `snps_mem_group_of_pointer'
+/usr/bin/ld: /home/kai/synopsys_tools/VCS_2018_SP2/vcs-mx/O-2018.09-SP2/linux64/lib/libvcsnew.so: \
+undefined reference to `snpsCallocFunc'
+/usr/bin/ld: /home/kai/synopsys_tools/VCS_2018_SP2/vcs-mx/O-2018.09-SP2/linux64/lib/libvcsucli.so: \
+undefined reference to `storeMiscTfCb'
+/usr/bin/ld: /home/kai/synopsys_tools/VCS_2018_SP2/vcs-mx/O-2018.09-SP2/linux64/lib/libvcsnew.so: \
+undefined reference to `snps_mem_set_exec_name'
+/usr/bin/ld: /home/kai/synopsys_tools/VCS_2018_SP2/vcs-mx/O-2018.09-SP2/linux64/lib/libvcsnew.so: \
+undefined reference to `vfs_set_readonly'
+/usr/bin/ld: /home/kai/synopsys_tools/VCS_2018_SP2/vcs-mx/O-2018.09-SP2/linux64/lib/libvcsnew.so: \
+undefined reference to `vfs_fopen'
+/usr/bin/ld: /home/kai/synopsys_tools/VCS_2018_SP2/vcs-mx/O-2018.09-SP2/linux64/lib/libvcsnew.so: \
+undefined reference to `vfs::fopen(char const*, char const*, char const*, vcsfs_t, \
+unsigned int)'
+/usr/bin/ld: /home/kai/synopsys_tools/VCS_2018_SP2/vcs-mx/O-2018.09-SP2/linux64/lib/libvcsnew.so: \
+undefined reference to `vfs_fstat'
+/usr/bin/ld: /home/kai/synopsys_tools/VCS_2018_SP2/vcs-mx/O-2018.09-SP2/linux64/lib/libvcsnew.so: \
+undefined reference to `snpsCurrentGroup'
+/usr/bin/ld: /home/kai/synopsys_tools/VCS_2018_SP2/vcs-mx/O-2018.09-SP2/linux64/lib/libvcsnew.so: \
+undefined reference to `ZsGetHdlVariableHandleById'
+/usr/bin/ld: /home/kai/synopsys_tools/VCS_2018_SP2/vcs-mx/O-2018.09-SP2/linux64/lib/libvcsnew.so: \
+undefined reference to `ZsGetNextSimulationTimeIfc'
+/usr/bin/ld: /home/kai/synopsys_tools/VCS_2018_SP2/vcs-mx/O-2018.09-SP2/linux64/lib/libvcsnew.so: \
+undefined reference to `snps_mem_push_small_allocation_size'
+/usr/bin/ld: /home/kai/synopsys_tools/VCS_2018_SP2/vcs-mx/O-2018.09-SP2/linux64/lib/libvcsnew.so: \
+undefined reference to `ZsFinalize'
+collect2: error: ld returned 1 exit status
+make[1]: *** [Makefile:110: product_timestamp] Error 1
+make[1]: Leaving directory '/home/kai/ChiselProject/Benchmarks/TB2/TB/Neuron-step/csrc' \
+
+Make exited with status 2
+CPU time: .169 seconds to compile + .167 seconds to elab + .118 seconds to link

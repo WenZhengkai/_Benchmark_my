@@ -1,0 +1,73 @@
+Magic 271485
+Revision Verdi_O-2018.09-SP2
+
+; Window Layout <x> <y> <width> <height> <signalwidth> <valuewidth>
+viewPort 0 27 2560 592 100 65
+
+; File list:
+; openDirFile [-d delimiter] [-s time_offset] [-rf auto_bus_rule_file] path_name file_name
+openDirFile -d / "" "/home/kai/ChiselProject/Benchmarks/TESTBASE/dump.fsdb"
+
+; file time scale:
+; fileTimeScale ### s|ms|us|ns|ps
+
+; signal spacing:
+signalSpacing 5
+
+; windowTimeUnit is used for zoom, cursor & marker
+; waveform viewport range
+zoom 0.000000 7605300.000000
+cursor 0.000000
+marker 0.000000
+
+; user define markers
+; userMarker time_pos marker_name color linestyle
+; visible top row signal index
+top 0
+; marker line index
+markerPos 19
+
+; event list
+; addEvent event_name event_expression
+; curEvent event_name
+
+
+
+COMPLEX_EVENT_BEGIN
+
+
+COMPLEX_EVENT_END
+
+
+
+; toolbar current search type
+; curSTATUS search_type
+curSTATUS ByChange
+
+
+addGroup "golden_model"
+activeDirFile "" "/home/kai/ChiselProject/Benchmarks/TESTBASE/dump.fsdb"
+addSignal -h 15 /testbench/golden_model/clock
+addSignal -h 15 -holdScope reset
+addSignal -h 15 -holdScope io_in_0[15:0]
+addSignal -h 15 -holdScope io_in_1[15:0]
+addSignal -h 15 -holdScope io_in_2[15:0]
+addSignal -h 15 -holdScope io_in_3[15:0]
+addSignal -h 15 -holdScope io_in_4[15:0]
+addSignal -h 15 -holdScope io_in_5[15:0]
+addSignal -h 15 -holdScope io_in_6[15:0]
+addSignal -h 15 -holdScope io_in_7[15:0]
+addSignal -h 15 -holdScope io_weights_0[15:0]
+addSignal -h 15 -holdScope io_weights_1[15:0]
+addSignal -h 15 -holdScope io_weights_2[15:0]
+addSignal -h 15 -holdScope io_weights_3[15:0]
+addSignal -h 15 -holdScope io_weights_4[15:0]
+addSignal -h 15 -holdScope io_weights_5[15:0]
+addSignal -h 15 -holdScope io_weights_6[15:0]
+addSignal -h 15 -holdScope io_weights_7[15:0]
+addSignal -h 15 -holdScope io_out[15:0]
+addGroup "G2"
+
+; getSignalForm Scope Hierarchy Status
+; active file of getSignalForm
+

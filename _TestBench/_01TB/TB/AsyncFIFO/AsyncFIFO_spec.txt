@@ -1,0 +1,67 @@
+### 1. Module Name
+- **GrayCoder** and **AsyncFIFO**
+
+### 2. Module Functions
+
+#### GrayCoder
+1. **Gray Code Conversion**: The primary function of the `GrayCoder` module is to convert a binary number to its corresponding Gray code representation or vice versa, based on the `io_encode` signal.
+2. **Bidirectional Encoding/Decoding**: It can perform both encoding and decoding operations depending on the control signal `io_encode`.
+
+#### AsyncFIFO
+1. **Asynchronous FIFO Buffer**: The `AsyncFIFO` module serves as an asynchronous First-In-First-Out (FIFO) buffer, which allows for data transfer between two clock domains.
+2. **Data Storage and Retrieval**: It manages the storage of data written into the FIFO and the subsequent reading of this data, ensuring data integrity across different clock domains.
+3. **Full and Empty Status Indication**: It provides status signals (`io_full` and `io_empty`) to indicate when the FIFO is full or empty, preventing overflow and underflow conditions.
+
+### 3. Input and Output Port Descriptions
+
+#### GrayCoder
+- **Inputs:**
+  1. `io_in [4:0]`: 5-bit input data, which can be either binary or Gray code depending on the operation.
+  2. `io_encode`: A control signal that determines the operation mode. When high, the module encodes binary to Gray code; when low, it decodes Gray code to binary.
+
+- **Outputs:**
+  1. `io_out [4:0]`: 5-bit output data, representing the converted code (either Gray or binary).
+
+#### AsyncFIFO
+- **Inputs:**
+  1. `clock`: System clock for synchronous operations.
+  2. `reset`: Reset signal to initialize the FIFO.
+  3. `io_write_clock`: Clock signal for the write domain.
+  4. `io_write_enable`: Enable signal for writing data into the FIFO.
+  5. `io_write_data [31:0]`: 32-bit data input for writing into the FIFO.
+  6. `io_read_clock`: Clock signal for the read domain.
+  7. `io_read_enable`: Enable signal for reading data from the FIFO.
+
+- **Outputs:**
+  1. `io_read_data [31:0]`: 32-bit data output from the FIFO.
+  2. `io_full`: Status signal indicating the FIFO is full.
+  3. `io_empty`: Status signal indicating the FIFO is empty.
+
+### 4. Internal Working Principle
+
+#### GrayCoder
+- The GrayCoder module operates by manipulating bits to convert between binary and Gray code. When encoding, each bit is XORed with the bit to its left. When decoding, a series of XOR operations are performed to revert to binary.
+
+#### AsyncFIFO
+- The AsyncFIFO module employs dual clock domains for reading and writing, using Gray code to safely synchronize pointers across these domains. The write and read operations are controlled by separate clocks, with the FIFO's full and empty status determined by comparing synchronized Gray-coded pointers.
+
+### 5. Implementation Logic Explanation
+
+#### GrayCoder
+- The module uses wire assignments to create intermediate signals for bit manipulation. The encoding process involves shifting and XOR operations to achieve the Gray code conversion. Decoding reverses this process using similar operations.
+
+#### AsyncFIFO
+- The FIFO utilizes a memory array (`mem`) to store data. Write and read operations are controlled by counters (`write_counter` and `read_counter`), which are incremented on successful operations. Gray code pointers (`write_pointer_sync`, `read_pointer_gray_sync`) ensure safe crossing of clock domains. The `io_full` and `io_empty` signals are derived from comparing these pointers.
+
+### 6. Internally Defined Signal Descriptions
+
+#### GrayCoder
+- **_io_out_T, _io_out_T_1, ..., _io_out_T_7**: Intermediate signals used for bit manipulation during the conversion process.
+
+#### AsyncFIFO
+- **mem [31:0]**: Memory array for storing FIFO data.
+- **write_counter, read_counter**: 5-bit counters for tracking write and read positions.
+- **sync_r, read_pointer_gray_sync, write_pointer_sync_r, write_pointer_sync**: Registers for synchronizing Gray code pointers across clock domains.
+- **mem_io_read_data_MPORT_***: Signals related to memory read operations.
+- **mem_MPORT_***: Signals related to memory write operations.
+- **encoder_io_***, **decoder_io_***, **grayCoderInc_io_***: Signals associated with the GrayCoder instances for encoding and decoding operations.
