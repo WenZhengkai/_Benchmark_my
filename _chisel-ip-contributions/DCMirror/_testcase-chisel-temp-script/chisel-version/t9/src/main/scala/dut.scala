@@ -2,41 +2,41 @@ import chisel3._
 import chisel3.util._
 
 class dut[D <: Data](data: D, n: Int) extends Module {
-  require(n > 0, "The number of output destinations (n) must be greater than 0.")
-
   val io = IO(new Bundle {
-    val dst = Input(UInt(n.W))            // Active output destination bit vector
-    val c = Flipped(Decoupled(data))      // Input channel (DecoupledIO interface)
-    val p = Vec(n, Decoupled(data))       // Array of output channels (DecoupledIO interface)
+    val dst = Input(UInt(n.W))
+    val c = Flipped(Decoupled(data.cloneType))
+    val p = Vec(n, Decoupled(data.cloneType))
   })
 
-  // Registers to hold internal state
-  val pData = Reg(data.cloneType)         // Register to store the current payload
-  val pValid = RegInit(0.U(n.W))          // Validity register for outputs, initialized to 0
+  // Task 1: Define Registers
+  val pData = Reg(data.cloneType)
+  val pValid = RegInit(0.U(n.W))
 
-  // Ready vector from all output channels
-  val pReady = Cat(io.p.map(_.ready).reverse) // Concatenate 'ready' signals from all outputs
+  // Task 2: Compute `pReady` Vector
+  val pReady = Wire(UInt(n.W))
+  pReady := Cat(io.p.map(_.ready).reverse)  // Corrected line
 
-  // Compute the next accept signal
-  val nxtAccept = (pValid === 0.U) || (pValid & pReady === pValid)
+  // Task 3: Compute `nxtAccept` Signal
+  val nxtAccept = (pValid === 0.U) || ((pValid & pReady) === pValid)
 
-  // Data flow logic
+  // Task 4: Update Data and Validity
   when(nxtAccept) {
-    // Update the data payload register with the incoming data bits when nxtAccept is true
     pData := io.c.bits
-    // Update pValid based on dst and input validity
-    pValid := Mux(io.c.valid, io.dst & Fill(n, 1.U(1.W)), 0.U)
-  } .otherwise {
-    // Clear out pValid for outputs that are ready
+    when(io.c.valid) {
+      pValid := io.dst & Fill(n, io.c.valid)
+    }.otherwise {
+      pValid := 0.U
+    }
+  }.otherwise {
     pValid := pValid & ~pReady
   }
 
-  // Input channel ready signal: Accept new data if nxtAccept is true
-  io.c.ready := nxtAccept
-
-  // Output assignment logic
+  // Task 5: Output Assignment
   for (i <- 0 until n) {
-    io.p(i).valid := pValid(i)               // Output valid based on pValid register
-    io.p(i).bits := pData                    // All outputs share the same payload from pData
+    io.p(i).valid := (pValid(i))
+    io.p(i).bits := pData
   }
+
+  // Task 6: Implement Ready/Valid Handshake
+  io.c.ready := nxtAccept
 }

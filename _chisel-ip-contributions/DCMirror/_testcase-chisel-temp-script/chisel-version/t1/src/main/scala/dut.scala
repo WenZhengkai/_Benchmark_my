@@ -2,44 +2,41 @@ import chisel3._
 import chisel3.util._
 
 class dut[D <: Data](data: D, n: Int) extends Module {
-  require(n > 0, "Number of output destinations (n) must be greater than 0")
-  require(data != null, "Data type for payload cannot be null")
-
   val io = IO(new Bundle {
-    val dst = Input(UInt(n.W)) // Destination bit vector
-    val c = Flipped(Decoupled(data.cloneType)) // Input channel
-    val p = Vec(n, Decoupled(data.cloneType)) // Output channels
+    val dst = Input(UInt(n.W))
+    val c = Flipped(Decoupled(data.cloneType))
+    val p = Vec(n, Decoupled(data.cloneType))
   })
 
-  // --- Registers to store internal state ---
-  val pData = Reg(data.cloneType) // Register to hold the data payload
-  val pValid = RegInit(0.U(n.W)) // Register to track which output channels are valid
+  // Task 1: Define Registers
+  val pData = Reg(data.cloneType)
+  val pValid = RegInit(0.U(n.W))
 
-  // --- Concatenate ready signals of all outputs ---
-  val pReady = Cat(io.p.map(_.ready).reverse)
+  // Task 2: Compute `pReady` Vector
+  // Concatenate ready signals from all output channels
+  val pReady = VecInit(io.p.map(_.ready)).asUInt()
 
-  // --- Compute next accept signal ---
-  val nxtAccept = (pValid === 0.U) || (pValid & pReady === pValid)
+  // Task 3: Compute `nxtAccept` Signal
+  // Can accept new data when no data is currently valid or all valid data has been accepted
+  val nxtAccept = (pValid === 0.U) || ((pValid & pReady) === pValid)
 
-  // --- Handle data transfer ---
+  // Task 4: Update Data and Validity
   when(nxtAccept) {
-    when(io.c.fire()) {
-      pData := io.c.bits // Update data register with incoming data
-      pValid := io.dst & Fill(n, io.c.valid.asUInt) // Update valid register based on `dst` and `valid`
-    }.otherwise {
-      pValid := 0.U // Clear valid register if no incoming data and accepting new data
-    }
-  }.otherwise {
-    pValid := pValid & ~pReady // Clear valid bits for outputs that are ready
+    pData := io.c.bits
+    pValid := io.c.valid & io.dst
+  } .otherwise {
+    pValid := pValid & ~pReady // Retain outputs not yet ready
   }
 
-  // --- Assign values to input channel `ready` ---
+  // Task 5: Output Assignment
   io.c.ready := nxtAccept
-
-  // --- Connect each output channel ---
   for (i <- 0 until n) {
-    io.p(i).valid := pValid(i) // Provide valid signal based on `pValid`
-    io.p(i).bits := pData // Always provide payload stored in `pData`
+    io.p(i).valid := pValid(i)
+    io.p(i).bits := pData
   }
+
+  // Task 6: Implement Ready/Valid Handshake
+  // This is implicitly handled by the assignment above where
+  // output valid and ready signals are coordinated
 }
 

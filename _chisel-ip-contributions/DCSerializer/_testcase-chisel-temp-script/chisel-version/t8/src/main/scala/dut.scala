@@ -2,53 +2,51 @@ import chisel3._
 import chisel3.util._
 
 class dut[D <: Data](data: D, width: Int) extends Module {
-  // Ensure that output width is less than the width of the input data structure
-  require(width > 0, "Output width must be greater than zero")
-  require(data.getWidth > width, "Output width must be less than input data width")
-
-  // I/O interface declaration
+  require(width < data.getWidth, "Output width must be less than the input data width.")
+  
   val io = IO(new Bundle {
-    val dataIn  = Flipped(Decoupled(data))    // Input handshaking interface
-    val dataOut = Decoupled(UInt(width.W))   // Output handshaking interface
+    val dataIn = Flipped(Decoupled(data))
+    val dataOut = Decoupled(UInt(width.W))
   })
 
-  // Internal fields
-  val dataWidth = data.getWidth               // Total bit-width of input data
-  val cycles = (dataWidth + width - 1) / width // Number of cycles to serialize the input data
+  // Task 1: Cycle Calculation Logic
+  val dataWidth = data.getWidth
+  val cycles = (dataWidth + width - 1) / width // Calculate number of cycles needed
 
-  // Registers
-  val cycleCount = RegInit(0.U(log2Ceil(cycles).W))  // Counter to track serialization cycle
-  val activeData = Reg(data)                        // Register to hold the current input data
-  val activeTransaction = RegInit(false.B)         // Indicates if a transaction is active
+  // Task 2: Cycle Counter Register
+  val cycleCount = RegInit(0.U(log2Ceil(cycles).W))
 
-  // Data splitting
-  val dataVec = Wire(Vec(cycles, UInt(width.W)))    // Splitting the input data into words of `width` bits
+  // Task 3: Data Selection and Storage
+  val dataSelect = Wire(Vec(cycles, UInt(width.W)))
+
+  // Use a Wire to convert from Data to UInt
+  val inputDataAsUInt = Wire(UInt(dataWidth.W))
+  inputDataAsUInt := io.dataIn.bits.asUInt
+
+  // Slice the input data into fixed width words
   for (i <- 0 until cycles) {
-    val startBit = i * width
-    val endBit = math.min(startBit + width, dataWidth) - 1
-    dataVec(i) := activeData.asUInt()(endBit, startBit)
+    val lowerBound = i * width
+    val upperBound = math.min((i + 1) * width, dataWidth)
+    dataSelect(i) := inputDataAsUInt(upperBound - 1, lowerBound)
   }
 
-  // Output logic
-  io.dataOut.bits := dataVec(cycleCount)
-  io.dataOut.valid := activeTransaction
+  io.dataOut.bits := dataSelect(cycleCount)
 
-  // Input logic
-  io.dataIn.ready := !activeTransaction && io.dataOut.ready
+  // Task 4: Handshaking Logic for Data Input
+  io.dataIn.ready := (cycleCount === (cycles - 1).U) && io.dataOut.ready
 
-  // FSM / State Logic
-  when(io.dataOut.fire) {
+  // Task 5: Handshaking Logic for Data Output
+  io.dataOut.valid := io.dataIn.valid
+
+  when(io.dataOut.fire()) {
     when(cycleCount === (cycles - 1).U) {
       cycleCount := 0.U
-      activeTransaction := false.B
-    }.otherwise {
+    } .otherwise {
       cycleCount := cycleCount + 1.U
     }
-  }.otherwise {
-    when(io.dataIn.fire) {
-      activeData := io.dataIn.bits
-      activeTransaction := true.B
-      cycleCount := 0.U
-    }
+  }
+
+  when(io.dataIn.fire()) {
+    cycleCount := 0.U
   }
 }

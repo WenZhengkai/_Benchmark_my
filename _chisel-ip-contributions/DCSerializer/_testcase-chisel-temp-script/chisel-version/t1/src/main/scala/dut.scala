@@ -2,49 +2,48 @@ import chisel3._
 import chisel3.util._
 
 class dut[D <: Data](data: D, width: Int) extends Module {
-  require(width > 0, "Width must be greater than 0")
-  require(data.getWidth > width, "Width of output channel must be less than the width of the input data")
+  require(width > 0 && width < data.getWidth, "Width must be greater than 0 and less than the bit-width of the input data.")
 
   val io = IO(new Bundle {
-    val dataIn = Flipped(Decoupled(data)) // Input interface for the data to be serialized
-    val dataOut = Decoupled(UInt(width.W)) // Output interface for serialized data
+    val dataIn = Flipped(Decoupled(data))
+    val dataOut = Decoupled(UInt(width.W))
   })
 
-  // Calculate number of serialization cycles
+  // Calculate the number of serialization cycles
   val dataWidth = data.getWidth
-  val cycles = (dataWidth + width - 1) / width // Ceiling of dataWidth / width
+  val cycles = if (dataWidth % width != 0) (dataWidth / width) + 1 else dataWidth / width
   
-  // Registers
-  val cycleCount = RegInit(0.U(log2Ceil(cycles).W)) // Tracks current cycle of serialization
-  val active = RegInit(false.B) // Indicates if serialization is in progress
+  // Cycle counter register
+  val cycleCount = RegInit(0.U(log2Ceil(cycles).W))
   
-  // Convert the input data to a UInt for serialization
-  val dataVec = Wire(Vec(cycles, UInt(width.W)))
-  val inputData = Reg(data)
-  
-  // Break the input data into smaller words of size `width`
-  for (i <- 0 until cycles) {
-    val startIdx = i * width
-    val endIdx = math.min((i + 1) * width, dataWidth) - 1
-    dataVec(i) := inputData.asUInt()(endIdx, startIdx)
-  }
-  
-  // Handshaking logic
-  io.dataIn.ready := !active && io.dataOut.ready // Accept new data when idle and output is ready
-  io.dataOut.valid := active // Output is valid only when serialization is active
-  io.dataOut.bits := dataVec(cycleCount) // Output the current serialized word
+  // Data selection and storage
+  val dataSelect = Wire(Vec(cycles, UInt(width.W)))
 
-  when(io.dataIn.fire) {
-    // Start a new serialization transaction
-    inputData := io.dataIn.bits
-    cycleCount := 0.U
-    active := true.B
-  }.elsewhen(io.dataOut.fire && active) {
-    // During serialization, advance the cycle count
+  // Populate the dataSelect with slices of data
+  for (i <- 0 until cycles) {
+    val startBit = i * width
+    val endBit = (i + 1) * width - 1
+    val sliceWidth = if (endBit < dataWidth) width else dataWidth - startBit
+    dataSelect(i) := io.dataIn.bits.asUInt()(startBit + sliceWidth - 1, startBit)
+  }
+
+  // Default output assignments
+  io.dataOut.bits := dataSelect(cycleCount)
+  io.dataOut.valid := io.dataIn.valid && cycleCount < cycles.U
+
+  // Handshaking logic for data input
+  io.dataIn.ready := cycleCount === (cycles - 1).U && io.dataOut.ready
+
+  // Handshaking logic and cycle count update
+  when(io.dataOut.fire()) {
+    cycleCount := cycleCount + 1.U
     when(cycleCount === (cycles - 1).U) {
-      active := false.B // End serialization once all cycles are done
-    }.otherwise {
-      cycleCount := cycleCount + 1.U
+      cycleCount := 0.U
     }
+  }
+
+  // Reset cycle count on new input transaction
+  when(io.dataIn.fire()) {
+    cycleCount := 0.U
   }
 }

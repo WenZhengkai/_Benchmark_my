@@ -3,54 +3,36 @@ import chisel3.util._
 
 class dut[D <: Data](data: D, n: Int) extends Module {
   val io = IO(new Bundle {
-    val dst = Input(UInt(n.W))                       // Active output destinations
-    val c   = Flipped(DecoupledIO(data.cloneType))   // Input channel
-    val p   = Vec(n, DecoupledIO(data.cloneType))    // Output channels (array of DecoupledIO interfaces)
+    val dst = Input(UInt(n.W))
+    val c = Flipped(DecoupledIO(data.cloneType))
+    val p = Vec(n, DecoupledIO(data.cloneType))
   })
 
-  // Registers to store the data payload and the valid signal for each output
-  val pData  = Reg(data.cloneType)                  // Data register
-  val pValid = RegInit(0.U(n.W))                    // Valid register, initialized to zero
+  // Task 1: Define Registers
+  val pData = Reg(data.cloneType)
+  val pValid = RegInit(0.U(n.W))
 
-  // Concatenate all outputs' ready signals into a ready vector
-  val pReady = Cat(io.p.map(_.ready).reverse)
+  // Task 2: Compute `pReady` Vector
+  val pReadyVec = VecInit(io.p.map(_.ready))
+  val pReady = pReadyVec.asUInt()
 
-  // Compute the next accept signal
-  val nxtAccept = (pValid === 0.U) || (pValid & pReady === pValid)
+  // Task 3: Compute `nxtAccept` Signal
+  val nxtAccept = (pValid === 0.U) || (pValid & pReady) === pValid
 
-  // Update the data and valid signals based on nxtAccept
-  when(nxtAccept) {
-    // Update pData with the incoming data if nxtAccept is true
+  // Task 4: Update Data and Validity
+  when(io.c.valid && nxtAccept) {
     pData := io.c.bits
-    
-    // Set valid bits for outputs according to dst if incoming data is valid
-    pValid := Mux(io.c.valid, io.dst, 0.U)
+    pValid := io.dst & Fill(n, io.c.valid.asUInt()) // Only set valid for active outputs
   }.otherwise {
-    // Retain valid bits for outputs that are not ready
-    pValid := pValid & ~pReady
+    pValid := pValid & ~pReady // Clear valid for any outputs that are ready
   }
 
-  // Control the input ready signal
-  io.c.ready := nxtAccept
-
-  // Assign outputs
+  // Task 5: Output Assignment
   for (i <- 0 until n) {
-    io.p(i).valid := pValid(i)                      // Drive valid signals from pValid
-    io.p(i).bits  := pData                          // Share the same data payload across all outputs
+    io.p(i).valid := pValid(i)
+    io.p(i).bits := pData
   }
-}
 
-// Test module or instantiation can be created as follows:
-// class Top extends Module {
-//   val dataWidth = 16
-//   val numOutputs = 4
-//   val io = IO(new Bundle {
-//     val dst = Input(UInt(numOutputs.W))
-//     val in  = Flipped(DecoupledIO(UInt(dataWidth.W)))
-//     val out = Vec(numOutputs, DecoupledIO(UInt(dataWidth.W)))
-//   })
-//   val dcMirror = Module(new DCMirror(UInt(dataWidth.W), numOutputs))
-//   dcMirror.io.dst := io.dst
-//   dcMirror.io.c <> io.in
-//   io.out <> dcMirror.io.p
-// }
+  // Task 6: Implement Ready/Valid Handshake
+  io.c.ready := nxtAccept
+}

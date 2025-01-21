@@ -1,51 +1,51 @@
-package example
-
 import chisel3._
 import chisel3.util._
 
-/** DCSerializer Module
-  *
-  * Serializes an arbitrary Chisel data structure (`D <: Data`) into a sequence
-  * of output words of fixed width (`W` bits), transmitting them one word at a time.
-  *
-  * @param data  Chisel data type to be serialized
-  * @param width Width in bits of the serialized output channel
-  **/
 class dut[D <: Data](data: D, width: Int) extends Module {
-  require(width > 0, "Width must be greater than 0")
-  require(data.getWidth > width, "Output width (W) must be smaller than input data width")
+  require(width > 0, "Width must be greater than zero")
+  require(data.getWidth > width, "Data width must be greater than serialized output width")
 
   val io = IO(new Bundle {
-    val dataIn  = Flipped(Decoupled(data)) // Input data to serialize
-    val dataOut = Decoupled(UInt(width.W)) // Serialized output words
+    val dataIn = Flipped(Decoupled(data))
+    val dataOut = Decoupled(UInt(width.W))
   })
 
-  // Calculate the number of cycles required for serialization
-  val dataWidth: Int = data.getWidth
-  val cycles: Int = (dataWidth + width - 1) / width // Ceiling of dataWidth / width
+  // Task 1: Cycle Calculation Logic
+  val dataWidth = data.getWidth
+  val cycles = if (dataWidth % width != 0) (dataWidth / width) + 1 else dataWidth / width
 
-  // Internal state
-  val cycleCount = RegInit(0.U(log2Ceil(cycles).W)) // Tracks the current serialization cycle
-  val active = RegInit(false.B)                     // Tracks if a serialization is currently ongoing
-  val buffer = Reg(data.cloneType)                  // Stores the input data during serialization
+  // Task 2: Cycle Counter Register
+  val cycleCount = RegInit(0.U(log2Ceil(cycles).W))
 
-  io.dataIn.ready := !active && io.dataOut.ready    // Accept new data if idle
-  io.dataOut.valid := active                        // Output is valid when actively serializing
-  io.dataOut.bits := buffer.asUInt()(width.U * cycleCount + width.U - 1, width.U * cycleCount) // Extract the current word
+  // Task 3: Data Selection and Storage
+  val dataSelect = Wire(Vec(cycles, UInt(width.W)))
 
-  when(io.dataIn.fire) {
-    // When a new transaction starts:
-    buffer := io.dataIn.bits            // Load the input data
-    cycleCount := 0.U                   // Reset the cycle counter
-    active := true.B                    // Indicate serialization is active
+  // Populate dataSelect with slices of input data
+  for (i <- 0 until cycles) {
+    val startBit = i * width
+    val endBit = math.min(startBit + width, dataWidth) - 1
+    dataSelect(i) := io.dataIn.bits.asUInt()(endBit, startBit)
   }
 
-  when(active && io.dataOut.fire) {
-    // When a serialized word is sent:
-    cycleCount := cycleCount + 1.U      // Advance to the next serialization cycle
+  // Select the appropriate word from dataSelect for output
+  io.dataOut.bits := dataSelect(cycleCount)
+
+  // Task 4 and 5: Handshaking Logic
+  io.dataIn.ready := (cycleCount === (cycles - 1).U) && io.dataOut.ready
+  io.dataOut.valid := io.dataIn.valid
+
+  // Task 2: Cycle Counter Logic continued
+  when(io.dataOut.fire()) {
     when(cycleCount === (cycles - 1).U) {
-      active := false.B                 // End the transaction after all cycles
+      cycleCount := 0.U
+    } .otherwise {
+      cycleCount := cycleCount + 1.U
     }
   }
+
+  when(io.dataIn.fire()) {
+    cycleCount := 0.U
+  }
 }
+
 

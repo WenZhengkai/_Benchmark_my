@@ -1,39 +1,41 @@
 import chisel3._
 import chisel3.util._
 
-class dut[D <: Data](data: D, n: Int) extends Module {
+class dut[D <: Data](dataType: D, n: Int) extends Module {
   val io = IO(new Bundle {
-    val dst = Input(UInt(n.W))                            // Bit vector to select active output channels
-    val c = Flipped(Decoupled(data.cloneType))            // Input channel
-    val p = Vec(n, Decoupled(data.cloneType))             // Output channels
+    val dst = Input(UInt(n.W))
+    val c = Flipped(DecoupledIO(dataType.cloneType))
+    val p = Vec(n, DecoupledIO(dataType.cloneType))
   })
 
-  // Register to store the data payload
-  val pData = Reg(data.cloneType)
-
-  // Register to track which outputs hold valid data
+  // Task 1: Define Registers
+  val pData = Reg(dataType.cloneType)
   val pValid = RegInit(0.U(n.W))
 
-  // The ready vector, aggregating all `ready` signals from outputs
+  // Task 2: Compute `pReady` Vector
   val pReady = VecInit(io.p.map(_.ready)).asUInt
 
-  // Compute when to accept new data
-  val nxtAccept = (pValid === 0.U) || (pValid === pReady)
+  // Task 3: Compute `nxtAccept` Signal
+  val nxtAccept = (pValid === 0.U) || ((pValid & pReady) === pValid)
 
-  // Logic for accepting new data
+  // Task 4: Update Data and Validity
   when(nxtAccept) {
-    pData := io.c.bits // Update the data payload register with input data
-    pValid := Mux(io.c.valid, io.dst & Fill(n, 1.U), 0.U) // Update valid register based on `dst` and `io.c.valid`
-  } .otherwise {
-    pValid := pValid & ~pReady // Retain only the bits for outputs that aren't ready
+    when(io.c.valid) {
+      pData := io.c.bits
+      pValid := io.dst
+    }
+  }.otherwise {
+    pValid := pValid & ~pReady
   }
 
-  // Connect the output logic
+  // Task 5: Output Assignment
   for (i <- 0 until n) {
-    io.p(i).valid := pValid(i)  // Associate valid signal with corresponding `pValid` bit
-    io.p(i).bits := pData       // Drive the data payload to all outputs
+    io.p(i).valid := pValid(i)
+    io.p(i).bits := pData
   }
 
-  // Connect the input ready signal
-  io.c.ready := nxtAccept // The module is ready to accept new data when `nxtAccept` is true
+  // Task 6: Implement Ready/Valid Handshake
+  io.c.ready := nxtAccept
+
+  // Ensure that `pValid` properly reacts to the ready conditions of output channels
 }

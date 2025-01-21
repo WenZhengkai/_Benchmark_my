@@ -2,50 +2,42 @@ import chisel3._
 import chisel3.util._
 
 class dut[D <: Data](data: D, width: Int) extends Module {
-  require(width > 0, "Serialized data width must be greater than 0")
-
-  // IO Definition
   val io = IO(new Bundle {
-    val dataIn = Flipped(Decoupled(UInt(width.W))) // Serialized data input
-    val dataOut = Decoupled(data.cloneType)        // Deserialized output
+    val dataIn  = Flipped(Decoupled(UInt(width.W)))
+    val dataOut = Decoupled(data.cloneType)
   })
 
-  // Calculate number of cycles required to process the entire data
-  val totalBits = data.getWidth
-  val cycles = (totalBits + width - 1) / width // Ceiling of totalBits / width
+  // Calculate the number of cycles needed to deserialize the data
+  val cycles = (data.getWidth + width - 1) / width
 
-  // Internal State
-  val cycleCount = RegInit(0.U(log2Ceil(cycles).W)) // Cycle counter
-  val dataSelect = Reg(Vec(cycles, UInt(width.W)))  // Temporary storage for serialized segments
-  val dataValid = RegInit(false.B)                 // Flag for valid deserialized data
-
-  // Default ready-valid signals
-  io.dataIn.ready := !dataValid // Only accept new data when not busy producing output
-  io.dataOut.valid := dataValid
-  io.dataOut.bits := DontCare // Default assignment
+  // Registers for tracking the deserialization process
+  val cycleCount = RegInit(0.U(log2Ceil(cycles).W))
+  val dataSelect = Reg(Vec(cycles, UInt(width.W)))
+  val dataValid = RegInit(false.B)
 
   // Deserialization Process
-  when(io.dataIn.fire) { // When input data is valid and ready
+  when(io.dataIn.fire()) {
+    // Store the incoming serialized data
     dataSelect(cycleCount) := io.dataIn.bits
+    // Increment the cycle count
+    cycleCount := cycleCount + 1.U
+
+    // Check if this was the last cycle needed
     when(cycleCount === (cycles - 1).U) {
-      // Last segment received
       dataValid := true.B
-      cycleCount := 0.U // Reset cycle count for next transaction
-    }.otherwise {
-      cycleCount := cycleCount + 1.U
+      cycleCount := 0.U // Reset for next sequence
     }
   }
 
-  // Assemble the deserialized data when all segments are collected
-  if (cycles == 1) {
-    // Special case when only a single cycle is needed (edge case)
-    io.dataOut.bits := dataSelect.head.asTypeOf(data)
-  } else {
-    io.dataOut.bits := dataSelect.asUInt.asTypeOf(data)
-  }
+  // Construct the output data from the deserialized segments
+  io.dataOut.bits := dataSelect.asTypeOf(data)
 
-  // Reset dataValid when the output is successfully transmitted
-  when(io.dataOut.fire) {
-    dataValid := false.B
+  // Flow Control
+  io.dataIn.ready := !dataValid || io.dataOut.fire() // Ready for new input if not valid
+  io.dataOut.valid := dataValid
+
+  when(io.dataOut.fire()) {
+    dataValid := false.B // Clear valid after successful transmission
   }
 }
+

@@ -7,40 +7,33 @@ class dut[D <: Data](data: D, width: Int) extends Module {
     val dataOut = Decoupled(data.cloneType)
   })
 
-  // Calculate the number of cycles required for deserialization
+  // Task 1: Cycle Calculation
   val dataWidth = data.getWidth
-  val cycles = (dataWidth + width - 1) / width // Ceiling division
+  val cycles = (dataWidth + width - 1) / width
 
-  // Internal registers
+  // Task 2: Register Initialization
   val cycleCount = RegInit(0.U(log2Ceil(cycles).W))
   val dataSelect = Reg(Vec(cycles, UInt(width.W)))
   val dataValid = RegInit(false.B)
 
-  // Input handshaking
-  io.dataIn.ready := !dataValid || io.dataOut.fire()
-
+  // Task 3: Deserialization Process
+  io.dataIn.ready := !dataValid && io.dataOut.ready
   when(io.dataIn.fire()) {
-    // Store incoming data segment
     dataSelect(cycleCount) := io.dataIn.bits
-
-    // Update cycle counter
-    cycleCount := cycleCount + 1.U
-
-    // Check if deserialization is complete
     when(cycleCount === (cycles - 1).U) {
       dataValid := true.B
-      cycleCount := 0.U // Reset cycle counter
+      cycleCount := 0.U
+    }.otherwise {
+      cycleCount := cycleCount + 1.U
     }
   }
 
-  // Construct the output data from collected segments
+  // Task 4: Output Data Construction
   io.dataOut.bits := dataSelect.asTypeOf(data)
-  io.dataOut.valid := dataValid
 
-  // Output handshake
+  // Task 5: Manage Flow Control
+  io.dataOut.valid := dataValid
   when(io.dataOut.fire()) {
-    dataValid := false.B // Reset dataValid when outputting data
+    dataValid := false.B
   }
 }
-
-

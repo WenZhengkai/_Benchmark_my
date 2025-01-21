@@ -1,46 +1,44 @@
+
 import chisel3._
 import chisel3.util._
 
-class dut[D <: Data](data: D, n: Int) extends Module {
-  require(n > 0, "The number of output destinations 'n' must be greater than 0.")
-
+class dut[D <: Data](dataType: D, n: Int) extends Module {
   val io = IO(new Bundle {
-    val dst = Input(UInt(n.W)) // Bit vector specifying active output channels
-    val c = Flipped(DecoupledIO(data.cloneType)) // Input channel
-    val p = Vec(n, DecoupledIO(data.cloneType)) // Output channels
+    val dst = Input(UInt(n.W))
+    val c = Flipped(Decoupled(dataType))
+    val p = Vec(n, Decoupled(dataType))
   })
 
-  // Data Register to store the current payload
-  val pData = Reg(data.cloneType)
-
-  // Valid Register to track which outputs are holding valid data
+  // Task 1: Define Registers
+  val pData = Reg(dataType)
   val pValid = RegInit(0.U(n.W))
 
-  // Ready Vector from all output channels
-  val pReady = Cat(io.p.map(_.ready).reverse)
-
-  // Next Accept Signal - When the module can accept new data
-  val nxtAccept = pValid === 0.U || (pValid & pReady) === pValid
-
-  // Data Flow Control Logic
-  when(nxtAccept) {
-    when(io.c.valid) {
-      pData := io.c.bits       // Capture the new data payload
-      pValid := io.dst & Fill(n, io.c.valid.asUInt) // Set new valid bits based on dst and c.valid
-    }.otherwise {
-      pValid := 0.U            // Reset pValid if no new valid input
-    }
-  }.otherwise {
-    pValid := pValid & ~pReady // Clear valid bits for outputs that have accepted the data
+  // Task 2: Compute pReady Vector
+  val pReady = Wire(Vec(n, Bool()))
+  for (i <- 0 until n) {
+    pReady(i) := io.p(i).ready
   }
 
-  // Input ready signal is driven by nxtAccept
-  io.c.ready := nxtAccept
+  // Convert Vec to UInt
+  val pReadyVec = VecInit(pReady.toSeq).asUInt
 
-  // Output Assignment
+  // Task 3: Compute nxtAccept Signal
+  val nxtAccept = (pValid === 0.U || ((pValid & pReadyVec) === pValid))
+
+  // Task 4: Update Data and Validity
+  when(nxtAccept) {
+    pData := io.c.bits
+    pValid := io.dst & Fill(n, io.c.valid)
+  } .otherwise {
+    pValid := pValid & ~pReadyVec
+  }
+
+  // Task 5: Output Assignment
   for (i <- 0 until n) {
     io.p(i).valid := pValid(i)
     io.p(i).bits := pData
   }
-}
 
+  // Task 6: Implement Ready/Valid Handshake
+  io.c.ready := nxtAccept
+}

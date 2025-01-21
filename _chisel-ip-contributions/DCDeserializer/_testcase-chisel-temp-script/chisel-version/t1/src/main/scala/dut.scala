@@ -1,45 +1,42 @@
 import chisel3._
 import chisel3.util._
 
-class dut[D <: Data](dataType: D, width: Int) extends Module {
+class dut[D <: Data](gen: D, width: Int) extends Module {
   val io = IO(new Bundle {
-    val dataIn  = Flipped(Decoupled(UInt(width.W)))
-    val dataOut = Decoupled(dataType.cloneType)
+    val dataIn = Flipped(Decoupled(UInt(width.W)))
+    val dataOut = Decoupled(gen.cloneType)
   })
 
-  // Calculate the number of cycles needed to receive the full data
-  val totalWidth = dataType.getWidth
-  val cycles = (totalWidth + width - 1) / width // Calculate required cycles, round up
-  
-  // Registers to keep track of the deserialization process
+  // Task 1: Cycle Calculation
+  val dataWidth = gen.getWidth
+  val cycles = (dataWidth + width - 1) / width
+
+  // Task 2: Register Initialization
   val cycleCount = RegInit(0.U(log2Ceil(cycles).W))
   val dataSelect = Reg(Vec(cycles, UInt(width.W)))
   val dataValid = RegInit(false.B)
 
-  // Default Values
-  io.dataIn.ready := !dataValid
-  io.dataOut.valid := dataValid
-  io.dataOut.bits := dataType
-
+  // Task 3: Deserialization Process
   when(io.dataIn.fire()) {
-    // Store the received segment
     dataSelect(cycleCount) := io.dataIn.bits
-
-    when(cycleCount === (cycles - 1).U) {
-      // Indicating data is valid when all cycles are received
+    cycleCount := cycleCount + 1.U
+    when (cycleCount === (cycles - 1).U) {
       dataValid := true.B
-      cycleCount := 0.U // Reset cycle count for the next transaction
-    } .otherwise {
-      cycleCount := cycleCount + 1.U
+      cycleCount := 0.U
     }
   }
 
-  when(io.dataOut.fire()) {
-    dataValid := false.B // Reset data validity after output is consumed
-  }
+  // Task 4: Output Data Construction
+  // Concatenate dataSelect and cast it to the intended data type
+  io.dataOut.bits := dataSelect.asTypeOf(gen)
 
-  // Reconstruct the full data from segments
-  io.dataOut.bits := Cat(dataSelect.reverse) // Join the segments back to the original data width
+  // Task 5: Manage Flow Control
+  io.dataIn.ready := !dataValid || io.dataOut.fire()
+  io.dataOut.valid := dataValid
+
+  when(io.dataOut.fire()) {
+    dataValid := false.B
+  }
 }
 
 

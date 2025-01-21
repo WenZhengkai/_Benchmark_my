@@ -1,0 +1,36 @@
+# Specification
+
+## Module Name
+DCDeserializer
+
+## Overview
+The `DCDeserializer` module is designed to accept a serial data stream and convert it back into a multi-bit parallel word. It is particularly useful in reconstructing data that has been serialized using a corresponding serialization process. This module does not buffer the incoming transaction and only acknowledges once the entire serialized stream has been successfully processed.
+
+## Parameters
+- **[D <: Data] data (D):** Chisel data structure type to be reconstructed from the serialized stream. This parameter determines the type and structure of the data after deserialization.
+- **width (Int):** Specifies the width (in bits) of the serialized data channel. This width dictates how many bits are processed per clock cycle during the deserialization process.
+
+## Input/Output Interface
+- **Inputs:**
+  - `dataIn (Decoupled(UInt(width.W)))`: This is the input channel for the serialized data stream. The incoming data is in `UInt` format of `width` bits for each cycle. It is encapsulated in a Chisel `Decoupled` interface to manage readiness and valid signals for proper data flow control.
+  
+- **Outputs:**
+  - `dataOut (Decoupled(data.cloneType))`: This is the output interface for the deserialized data, which aligns with the original data type `D`. The `Decoupled` interface provides valid and ready signaling to facilitate correct handshaking during data transmission.
+
+## Internal Logic
+1. **Cycle Calculation:**
+   - The number of required cycles (`cycles`) to fully deserialize the incoming data is calculated based on the total width of the data and the width of the serialized channel. If there's any remainder when dividing the data’s total width by the serialized channel width, an additional cycle is required.
+
+2. **Register Initialization:**
+   - `cycleCount`: A register initialized to zero to keep track of the current cycle of the deserialization process. The width of this register is determined by the number of cycles using the `log2Ceil` function.
+   - `dataSelect`: A vector register stores each segment of the serialized data as it arrives over multiple cycles.
+   - `dataValid`: A Boolean register initialized to zero, indicating whether the deserialized data is ready to be output.
+
+3. **Deserialization Process:**
+   - The incoming `dataIn.fire` condition (ready and valid) triggers the storage of the serialized data segment into the appropriate position in `dataSelect` based on the current `cycleCount`.
+   - When the final segment is received (`cycleCount` reaches `cycles - 1`), the `dataValid` flag is set to true and `cycleCount` resets to zero to prepare for the next set of data.
+   - If the deserialized data (`dataOut`) is successfully transmitted (`dataOut.fire`), `dataValid` is reset to indicate readiness for the next data deserialization operation.
+
+4. **Output Logic:**
+   - The output `io.dataOut.bits` are constructed from the collected segments in `dataSelect`, reconstructed back into the original data type `D`.
+   - The module manages flow control with the `dataOut` valid and `dataIn` ready signals to ensure proper sequencing and handling of serial data into parallel format.
