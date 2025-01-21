@@ -40,7 +40,7 @@ import pandas as pd
 df = pd.read_excel("$excel_file", header=None)
 
 # 从第二行第五列开始读取
-row_index = 1  # 索引从0开始，第二行对应的索引为1
+row_index = len(df) - 1  # 索引从0开始，第二行对应的索引为1
 col_start_index = 4  # 第五列索引为4
 
 # 循环写入到dut文件中

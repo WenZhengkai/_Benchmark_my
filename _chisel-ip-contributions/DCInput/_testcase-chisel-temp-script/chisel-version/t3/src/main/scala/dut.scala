@@ -1,46 +1,34 @@
 import chisel3._
 import chisel3.util._
 
-class dut[D <: Data](gen: D) extends Module {
+class dut[D <: Data](data: D) extends Module {
   val io = IO(new Bundle {
-    val enq = Flipped(DecoupledIO(gen))  // Input interface for incoming data
-    val deq = DecoupledIO(gen)           // Output interface for processed data
+    val enq = Flipped(DecoupledIO(data))
+    val deq = DecoupledIO(data)
   })
 
-  // Internal registers and wires
+  // Task 1: Set Up Registers and Wires
   val ready_r = RegInit(true.B)
   val occupied = RegInit(false.B)
-  val hold = Reg(gen)
+  val hold = Reg(data.cloneType)
   val load = Wire(Bool())
   val drain = Wire(Bool())
 
-  // Data forwarding logic
-  // Determine if we should load new data
+  // Task 2: Implement Data Forwarding Logic
+  drain := occupied && io.deq.ready
   load := io.enq.valid && ready_r && (!io.deq.ready || drain)
 
-  // Determine if draining is possible
-  drain := occupied && io.deq.ready
-
-  // Data handling logic
-  when (occupied) {
-    io.deq.bits := hold
-  } .otherwise {
-    io.deq.bits := io.enq.bits
-  }
-
-  // Valid signal for output
+  // Task 3: Implement Data Handling Logic
+  io.deq.bits := Mux(occupied, hold, io.enq.bits)
   io.deq.valid := io.enq.valid || occupied
 
-  // Control logic
-  when (load) {
+  // Task 4: Implement Control Logic
+  when(load) {
     hold := io.enq.bits
-    occupied := true.B
-  } .elsewhen (drain) {
-    occupied := false.B
   }
-  
-  // Determine the ready signal
-  ready_r := !load && (!occupied || drain)
-  io.enq.ready := ready_r
+
+  occupied := Mux(load, true.B, Mux(drain, false.B, occupied))
+
+  ready_r := Mux(load, false.B, !occupied || drain)
 }
 

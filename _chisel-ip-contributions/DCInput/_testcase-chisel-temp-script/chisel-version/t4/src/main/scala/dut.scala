@@ -3,40 +3,37 @@ import chisel3.util._
 
 class dut[D <: Data](data: D) extends Module {
   val io = IO(new Bundle {
-    val enq = Flipped(DecoupledIO(data))
-    val deq = DecoupledIO(data)
+    val enq = Flipped(Decoupled(data))
+    val deq = Decoupled(data)
   })
 
-  // Internal registers and wires
-  val ready_r = RegInit(true.B)
-  val occupied = RegInit(false.B)
-  val hold = Reg(data.cloneType)
-  val load = Wire(Bool())
-  val drain = Wire(Bool())
+  // Task 1: Set Up Registers and Wires
+  val ready_r = RegInit(true.B) // Indicate readiness to accept incoming data
+  val occupied = RegInit(false.B) // Track whether the module currently holds unsent data
+  val hold = Reg(data) // Temporarily store incoming data
 
-  // Load and Drain Logic
+  val load = Wire(Bool()) // Combinational logic to manage data load condition
+  val drain = Wire(Bool()) // Combinational logic to manage data drain condition
+
+  // Task 2: Implement Data Forwarding Logic
   drain := occupied && io.deq.ready
   load := io.enq.valid && ready_r && (!io.deq.ready || drain)
 
-  // Data Handling Logic
-  when(load) {
-    when(!occupied) {
-      hold := io.enq.bits
-    }
-    occupied := true.B
-  }
-
-  when(drain) {
-    occupied := false.B
-  }
-
-  // Output Logic
+  // Task 3: Implement Data Handling Logic
   io.deq.bits := Mux(occupied, hold, io.enq.bits)
   io.deq.valid := io.enq.valid || occupied
 
-  // Ready Logic
-  ready_r := !load && (!occupied || drain)
+  // Task 4: Implement Control Logic
+  when(load) {
+    hold := io.enq.bits // Update hold with new data when load condition is met
+  }
 
-  // Handle ready signals of inputs/outputs
+  when(load) {
+    occupied := true.B // Occupied if load condition is met
+  } .elsewhen(drain) {
+    occupied := false.B // Not occupied if drain condition occurs
+  }
+
+  ready_r := !load && (!occupied || drain)
   io.enq.ready := ready_r
 }

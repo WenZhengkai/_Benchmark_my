@@ -3,47 +3,34 @@ import chisel3.util._
 
 class dut[D <: Data](data: D) extends Module {
   val io = IO(new Bundle {
-    val enq = Flipped(Decoupled(data.cloneType))
-    val deq = Decoupled(data.cloneType)
+    val enq = Flipped(Decoupled(data))
+    val deq = Decoupled(data)
   })
 
-  // Register to track if the module is ready to accept new data
-  val ready_r = RegInit(true.B)
-  // Register to store if there's unsent data in the buffer
-  val occupied = RegInit(false.B)
-  // Register to hold the data temporarily
-  val hold = Reg(data.cloneType)
+  // Task 1: Set Up Registers and Wires
+  val ready_r = RegInit(true.B)  // Initialized as true to accept data initially
+  val occupied = RegInit(false.B) // Register to track if data is held
+  val hold = Reg(data.cloneType)  // Register to hold data temporarily
+  val load = Wire(Bool())         // Wire for determining load condition
+  val drain = Wire(Bool())        // Wire for determining drain condition
 
-  // Combinational wire to decide if new data should be loaded
-  val load = Wire(Bool())
-  // Combinational wire to decide if the data should be forwarded
-  val drain = Wire(Bool())
-
-  // Determine when to load new data
+  // Task 2: Implement Data Forwarding Logic
+  drain := occupied && io.deq.ready
   load := io.enq.valid && ready_r && (!io.deq.ready || drain)
 
-  // Determine when to drain data
-  drain := occupied && io.deq.ready
-
-  // Output data logic
+  // Task 3: Implement Data Handling Logic
   io.deq.bits := Mux(occupied, hold, io.enq.bits)
   io.deq.valid := io.enq.valid || occupied
 
-  // Register logic for hold and occupied signals
+  // Task 4: Implement Control Logic
   when(load) {
     hold := io.enq.bits
-    occupied := true.B
-  }
-  when(drain) {
-    occupied := false.B
   }
 
-  // Update ready_r based on load, drain, and occupied signals
-  when(!load) {
-    ready_r := !occupied || drain
-  }
-
-  // Update the ready signal for the input
+  occupied := Mux(load, true.B, Mux(drain, false.B, occupied))
+  ready_r := !load && (!occupied || drain)
+  
+  // Tie ready signal of input
   io.enq.ready := ready_r
 }
 
