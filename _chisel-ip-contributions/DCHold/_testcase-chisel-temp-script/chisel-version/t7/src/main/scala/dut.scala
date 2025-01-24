@@ -3,27 +3,32 @@ import chisel3.util._
 
 class dut[D <: Data](data: D) extends Module {
   val io = IO(new Bundle {
-    val enq = Flipped(DecoupledIO(data))
-    val deq = DecoupledIO(data)
+    val enq = Flipped(Decoupled(data))
+    val deq = Decoupled(data)
   })
 
-  // Internal registers
+  // Task 1: Define and Initialize Registers
+  // Register to hold validity of current data
   val pValid = RegInit(false.B)
+  // Register to hold current data; left uninitialized
   val pData = Reg(data)
 
-  // Data Storage and Flow Control
-  when(io.enq.fire() && !pValid) {
-    // Capture the data when it's valid and nothing is currently held
+  // Task 2: Implement Data Storage Logic
+  when(io.enq.valid && !pValid) {
     pData := io.enq.bits
     pValid := true.B
-  }.elsewhen(io.deq.fire() && pValid) {
-    // Clear the data when the consumer has taken it
+  }
+
+  // Task 3: Implement Data Release Logic
+  when(io.deq.ready && pValid) {
     pValid := false.B
   }
 
-  // Output assignments
+  // Task 4: Output Assignments
+  // Connect pValid to deq's valid signal
   io.deq.valid := pValid
+  // Connect pData to deq's bits when valid
   io.deq.bits := pData
+  // enq is ready to accept new data when no valid data is being held
   io.enq.ready := !pValid
-
 }

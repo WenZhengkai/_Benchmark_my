@@ -1,8 +1,8 @@
 import chisel3._
 import chisel3.util._
 
-class dut[T <: Data](gen: T, entries: Int, hasFlush: Boolean = false) extends Module {
-  require(entries > 0, "Queue must have a positive number of entries")
+class dut[T <: Data](gen: T, val entries: Int, val hasFlush: Boolean = false) extends Module {
+  require(entries > 0, "Queue must have positive depth")
 
   val io = IO(new Bundle {
     val enq = Flipped(Decoupled(gen))
@@ -11,49 +11,75 @@ class dut[T <: Data](gen: T, entries: Int, hasFlush: Boolean = false) extends Mo
     val flush = if (hasFlush) Some(Input(Bool())) else None
   })
 
-  // Internal memory for queue
+  // Task 1: Implement `ram`
   val ram = Mem(entries, gen)
 
-  // Pointers for enqueue and dequeue
+  // Task 2: Implement Pointer Management
   val enq_ptr = RegInit(0.U(log2Ceil(entries).W))
   val deq_ptr = RegInit(0.U(log2Ceil(entries).W))
-  val maybe_full = RegInit(false.B)
 
-  // Pointer matching and full/empty calculation
+  // Wraparound logic
+  val enq_ptr_next = WireDefault(enq_ptr + 1.U)
+  val deq_ptr_next = WireDefault(deq_ptr + 1.U)
+
+  enq_ptr_next := Mux(enq_ptr === (entries - 1).U, 0.U, enq_ptr + 1.U)
+  deq_ptr_next := Mux(deq_ptr === (entries - 1).U, 0.U, deq_ptr + 1.U)
+
   val ptr_match = enq_ptr === deq_ptr
+
+  // Task 3: Implement Full/Empty Logic
+  val maybe_full = RegInit(false.B)
   val full = ptr_match && maybe_full
   val empty = ptr_match && !maybe_full
 
-  // Enqueue and dequeue logic
-  val do_enq = io.enq.valid && io.enq.ready
-  val do_deq = io.deq.valid && io.deq.ready
+  // Task 4: Implement Data Enqueue Logic
+  val do_enq = io.enq.valid && !full
 
-  when (do_enq && !do_deq) {
-    ram(enq_ptr) := io.enq.bits
-    enq_ptr := enq_ptr + 1.U
-  }.elsewhen (!do_enq && do_deq) {
-    deq_ptr := deq_ptr + 1.U
+  when(do_enq) {
+    ram.write(enq_ptr, io.enq.bits)
+    enq_ptr := enq_ptr_next
+    when(pointer_match) {
+      maybe_full := true.B
+    }
   }
 
-  when (do_enq =/= do_deq) {
-    maybe_full := do_enq
-  }
+  // Task 5: Implement Data Dequeue Logic
+  val do_deq = io.deq.ready && !empty
 
-  // Data output for dequeue
-  io.deq.bits := ram(deq_ptr)
   io.deq.valid := !empty
-  io.enq.ready := !full
+  io.deq.bits := ram.read(deq_ptr)
 
-  // Handle flush
+  when(do_deq) {
+    deq_ptr := deq_ptr_next
+    when(pointer_match) {
+      maybe_full := false.B
+    }
+  }
+
+  // Task 6: Implement Flush Mechanism (Optional Feature)
   if (hasFlush) {
-    when (io.flush.get) {
+    when(io.flush.get) {
       enq_ptr := 0.U
       deq_ptr := 0.U
       maybe_full := false.B
     }
   }
 
-  // Count calculation for number of elements
-  io.count := Mux(ptr_match && !maybe_full, 0.U, Mux(deq_ptr <= enq_ptr, enq_ptr - deq_ptr, entries.U - deq_ptr + enq_ptr))
+  // Task 7: Implement Count Calculation Logic
+  when(enq_ptr >= deq_ptr) {
+    io.count := enq_ptr - deq_ptr
+  }.otherwise {
+    io.count := (entries.U - deq_ptr) + enq_ptr
+  }
+
+  // Task 8: Implement Module Interface and Signals
+  io.enq.ready := !full
+
+  // Task 9: Integrate and Handle Corner Cases
+  // The design handles edge cases automatically:
+  // - Attempts to enqueue when full will block enqueue
+  // - Attempts to dequeue when empty will block dequeue
+  // - Correct as `entries` is not a power of two due to pointer wraparound management
+
 }
 

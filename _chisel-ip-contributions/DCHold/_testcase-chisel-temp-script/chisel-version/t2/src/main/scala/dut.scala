@@ -1,31 +1,33 @@
 import chisel3._
 import chisel3.util._
 
-class dut[D <: Data](dataType: D) extends Module {
+class dut[D <: Data](data: D) extends Module {
   val io = IO(new Bundle {
-    val enq = Flipped(DecoupledIO(dataType))  // Input interface
-    val deq = DecoupledIO(dataType)           // Output interface
+    val enq = Flipped(Decoupled(data)) // Input interface (producer)
+    val deq = Decoupled(data)          // Output interface (consumer)
   })
 
-  // Internal registers for data storage and valid indication
+  // Task 1: Define and Initialize Registers
   val pValid = RegInit(false.B)
-  val pData = Reg(dataType)
+  val pData = Reg(data)
 
-  // Control logic for data storage
-  when(io.enq.valid && !pValid && io.enq.ready) {
-    pData := io.enq.bits             // Capture data into internal storage
-    pValid := true.B                 // Set pValid to indicate data is available
+  // Task 2: Implement Data Storage Logic
+  // Capture and store incoming data when valid and not already holding data
+  when(io.enq.valid && !pValid) {
+    pData := io.enq.bits
+    pValid := true.B
   }
 
-  // Control logic for data release
+  // Task 3: Implement Data Release Logic
+  // Release and clear stored data when consumer is ready and data is valid
   when(io.deq.ready && pValid) {
-    pValid := false.B                // Clear pValid once the data is successfully dequeued
+    pValid := false.B
   }
 
-  // Output assignments
-  io.deq.valid := pValid             // Valid output based on internal state
-  io.deq.bits := pData               // Output data 
-  io.enq.ready := !pValid            // Ready input when no data is being held
-
+  // Task 4: Output Assignments
+  io.deq.valid := pValid
+  io.deq.bits  := pData
+  io.enq.ready := !pValid
 }
+
 

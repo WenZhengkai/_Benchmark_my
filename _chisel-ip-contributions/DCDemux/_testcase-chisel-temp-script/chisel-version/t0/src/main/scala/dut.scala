@@ -3,36 +3,29 @@ import chisel3.util._
 
 class dut[T <: Data](data: T, n: Int) extends Module {
   require(n > 0, "Number of output channels must be greater than 0")
-  
+
   val io = IO(new Bundle {
     val sel = Input(UInt(log2Ceil(n).W))
-    val c = Flipped(DecoupledIO(data))
-    val p = Vec(n, DecoupledIO(data))
+    val c   = Flipped(DecoupledIO(data))
+    val p   = Vec(n, DecoupledIO(data))
   })
-  
-  // Default assignments
-  io.c.ready := false.B
-  for (i <- 0 until n) {
-    io.p(i).bits := io.c.bits
-    io.p(i).valid := false.B
-  }
-  
-  // Demultiplex logic
-  when(io.c.valid) {
-    // Set the selected output channel to valid
-    io.p(io.sel).valid := true.B
-    // Update the ready signal of the input channel according to the selected output
-    io.c.ready := io.p(io.sel).ready
-  }
 
-  // Ensure that non-selected outputs remain invalid
+  // Task 2: Initialize Ready Signal
+  io.c.ready := false.B
+
+  // Task 3: Iterate Over Output Channels
   for (i <- 0 until n) {
+    // Task 4: Assign Data to Output Channels
+    io.p(i).bits := io.c.bits
+
+    // Task 5: Implement Selection Logic
     when(i.U === io.sel) {
       io.p(i).valid := io.c.valid
-    }.otherwise {
+      io.c.ready := io.p(i).ready
+    } .otherwise {
+      // Task 6: Inactivate Non-Selected Channels
       io.p(i).valid := false.B
     }
   }
 }
-
 

@@ -3,24 +3,28 @@ import chisel3.util._
 
 class dut[D <: Data](data: D) extends Module {
   val io = IO(new Bundle {
-    val enq = Flipped(Decoupled(data.cloneType))
-    val deq = Decoupled(data.cloneType)
+    val enq = Flipped(Decoupled(data))
+    val deq = Decoupled(data)
   })
 
-  // Registers to hold valid data and the data itself
+  // Task 1: Define and Initialize Registers
   val pValid = RegInit(false.B)
-  val pData = Reg(data.cloneType)
+  val pData = Reg(data)
 
-  // Input control logic
-  when(io.enq.fire()) {
+  // Task 2: Implement Data Storage Logic
+  when(io.enq.valid && !pValid) {
     pData := io.enq.bits
     pValid := true.B
-  } .elsewhen(io.deq.fire()) {
+  }
+
+  // Task 3: Implement Data Release Logic
+  when(io.deq.ready && pValid) {
     pValid := false.B
   }
 
-  // Output assignments
+  // Task 4: Output Assignments
   io.deq.valid := pValid
   io.deq.bits := pData
   io.enq.ready := !pValid
 }
+

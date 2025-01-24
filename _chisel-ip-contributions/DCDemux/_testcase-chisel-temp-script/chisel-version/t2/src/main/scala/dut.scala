@@ -2,33 +2,30 @@ import chisel3._
 import chisel3.util._
 
 class dut[T <: Data](data: T, n: Int) extends Module {
-  require(n > 0, "Number of output channels (n) must be greater than zero")
-
-  // Calculate the width of the selector
-  val selWidth = log2Ceil(n)
-
-  // Define the input and output interface
   val io = IO(new Bundle {
-    val sel = Input(UInt(selWidth.W))
-    val c   = Flipped(DecoupledIO(data))
-    val p   = Vec(n, DecoupledIO(data))
+    val sel = Input(UInt(log2Ceil(n).W))
+    val c = Flipped(DecoupledIO(data))
+    val p = Vec(n, DecoupledIO(data))
   })
 
-  // Initialize all output channels `valid` to false
-  io.p.foreach { channel =>
-    channel.bits := io.c.bits // Default connection for bits
-    channel.valid := false.B  // Default valid signal to false
-  }
-
-  // Set the default ready state for input `c` to false
+  // Task 2: Initialize Ready Signal
   io.c.ready := false.B
 
-  // Routing logic
+  // Task 3: Iterate Over Output Channels
   for (i <- 0 until n) {
-    when(io.sel === i.U) {
-      // When the selector matches the index, connect valid and ready signals
+    // Task 4: Assign Data to Output Channels
+    io.p(i).bits := io.c.bits
+
+    // Task 5: Implement Selection Logic
+    when (i.U === io.sel) {
       io.p(i).valid := io.c.valid
-      io.c.ready    := io.p(i).ready
+      io.c.ready := io.p(i).ready
+    } .otherwise {
+      // Task 6: Inactivate Non-Selected Channels
+      io.p(i).valid := false.B
     }
   }
 }
+
+// Testbench and simulation setup is required to verify the functionality of the module
+// You would typically use a ChiselTest-based testbench to ensure correctness.

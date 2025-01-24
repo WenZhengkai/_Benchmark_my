@@ -8,47 +8,47 @@ class CreditIO[D <: Data](data: D) extends Bundle {
 }
 
 class dut[D <: Data](data: D, maxCredit: Int) extends Module {
-  require(maxCredit >= 1, "maxCredit must be greater than or equal to 1")
-  
+  require(maxCredit >= 1, "maxCredit must be at least 1")
+
   val io = IO(new Bundle {
     val enq = Flipped(Decoupled(data))
     val deq = new CreditIO(data)
-    val curCredit = Output(UInt(log2Ceil(maxCredit).W))
+    val curCredit = Output(UInt(log2Ceil(maxCredit + 1).W))
   })
 
-  // Internal credit counter register
+  // Task 1: Define Internal Registers & Parameters
+  val icredit = RegInit(false.B)
   val curCredit = RegInit(maxCredit.U(log2Ceil(maxCredit + 1).W))
-
-  // Internal data and valid registers for output
-  val dataOut = Reg(data.cloneType)
+  val dataOut = RegInit(0.U.asTypeOf(data))
   val validOut = RegInit(false.B)
 
-  // Latch the credit signal for internal usage
-  val iCredit = Wire(Bool())
-  iCredit := io.deq.credit
+  // Task 2: Implement Credit Register (icredit)
+  icredit := io.deq.credit
 
-  // Default output connections
-  io.deq.bits := dataOut
-  io.deq.valid := validOut
-  io.curCredit := curCredit
+  // Task 3: Create Credit Counter Logic
+  when(io.deq.credit && !io.enq.ready) {
+    // Increment credit
+    curCredit := curCredit + 1.U
+  } .elsewhen(io.enq.fire()) {
+    // Decrement credit
+    curCredit := curCredit - 1.U
+  }
 
-  // Manage the enqueue ready signal
+  // Task 4: Implement the Ready Signal
   io.enq.ready := curCredit > 0.U
 
+  // Task 5: Develop Data & Valid Registers
   when(io.enq.fire()) {
-    // Enqueue event: consume a credit and latch data
-    curCredit := curCredit - 1.U
     dataOut := io.enq.bits
     validOut := true.B
-  }.elsewhen(iCredit && !validOut) {
-    // Credit received from receiver without enqueueing new data
-    curCredit := curCredit + 1.U
-  }
-
-  // Manage output valid signal
-  when(io.deq.credit && validOut) {
-    // Data has been sent, clear the valid signal
+  } .elsewhen(io.deq.credit) {
     validOut := false.B
   }
-}
 
+  // Task 6: Connect Outputs
+  io.deq.valid := validOut
+  io.deq.bits := dataOut
+
+  // Task 7: Set Current Credit Output
+  io.curCredit := curCredit
+}

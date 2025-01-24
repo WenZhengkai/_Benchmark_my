@@ -3,87 +3,80 @@ import chisel3.util._
 
 class dut[D <: Data](data: D) extends Module {
   val io = IO(new Bundle {
-    val enq = Flipped(DecoupledIO(data))
-    val deq = DecoupledIO(data)
+    val enq = Flipped(Decoupled(data))
+    val deq = Decoupled(data)
   })
 
-  // State Definitions
-  val s_0_0 :: s_1_0 :: s_0_1 :: s_2_1 :: Nil = Enum(4)
-  val state = RegInit(s_0_0)
+  // Task 1: Define Module Internal Components
+  // State definitions
+  val s_0_0 :: s_1_0 :: s_0_1 :: s_1_1 :: Nil = Enum(4)
+  val stateReg = RegInit(s_0_0)
 
-  // Registers to hold data
-  val hold_0 = Reg(data.cloneType)
-  val hold_1 = Reg(data.cloneType)
+  // Registers for holding data
+  val hold_0 = RegInit(0.U.asTypeOf(data))
+  val hold_1 = RegInit(0.U.asTypeOf(data))
 
-  // Control Signals
-  val push_vld = io.enq.valid && io.enq.ready
-  val pop_vld = io.deq.valid && io.deq.ready
+  // Control signals
   val shift = Wire(Bool())
   val load = Wire(Bool())
   val sendSel = Wire(Bool())
+  val push_vld = Wire(Bool())
+  val pop_vld = Wire(Bool())
 
-  // Default control signal assignments
-  shift := false.B
-  load := false.B
-  sendSel := false.B
+  // Task 2: Implement Control Signal Logic
+  push_vld := io.enq.valid && (stateReg === s_0_0 || stateReg === s_1_0)
+  pop_vld := io.deq.ready && (stateReg === s_0_1 || stateReg === s_1_1)
 
-  // State machine logic
-  switch(state) {
+  shift := (stateReg === s_1_0) && io.enq.valid && io.deq.ready
+  load := (stateReg === s_0_0) && io.enq.valid
+
+  // Send selection for muxing output
+  sendSel := stateReg === s_0_1 || stateReg === s_1_1
+
+  // Task 3: FSM State Transition Logic
+  switch(stateReg) {
     is(s_0_0) {
-      when(push_vld) {
-        state := s_1_0
-        load := true.B
+      when(io.enq.valid) {
+        stateReg := s_1_0
       }
     }
     is(s_1_0) {
-      when(push_vld && pop_vld) {
-        state := s_1_0 // continue in the same state
-        shift := true.B
-        load := true.B
-      } .elsewhen(push_vld) {
-        state := s_2_1
-        load := true.B
-      } .elsewhen(pop_vld) {
-        state := s_0_0
+      when(io.enq.valid && io.deq.ready) {
+        stateReg := s_1_1
+      }.elsewhen(io.enq.valid) {
+        stateReg := s_0_1
+      }.elsewhen(io.deq.ready) {
+        stateReg := s_0_0
       }
     }
     is(s_0_1) {
-      when(push_vld && pop_vld) {
-        state := s_1_0
-        shift := true.B
-        load := true.B
-      } .elsewhen(push_vld) {
-        state := s_2_1
-        shift := true.B
-        load := true.B
-      } .elsewhen(pop_vld) {
-        state := s_0_0
-        shift := true.B
+      when(io.deq.ready) {
+        stateReg := s_0_0
       }
     }
-    is(s_2_1) {
-      when(pop_vld) {
-        state := s_1_0
-        shift := true.B
+    is(s_1_1) {
+      when(io.deq.ready) {
+        stateReg := s_1_0
       }
     }
   }
 
-  // Shift and Load Data
+  // Task 4: Data Holding and Transition Logic
+  when(load) {
+    hold_0 := io.enq.bits
+  }
   when(shift) {
     hold_0 := hold_1
-  }
-  when(load) {
+    hold_1 := io.enq.bits
+  }.elsewhen(stateReg === s_0_0 && io.enq.valid) {
     hold_1 := io.enq.bits
   }
 
-  // Select output data
-  sendSel := (state === s_0_1 || state === s_2_1)
-
-  // Connect to I/O
-  io.enq.ready := (state =/= s_2_1)
-  io.deq.valid := (state === s_1_0 || state === s_0_1 || state === s_2_1)
+  // Task 5: Output Data Muxing Logic
   io.deq.bits := Mux(sendSel, hold_1, hold_0)
-}
 
+  // Task 6: Interface and Connection Logic
+  io.enq.ready := push_vld
+  io.deq.valid := pop_vld
+}
 

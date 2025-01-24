@@ -7,53 +7,54 @@ class CreditIO[D <: Data](data: D) extends Bundle {
   val bits = Output(data.cloneType)
 }
 
-class dut[D <: Data](data: D, val maxCredit: Int) extends Module {
-  require(maxCredit >= 1, "maxCredit must be greater than or equal to 1")
-
-  // Width of the credit counter
-  val creditWidth = log2Ceil(maxCredit)
-
+class dut[D <: Data](val data: D, val maxCredit: Int) extends Module {
+  require(maxCredit >= 1, "maxCredit must be at least 1")
   val io = IO(new Bundle {
-    val enq = Flipped(Decoupled(data))                // Input enqueue interface
-    val credit = Input(Bool())                       // Input credit signal
-    val deq = new CreditIO(data)                     // Output dequeue interface
-    val curCredit = Output(UInt(creditWidth.W))      // Current available credits
+    val enq = Flipped(Decoupled(data))
+    val deq = new CreditIO(data)
+    val curCredit = Output(UInt(log2Ceil(maxCredit).W))
   })
 
-  // Registers
-  val curCredit = RegInit(maxCredit.U(creditWidth.W)) // Credit counter register
-  val dataOut = Reg(data.cloneType)                   // Output data register
-  val validOut = RegInit(false.B)                     // Output valid register
+  // ---------- Task 1: Define Internal Registers & Parameters ----------
+  // Registers to manage credit and data
+  val icredit = RegInit(false.B)
+  val curCredit = RegInit(maxCredit.U(log2Ceil(maxCredit+1).W))
+  
+  val dataOut = Reg(data.cloneType)
+  val validOut = RegInit(false.B)
 
-  // Internal latch for credit signal
-  val icredit = RegNext(io.credit, init = false.B)
+  // ---------- Task 2: Implement Credit Register (icredit) ----------
+  // Track the last known state of the dequeue's credit signal
+  icredit := io.deq.credit
 
-  // Enqueue interface logic
-  io.enq.ready := curCredit > 0.U && !validOut
-
-  // Update credit counter
-  when(io.credit && !icredit) {
-    curCredit := curCredit + 1.U     // Increment credit when credit is received
+  // ---------- Task 3: Create Credit Counter Logic ----------
+  // Manage curCredit: increment when credit is received, decrement on enqueue
+  when (io.deq.credit && !io.enq.fire()) {
+    curCredit := curCredit + 1.U
+  }.elsewhen (!io.deq.credit && io.enq.fire()) {
+    curCredit := curCredit - 1.U
   }
 
-  when(io.enq.fire()) {
-    curCredit := curCredit - 1.U     // Decrement credit when data is enqueued
+  // ---------- Task 4: Implement the Ready Signal ----------
+  // Determine readiness to enqueue new data
+  io.enq.ready := curCredit > 0.U
+
+  // ---------- Task 5: Develop Data & Valid Registers ----------
+  // Manage the storage and valid status of data payloads
+  when (io.enq.fire()) {
+    dataOut := io.enq.bits
+    validOut := true.B
+  }.elsewhen(io.deq.valid && io.deq.credit) {
+    validOut := false.B
   }
 
-  // Output data and valid register updates
-  when(io.enq.fire()) {
-    dataOut := io.enq.bits          // Capture data from enqueue interface
-    validOut := true.B              // Set valid output when data is captured
-  }.elsewhen(io.deq.credit) {
-    validOut := false.B             // Clear valid output when credit is received and data is consumed
-  }
-
-  // Dequeue interface signals
+  // ---------- Task 6: Connect Outputs ----------
+  // Connect components to the CreditIO interface
   io.deq.valid := validOut
   io.deq.bits := dataOut
 
-  // Output current credit value
+  // ---------- Task 7: Set Current Credit Output ----------
+  // Output the current credit count
   io.curCredit := curCredit
 }
-
 

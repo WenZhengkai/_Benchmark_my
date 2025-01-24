@@ -1,32 +1,37 @@
 import chisel3._
 import chisel3.util._
 
-class dut[D <: Data](data: D) extends Module {
+/** 
+  * `DCHold` module: A ready/valid holding register.
+  *
+  * Design ensures no combinational paths and allows data transfers at most every other cycle.
+  *
+  * @param gen The data type parameter of the payload. 
+  */
+class dut[D <: Data](gen: D) extends Module {
   val io = IO(new Bundle {
-    val enq = Flipped(DecoupledIO(data))
-    val deq = DecoupledIO(data)
+    val enq = Flipped(Decoupled(gen)) // Input interface (producer -> enq)
+    val deq = Decoupled(gen)         // Output interface (deq -> consumer)
   })
 
-  // Registers for holding valid data and the data word itself
-  val pValid = RegInit(false.B)
-  val pData = Reg(data.cloneType)
+  // Registers to hold the state
+  val pValid = RegInit(false.B)    // Controls if there is valid data in the holding register
+  val pData = Reg(gen)             // Holds the current data
 
-  // Output assignments
-  io.deq.valid := pValid
-  io.deq.bits := pData
-
-  // Logic to manage handshake and data transfer
+  // Data storage logic: Latch incoming data if enq.valid is true and pValid is false
   when(io.enq.valid && !pValid) {
-    // Capture data from enq and mark the data as valid
-    pData := io.enq.bits
-    pValid := true.B
-  }.elsewhen(io.deq.ready && pValid) {
-    // Clear the valid data when deq is ready to accept it
-    pValid := false.B
+    pData := io.enq.bits  // Store incoming data in the register
+    pValid := true.B      // Mark the register as holding valid data
   }
 
-  // ready signal for enq indicating data can be received when no valid data is held
-  io.enq.ready := !pValid
+  // Data release logic: Clear pValid if deq.ready is true and pValid is true
+  when(io.deq.ready && pValid) {
+    pValid := false.B     // Clear valid status as data is consumed
+  }
+
+  // Output interface assignments
+  io.deq.valid := pValid       // Output valid signal mirrors the internal valid flag
+  io.deq.bits := pData         // Output data comes from the stored register
+
+  io.enq.ready := !pValid      // Ready to receive new data only if no valid data is being held
 }
-
-

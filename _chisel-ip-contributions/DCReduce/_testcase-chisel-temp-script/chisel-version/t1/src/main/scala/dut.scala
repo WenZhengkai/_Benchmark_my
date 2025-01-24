@@ -3,39 +3,35 @@ import chisel3.util._
 import chisel.lib.dclib._
 
 class dut[D <: Data](data: D, n: Int, op: (D, D) => D) extends Module {
-  require(n >= 2, "The number of inputs (n) must be at least 2")
+  require(n >= 2, "The number of inputs n must be at least 2.")
 
   val io = IO(new Bundle {
-    val a = Input(Vec(n, Flipped(Decoupled(data.cloneType))))
-    val z = Output(Decoupled(data.cloneType))
+    val a = Input(Vec(n, Flipped(Decoupled(data))))
+    val z = Output(Decoupled(data))
   })
 
-  // Create internal decoupled inputs using DCInput
-  val aInt = VecInit(io.a.map(DCInput(_)))
+  // Task 1: Implement Initialization of Internal Inputs
+  val aInt = io.a.map(DCInput(_))
 
-  // Create an internal wire for the reduction result
-  val zInt = Wire(Decoupled(data.cloneType))
+  // Task 2: Establish Intermediate Output Wire
+  val zInt = Wire(Decoupled(data))
 
-  // Compute all_valid signal
-  val all_valid = aInt.forall(_.valid)
+  // Task 3: Compute Validity Signal
+  val all_valid = aInt.map(_.valid).reduce(_ && _)
 
-  // Connect the ready signals conditionally based on zInt.ready and all_valid
-  for (input <- aInt) {
-    input.ready := zInt.ready && all_valid
+  // Task 4: Implement Reduction Operation
+  when(all_valid) {
+    zInt.bits := aInt.map(_.bits).reduce(op)
   }
 
-  // Perform the reduction operation using the provided op function
-  zInt.bits := aInt.map(_.bits).reduce(op)
+  // Task 5: Manage Output Control and Validity
+  zInt.valid := all_valid && io.z.ready
 
-  // Set the valid signal for the output
-  zInt.valid := all_valid
+  aInt.foreach { a =>
+    a.ready := zInt.valid
+  }
 
-  // Connect zInt to the output using DCOutput
+  // Task 6: Connect and Interface Output
   val zDcout = DCOutput(zInt)
   io.z <> zDcout
 }
-
-// Example usage:
-// object DCReduceExample extends App {
-//   chisel3.Driver.execute(Array("--target-dir", "generated"), () => new DCReduce(UInt(8.W), 4, (a: UInt, b: UInt) => a + b))
-// }

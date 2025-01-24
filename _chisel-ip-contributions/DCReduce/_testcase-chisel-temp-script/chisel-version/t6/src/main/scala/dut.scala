@@ -3,39 +3,40 @@ import chisel3.util._
 import chisel.lib.dclib._
 
 class dut[D <: Data](data: D, n: Int, op: (D, D) => D) extends Module {
-  require(n >= 2, s"The number of inputs `n` must be at least 2, but got $n.")
-  
+  require(n >= 2, "The DCReduce module requires at least two inputs.")
+
   val io = IO(new Bundle {
     val a = Vec(n, Flipped(Decoupled(data.cloneType)))
-    val z = Decoupled(data.cloneType)
+    val z = Decoupled(data)
   })
 
-  // Step 1: Initialization
-  // Create a vector of decoupled inputs using DCInput
-  val aInt = VecInit(io.a.map(a => DCInput(a)))
-  val zInt = Wire(Decoupled(data.cloneType))
+  // Task 1: Implement Initialization of Internal Inputs
+  val aInt: Vec[DecoupledIO[D]] = VecInit(io.a.map(DCInput(_)))
 
-  // Step 2: Logic Computation
-  // Compute `all_valid` signal to check if all inputs are valid
-  val allValid = aInt.map(_.valid).reduce(_ && _)
+  // Task 2: Establish Intermediate Output Wire
+  val zInt: DecoupledIO[D] = Wire(Decoupled(data))
 
-  // Perform reduction operation using the provided binary operator
-  val reducedResult = aInt.map(_.bits).reduce(op)
+  // Task 3: Compute Validity Signal
+  val allValid: Bool = aInt.map(_.valid).reduce(_ && _)
 
-  // zInt holds the result of the reduction
+  // Task 4: Implement Reduction Operation
+  when(allValid) {
+    // Reduce the valid inputs using the given binary operator
+    val result: D = aInt.map(_.bits).reduce(op)
+    zInt.bits := result
+  } .otherwise {
+    zInt.bits := DontCare
+  }
+
+  // Task 5: Manage Output Control and Validity
   zInt.valid := allValid && io.z.ready
-  zInt.bits := reducedResult
+  io.z.ready := true.B // Assuming combinational path for ready signaling
 
-  // All inputs are ready when the output is ready to consume data
-  aInt.foreach(_.ready := zInt.valid)
+  for (a <- aInt) {
+    a.ready := zInt.valid
+  }
 
-  // Step 3: Output Control
-  // Connect zInt to zDcout using DCOutput
-  val zDcout = DCOutput(zInt)
-
-  // Interface io.z with the result of the DCOutput stage
+  // Task 6: Connect and Interface Output
+  val zDcout: DecoupledIO[D] = DCOutput(zInt)
   io.z <> zDcout
 }
-
-// Example of instantiating the DCReduce module
-// val reduceModule = Module(new DCReduce(UInt(8.W), 4, (a: UInt, b: UInt) => a + b))

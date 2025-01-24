@@ -6,5 +6,19 @@
   {
     "class":"firrtl.transforms.BlackBoxTargetDirAnno",
     "targetDir":"../../_test/_cache/t5"
+  },
+  {
+    "class":"firrtl.transforms.CombinationalPath",
+    "sink":"~dut|dut>io_deq_valid",
+    "sources":[
+      "~dut|dut>io_deq_ready"
+    ]
+  },
+  {
+    "class":"firrtl.transforms.CombinationalPath",
+    "sink":"~dut|dut>io_enq_ready",
+    "sources":[
+      "~dut|dut>io_enq_valid"
+    ]
   }
 ]

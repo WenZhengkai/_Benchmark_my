@@ -13,56 +13,56 @@ module dut(
   reg [31:0] _RAND_1;
   reg [31:0] _RAND_2;
 `endif // RANDOMIZE_REG_INIT
-  reg [1:0] state; // @[dut.scala 14:22]
-  reg [7:0] hold_0; // @[dut.scala 17:19]
-  reg [7:0] hold_1; // @[dut.scala 18:19]
-  wire  push_vld = io_enq_valid & io_enq_ready; // @[dut.scala 26:31]
-  wire  pop_vld = io_deq_valid & io_deq_ready; // @[dut.scala 27:31]
-  wire  _T_2 = push_vld & pop_vld; // @[dut.scala 43:21]
-  wire [1:0] _GEN_2 = pop_vld ? 2'h2 : state; // @[dut.scala 50:27 51:15 14:22]
-  wire [1:0] _GEN_4 = push_vld ? 2'h3 : _GEN_2; // @[dut.scala 47:28 48:15]
-  wire  _GEN_5 = push_vld ? 1'h0 : pop_vld; // @[dut.scala 47:28 30:9]
-  wire  _GEN_7 = push_vld & pop_vld | push_vld; // @[dut.scala 43:33 45:14]
-  wire  _GEN_8 = push_vld & pop_vld | _GEN_5; // @[dut.scala 43:33 46:15]
-  wire [1:0] _GEN_9 = pop_vld ? 2'h0 : state; // @[dut.scala 63:27 64:15 14:22]
-  wire [1:0] _GEN_10 = push_vld ? 2'h3 : _GEN_9; // @[dut.scala 60:28 61:15]
-  wire [1:0] _GEN_11 = _T_2 ? 2'h1 : _GEN_10; // @[dut.scala 56:33 57:15]
-  wire [1:0] _GEN_14 = pop_vld ? 2'h1 : state; // @[dut.scala 68:21 69:15 14:22]
-  wire [1:0] _GEN_15 = 2'h3 == state ? _GEN_14 : state; // @[dut.scala 35:17 14:22]
-  wire  _GEN_16 = 2'h3 == state & pop_vld; // @[dut.scala 35:17 30:9]
-  wire  _GEN_18 = 2'h2 == state & _GEN_7; // @[dut.scala 35:17 31:8]
-  wire  _GEN_19 = 2'h2 == state ? _T_2 : _GEN_16; // @[dut.scala 35:17]
-  wire  _GEN_21 = 2'h1 == state ? _GEN_7 : _GEN_18; // @[dut.scala 35:17]
-  wire  _GEN_22 = 2'h1 == state ? _GEN_8 : _GEN_19; // @[dut.scala 35:17]
-  wire  load = 2'h0 == state ? push_vld : _GEN_21; // @[dut.scala 35:17]
-  wire  shift = 2'h0 == state ? 1'h0 : _GEN_22; // @[dut.scala 35:17 30:9]
-  wire  sendSel = state == 2'h2 | state == 2'h3; // @[dut.scala 87:31]
-  assign io_enq_ready = state != 2'h3; // @[dut.scala 90:25]
-  assign io_deq_valid = state != 2'h0; // @[dut.scala 91:25]
-  assign io_deq_bits = sendSel ? hold_1 : hold_0; // @[dut.scala 84:21]
+  reg [7:0] hold_0; // @[dut.scala 12:23]
+  reg [7:0] hold_1; // @[dut.scala 13:23]
+  reg [1:0] state; // @[dut.scala 17:22]
+  wire  _push_vld_T_1 = state == 2'h1; // @[dut.scala 27:57]
+  wire  _push_vld_T_2 = state == 2'h0 | state == 2'h1; // @[dut.scala 27:48]
+  wire  push_vld = io_enq_valid & (state == 2'h0 | state == 2'h1); // @[dut.scala 27:28]
+  wire  _pop_vld_T_1 = state == 2'h2; // @[dut.scala 28:56]
+  wire  _pop_vld_T_2 = _push_vld_T_1 | state == 2'h2; // @[dut.scala 28:47]
+  wire  _pop_vld_T_3 = state == 2'h3; // @[dut.scala 28:75]
+  wire  pop_vld = io_deq_ready & (_push_vld_T_1 | state == 2'h2 | state == 2'h3); // @[dut.scala 28:27]
+  wire  shift = push_vld & _pop_vld_T_2; // @[dut.scala 29:21]
+  wire  load = push_vld & _push_vld_T_2; // @[dut.scala 30:20]
+  wire  sendSel = _pop_vld_T_1 | _pop_vld_T_3; // @[dut.scala 31:30]
+  wire [1:0] _GEN_2 = pop_vld ? 2'h0 : state; // @[dut.scala 47:27 48:15 17:22]
+  wire [1:0] _GEN_3 = push_vld ? 2'h2 : _GEN_2; // @[dut.scala 45:28 46:15]
+  wire [1:0] _GEN_5 = push_vld ? 2'h3 : _GEN_2; // @[dut.scala 52:22 53:15]
+  wire [1:0] _GEN_6 = pop_vld ? 2'h1 : state; // @[dut.scala 59:21 60:15 17:22]
+  wire [1:0] _GEN_7 = 2'h3 == state ? _GEN_6 : state; // @[dut.scala 34:17 17:22]
+  assign io_enq_ready = push_vld & state != 2'h3; // @[dut.scala 77:28]
+  assign io_deq_valid = pop_vld & state != 2'h0; // @[dut.scala 78:27]
+  assign io_deq_bits = sendSel ? hold_1 : hold_0; // @[dut.scala 74:21]
   always @(posedge clock) begin
-    if (reset) begin // @[dut.scala 14:22]
-      state <= 2'h0; // @[dut.scala 14:22]
-    end else if (2'h0 == state) begin // @[dut.scala 35:17]
-      if (push_vld) begin // @[dut.scala 37:22]
-        state <= 2'h1; // @[dut.scala 38:15]
+    if (reset) begin // @[dut.scala 12:23]
+      hold_0 <= 8'h0; // @[dut.scala 12:23]
+    end else if (shift) begin // @[dut.scala 69:15]
+      hold_0 <= hold_1; // @[dut.scala 70:12]
+    end
+    if (reset) begin // @[dut.scala 13:23]
+      hold_1 <= 8'h0; // @[dut.scala 13:23]
+    end else if (load) begin // @[dut.scala 66:14]
+      hold_1 <= io_enq_bits; // @[dut.scala 67:12]
+    end
+    if (reset) begin // @[dut.scala 17:22]
+      state <= 2'h0; // @[dut.scala 17:22]
+    end else if (2'h0 == state) begin // @[dut.scala 34:17]
+      if (push_vld & io_deq_ready) begin // @[dut.scala 36:38]
+        state <= 2'h1; // @[dut.scala 37:15]
+      end else if (push_vld) begin // @[dut.scala 38:28]
+        state <= 2'h2; // @[dut.scala 39:15]
       end
-    end else if (2'h1 == state) begin // @[dut.scala 35:17]
+    end else if (2'h1 == state) begin // @[dut.scala 34:17]
       if (push_vld & pop_vld) begin // @[dut.scala 43:33]
-        state <= 2'h1; // @[dut.scala 44:15]
+        state <= 2'h3; // @[dut.scala 44:15]
       end else begin
-        state <= _GEN_4;
+        state <= _GEN_3;
       end
-    end else if (2'h2 == state) begin // @[dut.scala 35:17]
-      state <= _GEN_11;
+    end else if (2'h2 == state) begin // @[dut.scala 34:17]
+      state <= _GEN_5;
     end else begin
-      state <= _GEN_15;
-    end
-    if (load) begin // @[dut.scala 76:14]
-      hold_0 <= io_enq_bits; // @[dut.scala 77:12]
-    end
-    if (shift) begin // @[dut.scala 79:15]
-      hold_1 <= hold_0; // @[dut.scala 80:12]
+      state <= _GEN_7;
     end
   end
 // Register and memory initialization
@@ -102,11 +102,11 @@ initial begin
     `endif
 `ifdef RANDOMIZE_REG_INIT
   _RAND_0 = {1{`RANDOM}};
-  state = _RAND_0[1:0];
+  hold_0 = _RAND_0[7:0];
   _RAND_1 = {1{`RANDOM}};
-  hold_0 = _RAND_1[7:0];
+  hold_1 = _RAND_1[7:0];
   _RAND_2 = {1{`RANDOM}};
-  hold_1 = _RAND_2[7:0];
+  state = _RAND_2[1:0];
 `endif // RANDOMIZE_REG_INIT
   `endif // RANDOMIZE
 end // initial
