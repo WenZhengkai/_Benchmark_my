@@ -1,55 +1,52 @@
 import chisel3._
 import chisel3.util._
 
-// Define the CreditIO Bundle
 class CreditIO[D <: Data](data: D) extends Bundle {
   val valid = Output(Bool())
   val credit = Input(Bool())
   val bits = Output(data.cloneType)
 }
 
-// DCCreditSender Module
-class dut[D <: Data](data: D, maxCredit: Int) extends Module {
+class dut[D <: Data](data: D, val maxCredit: Int) extends Module {
   require(maxCredit >= 1, "maxCredit must be greater than or equal to 1")
-
+  
   val io = IO(new Bundle {
     val enq = Flipped(Decoupled(data))
     val deq = new CreditIO(data)
     val curCredit = Output(UInt(log2Ceil(maxCredit).W))
   })
 
-  // Task 1: Define Internal Registers & Parameters
-  val icredit = RegInit(false.B)
-  val curCredit = RegInit(maxCredit.U(log2Ceil(maxCredit).W))
-  val dataOut = Reg(data.cloneType)
-  val validOut = RegInit(false.B)
-
-  // Task 2: Implement Credit Register (icredit)
-  icredit := io.deq.credit
-
-  // Task 3: Create Credit Counter Logic
-  when(io.deq.credit && !io.enq.fire()) {
-    curCredit := curCredit + 1.U
-  }.elsewhen(io.enq.fire() && !io.deq.credit) {
-    curCredit := curCredit - 1.U
+  // Internal registers
+  val icredit = RegInit(false.B) // Latched credit signal
+  val curCreditReg = RegInit(maxCredit.U(log2Ceil(maxCredit).W)) // Current credit counter
+  
+  // Update internal credit register
+  when (icredit || io.deq.credit) {
+    icredit := io.deq.credit
   }
-
-  // Task 4: Implement the Ready Signal
-  io.enq.ready := curCredit > 0.U
-
-  // Task 5: Develop Data & Valid Registers
-  when(io.enq.fire()) {
-    dataOut := io.enq.bits
-    validOut := true.B
-  }.otherwise {
-    validOut := false.B
+  
+  // Logic for the credit counter
+  when(io.enq.fire && !icredit) {
+    // Decrement credit on successful send of data
+    curCreditReg := curCreditReg - 1.U
+  } .elsewhen(icredit && !io.enq.fire) {
+    // Increment credit when credit signal is received and no data is sent
+    curCreditReg := curCreditReg + 1.U
   }
-
-  // Task 6: Connect Outputs
-  io.deq.valid := validOut
+  
+  // Output current available credits
+  io.curCredit := curCreditReg
+  
+  // Data and valid register for output
+  val dataOut = RegEnable(io.enq.bits, io.enq.fire)
+  val validOut = RegNext(io.enq.fire, init = false.B)
+  
+  // Output logic
   io.deq.bits := dataOut
-
-  // Task 7: Set Current Credit Output
-  io.curCredit := curCredit
+  io.deq.valid := validOut
+  
+  // Determine when ready to accept new data
+  io.enq.ready := curCreditReg > 0.U
 }
+
 

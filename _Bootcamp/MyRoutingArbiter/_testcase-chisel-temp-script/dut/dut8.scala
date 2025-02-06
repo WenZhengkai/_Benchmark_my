@@ -7,20 +7,26 @@ class dut(numChannels: Int) extends Module {
     val out = Decoupled(UInt(8.W))
   })
 
-  // Determine if any input channel is valid
+  // Task 1: Implement Output Validity Logic
+  // Set the `out.valid` signal to true if at least one of the input channels is valid.
   io.out.valid := io.in.map(_.valid).reduce(_ || _)
 
-  // PriorityMux to select the first valid input channel index
-  val priorityIdx = PriorityMux(io.in.map(_.valid), (0 until numChannels).map(_.U))
+  // Task 2: Implement Priority Selection using PriorityMux
+  // Create a list of indices and corresponding valid signals
+  val validIndices = io.in.indices.map(i => (io.in(i).valid, i.U))
+  // Use PriorityMux to select the index of the first valid channel
+  val selectedChannel = PriorityMux(validIndices)
 
-  // Route data from the selected input channel to the output
-  io.out.bits := MuxLookup(priorityIdx, 0.U, io.in.zipWithIndex.map { case (in, idx) =>
-    idx.U -> in.bits
-  })
+  // Task 3: Implement Data Routing
+  // Route the data from the selected input channel to the output
+  io.out.bits := Mux1H(
+    io.in.indices.map(i => (selectedChannel === i.U) -> io.in(i).bits)
+  )
 
-  // Determine readiness of input channels
-  io.in.zipWithIndex.foreach { case (in, idx) =>
-    in.ready := io.out.ready && (priorityIdx === idx.U)
+  // Task 4: Implement Input Readiness Logic
+  // Set each input channel's `ready` signal based on the selected channel index and output readiness
+  for (i <- io.in.indices) {
+    io.in(i).ready := io.out.ready && (selectedChannel === i.U)
   }
 }
 

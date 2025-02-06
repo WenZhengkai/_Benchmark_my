@@ -2,44 +2,39 @@ import chisel3._
 import chisel3.util._
 import chisel.lib.dclib._
 
+// Define the DCReduce module
 class dut[D <: Data](data: D, n: Int, op: (D, D) => D) extends Module {
-  require(n >= 2, "The number of inputs must be at least 2")
-  
+  require(n >= 2, "The module requires at least two inputs.")
+
   val io = IO(new Bundle {
     val a = Vec(n, Flipped(Decoupled(data.cloneType)))
     val z = Decoupled(data.cloneType)
   })
 
-  // Task 1: Implement Initialization of Internal Inputs
-  // Create internal decoupled inputs using `DCInput` for interfacing with external inputs
+  // Task 1: Initialization of Internal Structures
+  // Create a vector `aInt` using the `DCInput` helper function for each input in `io.a`.
   val aInt = io.a.map(DCInput(_))
-
-  // Task 2: Establish Intermediate Output Wire
-  // Set up an internal wire to manage the computation results of the reduction operation
+  
+  // Define an intermediate wire `zInt` to carry the reduction result
   val zInt = Wire(Decoupled(data.cloneType))
-
-  // Task 3: Compute Validity Signal
-  // Develop the logic to determine when all inputs are valid and ready for computation
+  
+  // Task 2: Signal Generation for Validity Checking
+  // Compute `all_valid` signal ensuring that every input is valid
   val all_valid = aInt.map(_.valid).reduce(_ && _)
 
-  // Task 4: Implement Reduction Operation
-  // Use the specified binary operator to perform a reduction across the valid inputs
-  val reductionResult = RegInit(data.cloneType, 0.U.asTypeOf(data))
-  when (all_valid) {
-    reductionResult := aInt.map(_.bits).reduce(op)
-  }
-  zInt.bits := reductionResult
-
-  // Task 5: Manage Output Control and Validity
-  // Control when the reduction result is valid and ready for output, and manage input readiness signals
+  // Task 3: Implement Reduction Operation
+  // Perform a fold operation to apply the binary operator `op`
+  zInt.bits := aInt.map(_.bits).reduce(op)
+  
+  // Task 4: Output Control Logic
+  // Set zInt.valid based on all_valid and zInt.ready
   zInt.valid := all_valid && io.z.ready
-  for (in <- aInt) {
-    in.ready := zInt.valid
-  }
 
-  // Task 6: Connect and Interface Output
-  // Connect the intermediate output with the module's defined output interface
-  val zDcout = DCOutput(zInt)
-  io.z <> zDcout
+  // Manage the ready signals of inputs in aInt
+  aInt.foreach(_.ready := zInt.valid)
+
+  // Task 5: Interface the Output with DCOutput
+  // Connect the intermediate output `zInt` to the final module output `io.z`
+  io.z <> DCOutput(zInt)
 }
 

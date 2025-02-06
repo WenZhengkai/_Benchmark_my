@@ -1,0 +1,41 @@
+circuit dut :
+  module dut :
+    input clock : Clock
+    input reset : UInt<1>
+    output io : { flip in : { flip ready : UInt<1>, valid : UInt<1>, bits : UInt<8>}[4], out : { flip ready : UInt<1>, valid : UInt<1>, bits : UInt<8>}, chosen : UInt<2>}
+
+    io.out.valid <= UInt<1>("h0") @[dut.scala 12:16]
+    wire _io_out_bits_WIRE : UInt<8> @[dut.scala 13:30]
+    _io_out_bits_WIRE <= UInt<1>("h0") @[dut.scala 13:30]
+    io.out.bits <= _io_out_bits_WIRE @[dut.scala 13:15]
+    io.chosen <= UInt<2>("h3") @[dut.scala 14:13]
+    when io.in[3].valid : @[dut.scala 18:26]
+      io.out.valid <= UInt<1>("h1") @[dut.scala 19:20]
+      io.out.bits <= io.in[3].bits @[dut.scala 20:19]
+      io.chosen <= UInt<2>("h3") @[dut.scala 21:17]
+    when io.in[2].valid : @[dut.scala 18:26]
+      io.out.valid <= UInt<1>("h1") @[dut.scala 19:20]
+      io.out.bits <= io.in[2].bits @[dut.scala 20:19]
+      io.chosen <= UInt<2>("h2") @[dut.scala 21:17]
+    when io.in[1].valid : @[dut.scala 18:26]
+      io.out.valid <= UInt<1>("h1") @[dut.scala 19:20]
+      io.out.bits <= io.in[1].bits @[dut.scala 20:19]
+      io.chosen <= UInt<1>("h1") @[dut.scala 21:17]
+    when io.in[0].valid : @[dut.scala 18:26]
+      io.out.valid <= UInt<1>("h1") @[dut.scala 19:20]
+      io.out.bits <= io.in[0].bits @[dut.scala 20:19]
+      io.chosen <= UInt<1>("h0") @[dut.scala 21:17]
+    node _grant_partial_T = or(io.in[0].valid, io.in[1].valid) @[dut.scala 39:66]
+    node _grant_partial_T_1 = or(_grant_partial_T, io.in[2].valid) @[dut.scala 39:66]
+    node grant_1 = eq(io.in[0].valid, UInt<1>("h0")) @[dut.scala 39:76]
+    node grant_2 = eq(_grant_partial_T, UInt<1>("h0")) @[dut.scala 39:76]
+    node grant_3 = eq(_grant_partial_T_1, UInt<1>("h0")) @[dut.scala 39:76]
+    node _io_in_0_ready_T = and(UInt<1>("h1"), io.out.ready) @[dut.scala 30:32]
+    io.in[0].ready <= _io_in_0_ready_T @[dut.scala 30:17]
+    node _io_in_1_ready_T = and(grant_1, io.out.ready) @[dut.scala 30:32]
+    io.in[1].ready <= _io_in_1_ready_T @[dut.scala 30:17]
+    node _io_in_2_ready_T = and(grant_2, io.out.ready) @[dut.scala 30:32]
+    io.in[2].ready <= _io_in_2_ready_T @[dut.scala 30:17]
+    node _io_in_3_ready_T = and(grant_3, io.out.ready) @[dut.scala 30:32]
+    io.in[3].ready <= _io_in_3_ready_T @[dut.scala 30:17]
+

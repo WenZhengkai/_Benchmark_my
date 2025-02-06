@@ -9,58 +9,36 @@ class CreditIO[D <: Data](data: D) extends Bundle {
 
 class dut[D <: Data](data: D, maxCredit: Int) extends Module {
   require(maxCredit >= 1, "maxCredit must be greater than or equal to 1")
-
+  
   val io = IO(new Bundle {
     val enq = Flipped(Decoupled(data))
     val deq = new CreditIO(data)
     val curCredit = Output(UInt(log2Ceil(maxCredit).W))
   })
 
-  // Task 1: Define Internal Registers & Parameters
-  // Internal credit register
-  val icredit = RegInit(false.B)
+  // Initialize the credit counter to maxCredit
+  val creditCounter = RegInit(maxCredit.U(log2Ceil(maxCredit).W))
   
-  // Current credit counter, initialized to maxCredit
-  val curCredit = RegInit(maxCredit.U(log2Ceil(maxCredit + 1).W))
+  // Holds the last credit signal value for determining actions
+  val icredit = RegNext(io.deq.credit, init = false.B)
   
-  // Register to store output data and its valid status
-  val dataOut = Reg(data.cloneType)
-  val validOut = RegInit(false.B)
-
-  // Task 2: Implement Credit Register (icredit)
-  when(io.deq.credit) {
-    icredit := true.B
-  } .otherwise {
-    icredit := false.B
+  // Logic to update the credit counter
+  when (io.enq.fire && !io.deq.credit) { // Data is sent, decrement counter
+    creditCounter := creditCounter - 1.U
+  } .elsewhen (!io.enq.fire && io.deq.credit) { // Credit received, increment counter
+    creditCounter := creditCounter + 1.U
   }
 
-  // Task 3: Create Credit Counter Logic
-  when(io.deq.credit && !io.enq.valid) {
-    when(curCredit =/= maxCredit.U) {
-      curCredit := curCredit + 1.U
-    }
-  } .elsewhen(io.enq.fire()) {
-    when(curCredit =/= 0.U) {
-      curCredit := curCredit - 1.U
-    }
-  }
+  // Ready to enqueue only if there's credit available
+  io.enq.ready := creditCounter > 0.U
 
-  // Task 4: Implement the Ready Signal
-  io.enq.ready := (curCredit =/= 0.U)
+  // Registers to hold output data and valid flag
+  val dataOut = RegEnable(io.enq.bits, io.enq.fire)
+  val validOut = RegNext(io.enq.fire, init = false.B)
 
-  // Task 5: Develop Data & Valid Registers
-  when(io.enq.fire()) {
-    dataOut := io.enq.bits
-    validOut := true.B
-  } .elsewhen(io.deq.credit) {
-    validOut := false.B
-  }
-
-  // Task 6: Connect Outputs
-  io.deq.valid := validOut
+  // Output connections
   io.deq.bits := dataOut
-
-  // Task 7: Set Current Credit Output
-  io.curCredit := curCredit
+  io.deq.valid := validOut
+  io.curCredit := creditCounter
 }
 

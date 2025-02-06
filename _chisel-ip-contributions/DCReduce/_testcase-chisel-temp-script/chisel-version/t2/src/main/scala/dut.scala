@@ -3,36 +3,33 @@ import chisel3.util._
 import chisel.lib.dclib._
 
 class dut[D <: Data](data: D, n: Int, op: (D, D) => D) extends Module {
-  require(n >= 2, "The number of inputs (n) must be at least 2.")
+  require(n >= 2, "The number of inputs must be at least 2.")
 
   val io = IO(new Bundle {
-    val a = Input(Vec(n, Flipped(Decoupled(data.cloneType))))
-    val z = Output(Decoupled(data.cloneType))
+    val a = Vec(n, Flipped(Decoupled(data.cloneType)))
+    val z = Decoupled(data.cloneType)
   })
 
-  // Task 1: Implement Initialization of Internal Inputs
-  val aInt = VecInit(io.a.map(DCInput(_)))
+  // Task 1: Initialization of Internal Structures
+  val aInt = VecInit(io.a.map(a => DCInput(a)))
+  val zInt = Wire(Decoupled(data.cloneType))
 
-  // Task 2: Establish Intermediate Output Wire
-  val zInt = Wire(Decoupled(data))
-
-  // Task 3: Compute Validity Signal
+  // Task 2: Signal Generation for Validity Checking
   val all_valid = aInt.map(_.valid).reduce(_ && _)
 
-  // Task 4: Implement Reduction Operation
-  val reducedResult = Reg(data.cloneType)
-  when(all_valid) {
-    reducedResult := aInt.map(_.bits).reduce(op)
-  }
-
+  // Task 3: Implement Reduction Operation
+  val reducedResult = aInt.map(_.bits).reduce(op)
   zInt.bits := reducedResult
 
-  // Task 5: Manage Output Control and Validity
-  zInt.valid := all_valid && io.z.ready
-  aInt.foreach(_.ready := zInt.valid)
+  // Task 4: Output Control Logic
+  zInt.valid := all_valid && zInt.ready
+  aInt.foreach(_.ready := zInt.ready)
 
-  // Task 6: Connect and Interface Output
+  // Task 5: Interface the Output with DCOutput
   val zDcout = DCOutput(zInt)
   io.z <> zDcout
 }
+
+// Define an example binary operator for testing purposes, e.g., addition for UInt
+// val reductionModule = Module(new DCReduce(UInt(32.W), 2, (x, y) => x + y))
 

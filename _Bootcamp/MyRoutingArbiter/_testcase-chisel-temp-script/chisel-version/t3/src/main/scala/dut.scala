@@ -3,32 +3,27 @@ import chisel3.util._
 
 class dut(numChannels: Int) extends Module {
   val io = IO(new Bundle {
-    val in  = Flipped(Vec(numChannels, Decoupled(UInt(8.W))))
+    val in = Flipped(Vec(numChannels, Decoupled(UInt(8.W))))
     val out = Decoupled(UInt(8.W))
   })
 
-  // Default output is invalid
-  io.out.valid := false.B
-  io.out.bits  := 0.U
+  // Task 1: Implement Output Validity Logic
+  io.out.valid := io.in.map(_.valid).reduce(_ || _)
 
-  // Find the first valid input channel
-  val valids = io.in.map(_.valid)
-  val priorityEncoder = PriorityEncoder(valids)
+  // Task 2: Implement Priority Selection using PriorityMux
+  val validChannels = io.in.zipWithIndex.map { case (channel, index) =>
+    (channel.valid, index.U)
+  }
+  val selectedChannelIndex = PriorityMux(validChannels)
 
-  // Set the output validity based on any valid input channel
-  io.out.valid := valids.reduce(_ || _)
+  // Task 3: Implement Data Routing
+  io.out.bits := Mux1H(validChannels.map { case (valid, index) =>
+    valid -> io.in(index).bits
+  })
 
-  // Use PriorityMux to get the data from the selected channel and set the output bits
-  io.out.bits := PriorityMux(valids, io.in.map(_.bits))
-
-  // Set ready signal for each input channel
-  for (i <- 0 until numChannels) {
-    io.in(i).ready := io.out.ready && (priorityEncoder === i.U)
+  // Task 4: Implement Input Readiness Logic
+  io.in.zipWithIndex.foreach { case (channel, index) =>
+    channel.ready := io.out.ready && selectedChannelIndex === index.U
   }
 }
-
-// Testbench or Main application to use the MyRoutingArbiter module
-// You can create a Chisel testbench to instantiate and test `MyRoutingArbiter`
-// using ChiselTest or similar testing frameworks.
-
 

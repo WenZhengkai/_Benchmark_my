@@ -1,0 +1,88 @@
+# Design Specification for `DCReduce_golden` Module
+
+## 1. **Module Name**
+   - `DCReduce_golden`
+
+## 2. **Module Functions**
+   The `DCReduce_golden` module is designed to perform a reduction operation on multiple input data streams. Its primary objective is to receive data from six independent input channels, process them using a bitwise XOR reduction, and output the result through a single output channel. This module acts as a data aggregator, consolidating input data into a singular reduced form, which is particularly useful in scenarios where data from multiple sources need to be combined or compared efficiently.
+
+## 3. **Input and Output Port Descriptions**
+
+### Inputs
+1. **clock**: Clock signal (1-bit input).
+   - Synchronizes all operations within the module.
+2. **reset**: Reset signal (1-bit input).
+   - Resets internal states and registers to their default states.
+3. **io_a_0_valid**: Valid signal for input channel 0 (1-bit input).
+   - Indicates if the data on `io_a_0_bits` is valid.
+4. **io_a_0_bits**: Data bits for input channel 0 (8-bit input).
+   - Contains the data to be processed from channel 0.
+5. **io_a_1_valid**: Valid signal for input channel 1 (1-bit input).
+   - Indicates if the data on `io_a_1_bits` is valid.
+6. **io_a_1_bits**: Data bits for input channel 1 (8-bit input).
+   - Contains the data to be processed from channel 1.
+7. **io_a_2_valid**: Valid signal for input channel 2 (1-bit input).
+   - Indicates if the data on `io_a_2_bits` is valid.
+8. **io_a_2_bits**: Data bits for input channel 2 (8-bit input).
+   - Contains the data to be processed from channel 2.
+9. **io_a_3_valid**: Valid signal for input channel 3 (1-bit input).
+   - Indicates if the data on `io_a_3_bits` is valid.
+10. **io_a_3_bits**: Data bits for input channel 3 (8-bit input).
+    - Contains the data to be processed from channel 3.
+11. **io_a_4_valid**: Valid signal for input channel 4 (1-bit input).
+    - Indicates if the data on `io_a_4_bits` is valid.
+12. **io_a_4_bits**: Data bits for input channel 4 (8-bit input).
+    - Contains the data to be processed from channel 4.
+13. **io_a_5_valid**: Valid signal for input channel 5 (1-bit input).
+    - Indicates if the data on `io_a_5_bits` is valid.
+14. **io_a_5_bits**: Data bits for input channel 5 (8-bit input).
+    - Contains the data to be processed from channel 5.
+15. **io_z_ready**: Ready signal for output channel (1-bit input).
+    - Indicates if the output channel is ready to accept data.
+
+### Outputs
+1. **io_a_0_ready**: Ready signal for input channel 0 (1-bit output).
+   - Indicates if the module is ready to accept data on `io_a_0_bits`.
+2. **io_a_1_ready**: Ready signal for input channel 1 (1-bit output).
+   - Indicates if the module is ready to accept data on `io_a_1_bits`.
+3. **io_a_2_ready**: Ready signal for input channel 2 (1-bit output).
+   - Indicates if the module is ready to accept data on `io_a_2_bits`.
+4. **io_a_3_ready**: Ready signal for input channel 3 (1-bit output).
+   - Indicates if the module is ready to accept data on `io_a_3_bits`.
+5. **io_a_4_ready**: Ready signal for input channel 4 (1-bit output).
+   - Indicates if the module is ready to accept data on `io_a_4_bits`.
+6. **io_a_5_ready**: Ready signal for input channel 5 (1-bit output).
+   - Indicates if the module is ready to accept data on `io_a_5_bits`.
+7. **io_z_valid**: Valid signal for output channel (1-bit output).
+   - Indicates if the data on `io_z_bits` is valid.
+8. **io_z_bits**: Data bits for output channel (8-bit output).
+   - Contains the reduced result of the input data streams.
+
+## 4. **Internal Working Principle**
+The `DCReduce_golden` module processes data from six input channels using a series of internal `DCInput_UInt8` modules. Each input channel is connected to a `DCInput_UInt8` instance that handles data buffering and readiness signaling. The module performs a bitwise XOR operation across all valid input data streams. Once all inputs are valid and the output channel is ready, the XOR result is passed to a `DCOutput_UInt8` module for final output.
+
+## 5. **Implementation Logic Explanation**
+The module operates using both combinational and sequential logic:
+- **Data Handling**: Each input channel is managed by a `DCInput_UInt8` instance, which buffers incoming data and signals readiness.
+- **Reduction Operation**: The core reduction logic is implemented using a series of XOR operations across all input data bits. This operation is performed only when all input channels are valid.
+- **Output Management**: The reduced result is buffered and managed by a `DCOutput_UInt8` instance, ensuring the output is only valid when the output channel is ready to receive data.
+
+## 6. **Internally Defined Signal Descriptions**
+
+1. **aInt_tout_io_enq_ready, aInt_tout_1_io_enq_ready, ...**: Ready signals for each `DCInput_UInt8` instance.
+   - Indicate readiness to accept data from respective input channels.
+2. **aInt_tout_io_deq_valid, aInt_tout_1_io_deq_valid, ...**: Valid signals for each `DCInput_UInt8` instance.
+   - Indicate when buffered data is valid and ready for processing.
+3. **aInt_tout_io_deq_bits, aInt_tout_1_io_deq_bits, ...**: Data bits from each `DCInput_UInt8` instance.
+   - Contain the buffered data from each input channel.
+4. **all_valid**: Signal indicating that all input channels have valid data.
+   - Used to control when the reduction operation can be performed.
+5. **zDcout_tout_io_enq_ready**: Ready signal for the `DCOutput_UInt8` instance.
+   - Indicates when the output channel is ready to receive reduced data.
+6. **zDcout_tout_io_enq_valid**: Valid signal for the `DCOutput_UInt8` instance.
+   - Indicates when the reduced data is valid and ready for output.
+7. **_zInt_bits_T, _zInt_bits_T_1, ...**: Intermediate signals for XOR operations.
+   - Used to accumulate the XOR reduction result across all input data bits.
+
+This module effectively combines and reduces multiple data streams into a singular output, leveraging internal buffering and readiness signaling to ensure efficient and synchronized data processing.
+

@@ -2,46 +2,42 @@ import chisel3._
 import chisel3.util._
 
 class dut[T <: Data](gen: T, n: Int) extends Module {
-  require(n >= 0, "Number of producers must be >= 0")
-
   val io = IO(new Bundle {
     val in = Flipped(Vec(n, Decoupled(gen)))
     val out = Decoupled(gen)
     val chosen = Output(UInt(log2Ceil(n).W))
   })
 
-  // Priority resolution: find the lowest valid index
-  val chosen = WireDefault(n.U) // Default to an invalid "none chosen" value
-  io.out.valid := false.B
+  // Priority handling and grant sequence generation
+  val request = io.in.map(_.valid)
+  val grant = ArbiterCtrl_my(request)
 
-  for (i <- 0 until n) {
-    when(io.in(i).valid && (chosen === n.U)) {
+  // Internal signal to determine which producer is chosen
+  val chosen = WireDefault(n.U(log2Ceil(n).W)) // default to an invalid value
+
+  // Iterate through inputs and assign priority
+  for (i <- n-1 to 0 by -1) {
+    when(grant(i)) {
       chosen := i.U
+      io.out.bits := io.in(i).bits
     }
   }
-
-  // Grant generation using the ArbiterCtrl_my logic
-  val grants = ArbiterCtrl_my(io.in.map(_.valid))
-
-  // Connect producers to the output based on chosen grant
-  io.out.bits := io.in(chosen).bits
-  io.out.valid := Mux(chosen === n.U, false.B, io.in(chosen).valid)
-
-  // Set ready signals for producers
-  for (i <- 0 until n) {
-    io.in(i).ready := grants(i) && io.out.ready
-  }
-
+  
+  // Assign outputs
   io.chosen := chosen
-
-
+  io.out.valid := request(chosen) && io.out.ready
+  for (i <- 0 until n) {
+    io.in(i).ready := grant(i) && io.out.ready
+  }
 }
 
+// Internal object for controlling grant signals
 private object ArbiterCtrl_my {
   def apply(request: Seq[Bool]): Seq[Bool] = request.length match {
     case 0 => Seq()
     case 1 => Seq(true.B)
-    case _ => true.B +: request.tail.init.scanLeft(request.head)(_ || _).map(!_)
-
+    case _ => 
+      val grants = true.B +: request.tail.init.scanLeft(request.head)(_ || _).map(!_)
+      grants
   }
 }

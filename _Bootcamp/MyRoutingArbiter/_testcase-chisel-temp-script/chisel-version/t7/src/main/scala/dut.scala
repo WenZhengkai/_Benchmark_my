@@ -7,19 +7,20 @@ class dut(numChannels: Int) extends Module {
     val out = Decoupled(UInt(8.W))
   })
 
-  // Output Validity: Check if any input is valid
+  // Task 1: Implement Output Validity Logic
   io.out.valid := io.in.map(_.valid).reduce(_ || _)
 
-  // Priority Selection: Find the first valid input channel
-  val validVec = VecInit(io.in.map(_.valid))
-  val selectedChannel = PriorityMux(validVec, VecInit((0 until numChannels).map(_.U)))
+  // Task 2: Implement Priority Selection using PriorityMux
+  val validIndices = io.in.zipWithIndex.map { case (channel, index) => (channel.valid, index.U) }
+  val priorityIndex = PriorityMux(validIndices)
 
-  // Data Routing: Route data from the selected input channel to output
-  io.out.bits := io.in(selectedChannel).bits
+  // Task 3: Implement Data Routing
+  io.out.bits := io.in(priorityIndex).bits
 
-  // Input Readiness: Mark the selected input channel as ready if output is ready
-  for (i <- 0 until numChannels) {
-    io.in(i).ready := io.out.ready && (selectedChannel === i.U) && io.in(i).valid
+  // Task 4: Implement Input Readiness Logic
+  io.in.zipWithIndex.foreach { case (channel, index) =>
+    channel.ready := io.out.ready && (priorityIndex === index.U)
   }
 }
 
+// To test this implementation, you need to create a testbench using ChiselTest or write assertions in a `.fir` file

@@ -44,3 +44,426 @@ WARNING: Unmatched cancel notification for request id 167
 2025.01.04 12:01:38 WARN  no build target for: /home/kai/ChiselProject/Benchmarks/_Benchmark_my/_Bootcamp/MyRoutingArbiter/_testcase-chisel-temp-script/dut/dut9.scala
 2025.01.04 12:01:41 WARN  no build target for: /home/kai/ChiselProject/Benchmarks/_Benchmark_my/_Bootcamp/MyRoutingArbiter/_testcase-chisel-temp-script/dut/dut9.scala
 2025.01.04 12:07:21 INFO  shutting down Metals
+2025.01.24 15:09:20 INFO  tracing is disabled for protocol LSP, to enable tracing of incoming and outgoing JSON messages create an empty file at /home/kai/ChiselProject/Benchmarks/_Benchmark_my/_Bootcamp/MyRoutingArbiter/.metals/lsp.trace.json or /home/kai/.cache/metals/lsp.trace.json[0m
+2025.01.24 15:09:20 INFO  logging to file /home/kai/ChiselProject/Benchmarks/_Benchmark_my/_Bootcamp/MyRoutingArbiter/.metals/metals.log[0m
+2025.01.24 15:09:20 INFO  Started: Metals version 0.11.4 in workspace '/home/kai/ChiselProject/Benchmarks/_Benchmark_my/_Bootcamp/MyRoutingArbiter' for client Visual Studio Code 1.96.0.[0m
+2025.01.24 15:09:21 INFO  time: initialize in 0.64s[0m
+2025.01.24 15:09:21 WARN  Flyway upgrade recommended: H2 2.1.212 is newer than this version of Flyway and support has not been tested. The latest supported version of H2 is 2.1.210.[0m
+2025.01.24 15:09:21 WARN  Build server is not auto-connectable.[0m
+2025.01.24 15:09:21 WARN  no build tool detected in workspace '/home/kai/ChiselProject/Benchmarks/_Benchmark_my/_Bootcamp/MyRoutingArbiter'. The most common cause for this problem is that the editor was opened in the wrong working directory, for example if you use sbt then the workspace directory should contain build.sbt. [0m
+2025.01.24 15:09:22 WARN  no build target for: /home/kai/ChiselProject/Benchmarks/_Benchmark_my/_Bootcamp/MyRoutingArbiter/_testcase-chisel-temp-script/dut/dut9.scala[0m
+2025.01.24 15:09:23 INFO  no build target found for /home/kai/ChiselProject/Benchmarks/_Benchmark_my/_Bootcamp/MyRoutingArbiter/_testcase-chisel-temp-script/dut/dut9.scala. Using presentation compiler with project's scala-library version: 3.1.2[0m
+2025.01.24 15:09:24 INFO  time: code lens generation in 2.1s[0m
+2025.01.24 15:15:48 WARN  no build target for: /home/kai/ChiselProject/Benchmarks/_Benchmark_my/_Bootcamp/MyRoutingArbiter/_testcase-chisel-temp-script/dut/dut0.scala[0m
+2025.01.24 15:15:52 WARN  no build target for: /home/kai/ChiselProject/Benchmarks/_Benchmark_my/_Bootcamp/MyRoutingArbiter/_testcase-chisel-temp-script/dut/dut0.scala[0m
+Jan 24, 2025 3:15:54 PM org.eclipse.lsp4j.jsonrpc.RemoteEndpoint fallbackResponseError
+SEVERE: Internal error: file:///home/kai/ChiselProject/Benchmarks/_Benchmark_my/_Bootcamp/MyRoutingArbiter/_testcase-chisel-temp-script/dut/dut0.scala:3: error: empty quoted identifier
+```scala
+^
+java.util.concurrent.CompletionException: file:///home/kai/ChiselProject/Benchmarks/_Benchmark_my/_Bootcamp/MyRoutingArbiter/_testcase-chisel-temp-script/dut/dut0.scala:3: error: empty quoted identifier
+```scala
+^
+	at java.util.concurrent.CompletableFuture.encodeThrowable(CompletableFuture.java:292)
+	at java.util.concurrent.CompletableFuture.completeThrowable(CompletableFuture.java:308)
+	at java.util.concurrent.CompletableFuture.uniAccept(CompletableFuture.java:661)
+	at java.util.concurrent.CompletableFuture$UniAccept.tryFire(CompletableFuture.java:646)
+	at java.util.concurrent.CompletableFuture.postComplete(CompletableFuture.java:488)
+	at java.util.concurrent.CompletableFuture.completeExceptionally(CompletableFuture.java:1990)
+	at scala.meta.internal.metals.CancelTokens$.$anonfun$future$1(CancelTokens.scala:40)
+	at scala.meta.internal.metals.CancelTokens$.$anonfun$future$1$adapted(CancelTokens.scala:38)
+	at scala.concurrent.impl.Promise$Transformation.run(Promise.scala:484)
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1149)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:624)
+	at java.lang.Thread.run(Thread.java:748)
+Caused by: file:///home/kai/ChiselProject/Benchmarks/_Benchmark_my/_Bootcamp/MyRoutingArbiter/_testcase-chisel-temp-script/dut/dut0.scala:3: error: empty quoted identifier
+```scala
+^
+	at scala.meta.internal.tokenizers.Reporter.syntaxError(Reporter.scala:23)
+	at scala.meta.internal.tokenizers.Reporter.syntaxError$(Reporter.scala:23)
+	at scala.meta.internal.tokenizers.Reporter$$anon$1.syntaxError(Reporter.scala:33)
+	at scala.meta.internal.tokenizers.Reporter.syntaxError(Reporter.scala:25)
+	at scala.meta.internal.tokenizers.Reporter.syntaxError$(Reporter.scala:25)
+	at scala.meta.internal.tokenizers.Reporter$$anon$1.syntaxError(Reporter.scala:33)
+	at scala.meta.internal.tokenizers.LegacyScanner.getBackquotedIdent(LegacyScanner.scala:515)
+	at scala.meta.internal.tokenizers.LegacyScanner.fetchToken(LegacyScanner.scala:369)
+	at scala.meta.internal.tokenizers.LegacyScanner.nextToken(LegacyScanner.scala:245)
+	at scala.meta.internal.mtags.ScalaToplevelMtags.loop(ScalaToplevelMtags.scala:142)
+	at scala.meta.internal.mtags.ScalaToplevelMtags.indexRoot(ScalaToplevelMtags.scala:50)
+	at scala.meta.internal.mtags.MtagsIndexer.index(MtagsIndexer.scala:19)
+	at scala.meta.internal.mtags.MtagsIndexer.index$(MtagsIndexer.scala:18)
+	at scala.meta.internal.mtags.ScalaToplevelMtags.index(ScalaToplevelMtags.scala:40)
+	at scala.meta.internal.mtags.Mtags$.allToplevels(Mtags.scala:96)
+	at scala.meta.internal.metals.DefinitionProvider.fromMtags(DefinitionProvider.scala:269)
+	at scala.meta.internal.metals.DefinitionProvider.$anonfun$positionOccurrence$3(DefinitionProvider.scala:202)
+	at scala.Option.orElse(Option.scala:477)
+	at scala.meta.internal.metals.DefinitionProvider.$anonfun$positionOccurrence$1(DefinitionProvider.scala:202)
+	at scala.Option.flatMap(Option.scala:283)
+	at scala.meta.internal.metals.DefinitionProvider.positionOccurrence(DefinitionProvider.scala:197)
+	at scala.meta.internal.metals.DocumentHighlightProvider.$anonfun$documentHighlight$1(DocumentHighlightProvider.scala:33)
+	at scala.collection.immutable.List.map(List.scala:246)
+	at scala.meta.internal.metals.DocumentHighlightProvider.documentHighlight(DocumentHighlightProvider.scala:29)
+	at scala.meta.internal.metals.MetalsLanguageServer.$anonfun$documentHighlights$1(MetalsLanguageServer.scala:1467)
+	at scala.meta.internal.metals.CancelTokens$.$anonfun$apply$2(CancelTokens.scala:26)
+	at scala.concurrent.Future$.$anonfun$apply$1(Future.scala:678)
+	at scala.concurrent.impl.Promise$Transformation.run(Promise.scala:467)
+	... 3 more
+
+Jan 24, 2025 3:15:54 PM org.eclipse.lsp4j.jsonrpc.RemoteEndpoint fallbackResponseError
+SEVERE: Internal error: file:///home/kai/ChiselProject/Benchmarks/_Benchmark_my/_Bootcamp/MyRoutingArbiter/_testcase-chisel-temp-script/dut/dut0.scala:3: error: empty quoted identifier
+```scala
+^
+java.util.concurrent.CompletionException: file:///home/kai/ChiselProject/Benchmarks/_Benchmark_my/_Bootcamp/MyRoutingArbiter/_testcase-chisel-temp-script/dut/dut0.scala:3: error: empty quoted identifier
+```scala
+^
+	at java.util.concurrent.CompletableFuture.encodeThrowable(CompletableFuture.java:292)
+	at java.util.concurrent.CompletableFuture.completeThrowable(CompletableFuture.java:308)
+	at java.util.concurrent.CompletableFuture.uniAccept(CompletableFuture.java:661)
+	at java.util.concurrent.CompletableFuture$UniAccept.tryFire(CompletableFuture.java:646)
+	at java.util.concurrent.CompletableFuture.postComplete(CompletableFuture.java:488)
+	at java.util.concurrent.CompletableFuture.completeExceptionally(CompletableFuture.java:1990)
+	at scala.meta.internal.metals.CancelTokens$.$anonfun$future$1(CancelTokens.scala:40)
+	at scala.meta.internal.metals.CancelTokens$.$anonfun$future$1$adapted(CancelTokens.scala:38)
+	at scala.concurrent.impl.Promise$Transformation.run(Promise.scala:484)
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1149)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:624)
+	at java.lang.Thread.run(Thread.java:748)
+Caused by: file:///home/kai/ChiselProject/Benchmarks/_Benchmark_my/_Bootcamp/MyRoutingArbiter/_testcase-chisel-temp-script/dut/dut0.scala:3: error: empty quoted identifier
+```scala
+^
+	at scala.meta.internal.tokenizers.Reporter.syntaxError(Reporter.scala:23)
+	at scala.meta.internal.tokenizers.Reporter.syntaxError$(Reporter.scala:23)
+	at scala.meta.internal.tokenizers.Reporter$$anon$1.syntaxError(Reporter.scala:33)
+	at scala.meta.internal.tokenizers.Reporter.syntaxError(Reporter.scala:25)
+	at scala.meta.internal.tokenizers.Reporter.syntaxError$(Reporter.scala:25)
+	at scala.meta.internal.tokenizers.Reporter$$anon$1.syntaxError(Reporter.scala:33)
+	at scala.meta.internal.tokenizers.LegacyScanner.getBackquotedIdent(LegacyScanner.scala:515)
+	at scala.meta.internal.tokenizers.LegacyScanner.fetchToken(LegacyScanner.scala:369)
+	at scala.meta.internal.tokenizers.LegacyScanner.nextToken(LegacyScanner.scala:245)
+	at scala.meta.internal.mtags.ScalaToplevelMtags.loop(ScalaToplevelMtags.scala:142)
+	at scala.meta.internal.mtags.ScalaToplevelMtags.indexRoot(ScalaToplevelMtags.scala:50)
+	at scala.meta.internal.mtags.MtagsIndexer.index(MtagsIndexer.scala:19)
+	at scala.meta.internal.mtags.MtagsIndexer.index$(MtagsIndexer.scala:18)
+	at scala.meta.internal.mtags.ScalaToplevelMtags.index(ScalaToplevelMtags.scala:40)
+	at scala.meta.internal.mtags.Mtags$.allToplevels(Mtags.scala:96)
+	at scala.meta.internal.metals.DefinitionProvider.fromMtags(DefinitionProvider.scala:269)
+	at scala.meta.internal.metals.DefinitionProvider.$anonfun$positionOccurrence$3(DefinitionProvider.scala:202)
+	at scala.Option.orElse(Option.scala:477)
+	at scala.meta.internal.metals.DefinitionProvider.$anonfun$positionOccurrence$1(DefinitionProvider.scala:202)
+	at scala.Option.flatMap(Option.scala:283)
+	at scala.meta.internal.metals.DefinitionProvider.positionOccurrence(DefinitionProvider.scala:197)
+	at scala.meta.internal.metals.DocumentHighlightProvider.$anonfun$documentHighlight$1(DocumentHighlightProvider.scala:33)
+	at scala.collection.immutable.List.map(List.scala:246)
+	at scala.meta.internal.metals.DocumentHighlightProvider.documentHighlight(DocumentHighlightProvider.scala:29)
+	at scala.meta.internal.metals.MetalsLanguageServer.$anonfun$documentHighlights$1(MetalsLanguageServer.scala:1467)
+	at scala.meta.internal.metals.CancelTokens$.$anonfun$apply$2(CancelTokens.scala:26)
+	at scala.concurrent.Future$.$anonfun$apply$1(Future.scala:678)
+	at scala.concurrent.impl.Promise$Transformation.run(Promise.scala:467)
+	... 3 more
+
+Jan 24, 2025 3:15:55 PM org.eclipse.lsp4j.jsonrpc.RemoteEndpoint fallbackResponseError
+SEVERE: Internal error: file:///home/kai/ChiselProject/Benchmarks/_Benchmark_my/_Bootcamp/MyRoutingArbiter/_testcase-chisel-temp-script/dut/dut0.scala:3: error: empty quoted identifier
+```scala
+^
+java.util.concurrent.CompletionException: file:///home/kai/ChiselProject/Benchmarks/_Benchmark_my/_Bootcamp/MyRoutingArbiter/_testcase-chisel-temp-script/dut/dut0.scala:3: error: empty quoted identifier
+```scala
+^
+	at java.util.concurrent.CompletableFuture.encodeThrowable(CompletableFuture.java:292)
+	at java.util.concurrent.CompletableFuture.completeThrowable(CompletableFuture.java:308)
+	at java.util.concurrent.CompletableFuture.uniAccept(CompletableFuture.java:661)
+	at java.util.concurrent.CompletableFuture$UniAccept.tryFire(CompletableFuture.java:646)
+	at java.util.concurrent.CompletableFuture.postComplete(CompletableFuture.java:488)
+	at java.util.concurrent.CompletableFuture.completeExceptionally(CompletableFuture.java:1990)
+	at scala.meta.internal.metals.CancelTokens$.$anonfun$future$1(CancelTokens.scala:40)
+	at scala.meta.internal.metals.CancelTokens$.$anonfun$future$1$adapted(CancelTokens.scala:38)
+	at scala.concurrent.impl.Promise$Transformation.run(Promise.scala:484)
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1149)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:624)
+	at java.lang.Thread.run(Thread.java:748)
+Caused by: file:///home/kai/ChiselProject/Benchmarks/_Benchmark_my/_Bootcamp/MyRoutingArbiter/_testcase-chisel-temp-script/dut/dut0.scala:3: error: empty quoted identifier
+```scala
+^
+	at scala.meta.internal.tokenizers.Reporter.syntaxError(Reporter.scala:23)
+	at scala.meta.internal.tokenizers.Reporter.syntaxError$(Reporter.scala:23)
+	at scala.meta.internal.tokenizers.Reporter$$anon$1.syntaxError(Reporter.scala:33)
+	at scala.meta.internal.tokenizers.Reporter.syntaxError(Reporter.scala:25)
+	at scala.meta.internal.tokenizers.Reporter.syntaxError$(Reporter.scala:25)
+	at scala.meta.internal.tokenizers.Reporter$$anon$1.syntaxError(Reporter.scala:33)
+	at scala.meta.internal.tokenizers.LegacyScanner.getBackquotedIdent(LegacyScanner.scala:515)
+	at scala.meta.internal.tokenizers.LegacyScanner.fetchToken(LegacyScanner.scala:369)
+	at scala.meta.internal.tokenizers.LegacyScanner.nextToken(LegacyScanner.scala:245)
+	at scala.meta.internal.mtags.ScalaToplevelMtags.loop(ScalaToplevelMtags.scala:142)
+	at scala.meta.internal.mtags.ScalaToplevelMtags.indexRoot(ScalaToplevelMtags.scala:50)
+	at scala.meta.internal.mtags.MtagsIndexer.index(MtagsIndexer.scala:19)
+	at scala.meta.internal.mtags.MtagsIndexer.index$(MtagsIndexer.scala:18)
+	at scala.meta.internal.mtags.ScalaToplevelMtags.index(ScalaToplevelMtags.scala:40)
+	at scala.meta.internal.mtags.Mtags$.allToplevels(Mtags.scala:96)
+	at scala.meta.internal.metals.DefinitionProvider.fromMtags(DefinitionProvider.scala:269)
+	at scala.meta.internal.metals.DefinitionProvider.$anonfun$positionOccurrence$3(DefinitionProvider.scala:202)
+	at scala.Option.orElse(Option.scala:477)
+	at scala.meta.internal.metals.DefinitionProvider.$anonfun$positionOccurrence$1(DefinitionProvider.scala:202)
+	at scala.Option.flatMap(Option.scala:283)
+	at scala.meta.internal.metals.DefinitionProvider.positionOccurrence(DefinitionProvider.scala:197)
+	at scala.meta.internal.metals.DocumentHighlightProvider.$anonfun$documentHighlight$1(DocumentHighlightProvider.scala:33)
+	at scala.collection.immutable.List.map(List.scala:246)
+	at scala.meta.internal.metals.DocumentHighlightProvider.documentHighlight(DocumentHighlightProvider.scala:29)
+	at scala.meta.internal.metals.MetalsLanguageServer.$anonfun$documentHighlights$1(MetalsLanguageServer.scala:1467)
+	at scala.meta.internal.metals.CancelTokens$.$anonfun$apply$2(CancelTokens.scala:26)
+	at scala.concurrent.Future$.$anonfun$apply$1(Future.scala:678)
+	at scala.concurrent.impl.Promise$Transformation.run(Promise.scala:467)
+	... 3 more
+
+Jan 24, 2025 3:15:56 PM org.eclipse.lsp4j.jsonrpc.RemoteEndpoint fallbackResponseError
+SEVERE: Internal error: file:///home/kai/ChiselProject/Benchmarks/_Benchmark_my/_Bootcamp/MyRoutingArbiter/_testcase-chisel-temp-script/dut/dut0.scala:3: error: empty quoted identifier
+```scala
+^
+java.util.concurrent.CompletionException: file:///home/kai/ChiselProject/Benchmarks/_Benchmark_my/_Bootcamp/MyRoutingArbiter/_testcase-chisel-temp-script/dut/dut0.scala:3: error: empty quoted identifier
+```scala
+^
+	at java.util.concurrent.CompletableFuture.encodeThrowable(CompletableFuture.java:292)
+	at java.util.concurrent.CompletableFuture.completeThrowable(CompletableFuture.java:308)
+	at java.util.concurrent.CompletableFuture.uniAccept(CompletableFuture.java:661)
+	at java.util.concurrent.CompletableFuture$UniAccept.tryFire(CompletableFuture.java:646)
+	at java.util.concurrent.CompletableFuture.postComplete(CompletableFuture.java:488)
+	at java.util.concurrent.CompletableFuture.completeExceptionally(CompletableFuture.java:1990)
+	at scala.meta.internal.metals.CancelTokens$.$anonfun$future$1(CancelTokens.scala:40)
+	at scala.meta.internal.metals.CancelTokens$.$anonfun$future$1$adapted(CancelTokens.scala:38)
+	at scala.concurrent.impl.Promise$Transformation.run(Promise.scala:484)
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1149)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:624)
+	at java.lang.Thread.run(Thread.java:748)
+Caused by: file:///home/kai/ChiselProject/Benchmarks/_Benchmark_my/_Bootcamp/MyRoutingArbiter/_testcase-chisel-temp-script/dut/dut0.scala:3: error: empty quoted identifier
+```scala
+^
+	at scala.meta.internal.tokenizers.Reporter.syntaxError(Reporter.scala:23)
+	at scala.meta.internal.tokenizers.Reporter.syntaxError$(Reporter.scala:23)
+	at scala.meta.internal.tokenizers.Reporter$$anon$1.syntaxError(Reporter.scala:33)
+	at scala.meta.internal.tokenizers.Reporter.syntaxError(Reporter.scala:25)
+	at scala.meta.internal.tokenizers.Reporter.syntaxError$(Reporter.scala:25)
+	at scala.meta.internal.tokenizers.Reporter$$anon$1.syntaxError(Reporter.scala:33)
+	at scala.meta.internal.tokenizers.LegacyScanner.getBackquotedIdent(LegacyScanner.scala:515)
+	at scala.meta.internal.tokenizers.LegacyScanner.fetchToken(LegacyScanner.scala:369)
+	at scala.meta.internal.tokenizers.LegacyScanner.nextToken(LegacyScanner.scala:245)
+	at scala.meta.internal.mtags.ScalaToplevelMtags.loop(ScalaToplevelMtags.scala:142)
+	at scala.meta.internal.mtags.ScalaToplevelMtags.indexRoot(ScalaToplevelMtags.scala:50)
+	at scala.meta.internal.mtags.MtagsIndexer.index(MtagsIndexer.scala:19)
+	at scala.meta.internal.mtags.MtagsIndexer.index$(MtagsIndexer.scala:18)
+	at scala.meta.internal.mtags.ScalaToplevelMtags.index(ScalaToplevelMtags.scala:40)
+	at scala.meta.internal.mtags.Mtags$.allToplevels(Mtags.scala:96)
+	at scala.meta.internal.metals.DefinitionProvider.fromMtags(DefinitionProvider.scala:269)
+	at scala.meta.internal.metals.DefinitionProvider.$anonfun$positionOccurrence$3(DefinitionProvider.scala:202)
+	at scala.Option.orElse(Option.scala:477)
+	at scala.meta.internal.metals.DefinitionProvider.$anonfun$positionOccurrence$1(DefinitionProvider.scala:202)
+	at scala.Option.flatMap(Option.scala:283)
+	at scala.meta.internal.metals.DefinitionProvider.positionOccurrence(DefinitionProvider.scala:197)
+	at scala.meta.internal.metals.DocumentHighlightProvider.$anonfun$documentHighlight$1(DocumentHighlightProvider.scala:33)
+	at scala.collection.immutable.List.map(List.scala:246)
+	at scala.meta.internal.metals.DocumentHighlightProvider.documentHighlight(DocumentHighlightProvider.scala:29)
+	at scala.meta.internal.metals.MetalsLanguageServer.$anonfun$documentHighlights$1(MetalsLanguageServer.scala:1467)
+	at scala.meta.internal.metals.CancelTokens$.$anonfun$apply$2(CancelTokens.scala:26)
+	at scala.concurrent.Future$.$anonfun$apply$1(Future.scala:678)
+	at scala.concurrent.impl.Promise$Transformation.run(Promise.scala:467)
+	... 3 more
+
+2025.01.24 15:16:11 WARN  no build target for: /home/kai/ChiselProject/Benchmarks/_Benchmark_my/_Bootcamp/MyRoutingArbiter/_testcase-chisel-temp-script/dut/dut0.scala[0m
+2025.01.24 15:16:18 WARN  no build target for: /home/kai/ChiselProject/Benchmarks/_Benchmark_my/_Bootcamp/MyRoutingArbiter/_testcase-chisel-temp-script/dut/dut0.scala[0m
+2025.01.24 15:16:19 WARN  no build target for: /home/kai/ChiselProject/Benchmarks/_Benchmark_my/_Bootcamp/MyRoutingArbiter/_testcase-chisel-temp-script/dut/dut1.scala[0m
+2025.01.24 15:16:21 WARN  no build target for: /home/kai/ChiselProject/Benchmarks/_Benchmark_my/_Bootcamp/MyRoutingArbiter/_testcase-chisel-temp-script/dut/dut1.scala[0m
+2025.01.24 15:16:21 WARN  no build target for: /home/kai/ChiselProject/Benchmarks/_Benchmark_my/_Bootcamp/MyRoutingArbiter/_testcase-chisel-temp-script/dut/dut1.scala[0m
+2025.01.24 15:16:21 WARN  no build target for: /home/kai/ChiselProject/Benchmarks/_Benchmark_my/_Bootcamp/MyRoutingArbiter/_testcase-chisel-temp-script/dut/dut1.scala[0m
+2025.01.24 15:16:24 WARN  no build target for: /home/kai/ChiselProject/Benchmarks/_Benchmark_my/_Bootcamp/MyRoutingArbiter/_testcase-chisel-temp-script/dut/dut1.scala[0m
+2025.01.24 15:16:26 WARN  no build target for: /home/kai/ChiselProject/Benchmarks/_Benchmark_my/_Bootcamp/MyRoutingArbiter/_testcase-chisel-temp-script/dut/dut2.scala[0m
+2025.01.24 15:16:28 WARN  no build target for: /home/kai/ChiselProject/Benchmarks/_Benchmark_my/_Bootcamp/MyRoutingArbiter/_testcase-chisel-temp-script/dut/dut2.scala[0m
+2025.01.24 15:16:31 WARN  no build target for: /home/kai/ChiselProject/Benchmarks/_Benchmark_my/_Bootcamp/MyRoutingArbiter/_testcase-chisel-temp-script/dut/dut2.scala[0m
+2025.01.24 15:16:33 WARN  no build target for: /home/kai/ChiselProject/Benchmarks/_Benchmark_my/_Bootcamp/MyRoutingArbiter/_testcase-chisel-temp-script/dut/dut3.scala[0m
+2025.01.24 15:16:35 WARN  no build target for: /home/kai/ChiselProject/Benchmarks/_Benchmark_my/_Bootcamp/MyRoutingArbiter/_testcase-chisel-temp-script/dut/dut3.scala[0m
+2025.01.24 15:16:39 WARN  no build target for: /home/kai/ChiselProject/Benchmarks/_Benchmark_my/_Bootcamp/MyRoutingArbiter/_testcase-chisel-temp-script/dut/dut3.scala[0m
+2025.01.24 15:16:40 WARN  no build target for: /home/kai/ChiselProject/Benchmarks/_Benchmark_my/_Bootcamp/MyRoutingArbiter/_testcase-chisel-temp-script/dut/dut4.scala[0m
+2025.01.24 15:16:42 WARN  no build target for: /home/kai/ChiselProject/Benchmarks/_Benchmark_my/_Bootcamp/MyRoutingArbiter/_testcase-chisel-temp-script/dut/dut4.scala[0m
+2025.01.24 15:16:47 WARN  no build target for: /home/kai/ChiselProject/Benchmarks/_Benchmark_my/_Bootcamp/MyRoutingArbiter/_testcase-chisel-temp-script/dut/dut4.scala[0m
+2025.01.24 15:16:48 WARN  no build target for: /home/kai/ChiselProject/Benchmarks/_Benchmark_my/_Bootcamp/MyRoutingArbiter/_testcase-chisel-temp-script/dut/dut5.scala[0m
+2025.01.24 15:16:51 WARN  no build target for: /home/kai/ChiselProject/Benchmarks/_Benchmark_my/_Bootcamp/MyRoutingArbiter/_testcase-chisel-temp-script/dut/dut5.scala[0m
+2025.01.24 15:16:52 WARN  no build target for: /home/kai/ChiselProject/Benchmarks/_Benchmark_my/_Bootcamp/MyRoutingArbiter/_testcase-chisel-temp-script/dut/dut5.scala[0m
+2025.01.24 15:16:55 WARN  no build target for: /home/kai/ChiselProject/Benchmarks/_Benchmark_my/_Bootcamp/MyRoutingArbiter/_testcase-chisel-temp-script/dut/dut5.scala[0m
+2025.01.24 15:16:57 WARN  no build target for: /home/kai/ChiselProject/Benchmarks/_Benchmark_my/_Bootcamp/MyRoutingArbiter/_testcase-chisel-temp-script/dut/dut6.scala[0m
+2025.01.24 15:16:59 WARN  no build target for: /home/kai/ChiselProject/Benchmarks/_Benchmark_my/_Bootcamp/MyRoutingArbiter/_testcase-chisel-temp-script/dut/dut6.scala[0m
+2025.01.24 15:17:00 WARN  no build target for: /home/kai/ChiselProject/Benchmarks/_Benchmark_my/_Bootcamp/MyRoutingArbiter/_testcase-chisel-temp-script/dut/dut6.scala[0m
+2025.01.24 15:17:00 WARN  no build target for: /home/kai/ChiselProject/Benchmarks/_Benchmark_my/_Bootcamp/MyRoutingArbiter/_testcase-chisel-temp-script/dut/dut6.scala[0m
+2025.01.24 15:17:03 WARN  no build target for: /home/kai/ChiselProject/Benchmarks/_Benchmark_my/_Bootcamp/MyRoutingArbiter/_testcase-chisel-temp-script/dut/dut6.scala[0m
+2025.01.24 15:17:05 WARN  no build target for: /home/kai/ChiselProject/Benchmarks/_Benchmark_my/_Bootcamp/MyRoutingArbiter/_testcase-chisel-temp-script/dut/dut7.scala[0m
+2025.01.24 15:17:07 WARN  no build target for: /home/kai/ChiselProject/Benchmarks/_Benchmark_my/_Bootcamp/MyRoutingArbiter/_testcase-chisel-temp-script/dut/dut7.scala[0m
+2025.01.24 15:17:10 WARN  no build target for: /home/kai/ChiselProject/Benchmarks/_Benchmark_my/_Bootcamp/MyRoutingArbiter/_testcase-chisel-temp-script/dut/dut7.scala[0m
+2025.01.24 15:17:12 WARN  no build target for: /home/kai/ChiselProject/Benchmarks/_Benchmark_my/_Bootcamp/MyRoutingArbiter/_testcase-chisel-temp-script/dut/dut8.scala[0m
+2025.01.24 15:17:14 WARN  no build target for: /home/kai/ChiselProject/Benchmarks/_Benchmark_my/_Bootcamp/MyRoutingArbiter/_testcase-chisel-temp-script/dut/dut8.scala[0m
+2025.01.24 15:17:14 WARN  no build target for: /home/kai/ChiselProject/Benchmarks/_Benchmark_my/_Bootcamp/MyRoutingArbiter/_testcase-chisel-temp-script/dut/dut8.scala[0m
+2025.01.24 15:17:19 WARN  no build target for: /home/kai/ChiselProject/Benchmarks/_Benchmark_my/_Bootcamp/MyRoutingArbiter/_testcase-chisel-temp-script/dut/dut8.scala[0m
+2025.01.24 15:17:22 WARN  no build target for: /home/kai/ChiselProject/Benchmarks/_Benchmark_my/_Bootcamp/MyRoutingArbiter/_testcase-chisel-temp-script/dut/dut9.scala[0m
+2025.01.24 15:17:24 WARN  no build target for: /home/kai/ChiselProject/Benchmarks/_Benchmark_my/_Bootcamp/MyRoutingArbiter/_testcase-chisel-temp-script/dut/dut9.scala[0m
+2025.01.24 15:17:24 WARN  no build target for: /home/kai/ChiselProject/Benchmarks/_Benchmark_my/_Bootcamp/MyRoutingArbiter/_testcase-chisel-temp-script/dut/dut9.scala[0m
+2025.01.24 15:17:24 WARN  no build target for: /home/kai/ChiselProject/Benchmarks/_Benchmark_my/_Bootcamp/MyRoutingArbiter/_testcase-chisel-temp-script/dut/dut9.scala[0m
+Jan 24, 2025 3:17:24 PM org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+WARNING: Unmatched cancel notification for request id 270
+2025.01.24 15:17:24 WARN  no build target for: /home/kai/ChiselProject/Benchmarks/_Benchmark_my/_Bootcamp/MyRoutingArbiter/_testcase-chisel-temp-script/dut/dut9.scala[0m
+2025.01.24 15:17:31 WARN  no build target for: /home/kai/ChiselProject/Benchmarks/_Benchmark_my/_Bootcamp/MyRoutingArbiter/_testcase-chisel-temp-script/dut/dut9.scala[0m
+Jan 24, 2025 3:33:44 PM org.eclipse.lsp4j.jsonrpc.RemoteEndpoint fallbackResponseError
+SEVERE: Internal error: java.lang.reflect.InvocationTargetException
+java.lang.RuntimeException: java.lang.reflect.InvocationTargetException
+	at org.eclipse.lsp4j.jsonrpc.services.GenericEndpoint.lambda$null$0(GenericEndpoint.java:67)
+	at org.eclipse.lsp4j.jsonrpc.services.GenericEndpoint.request(GenericEndpoint.java:120)
+	at org.eclipse.lsp4j.jsonrpc.RemoteEndpoint.handleRequest(RemoteEndpoint.java:261)
+	at org.eclipse.lsp4j.jsonrpc.RemoteEndpoint.consume(RemoteEndpoint.java:190)
+	at org.eclipse.lsp4j.jsonrpc.json.StreamMessageProducer.handleMessage(StreamMessageProducer.java:194)
+	at org.eclipse.lsp4j.jsonrpc.json.StreamMessageProducer.listen(StreamMessageProducer.java:94)
+	at org.eclipse.lsp4j.jsonrpc.json.ConcurrentMessageProcessor.run(ConcurrentMessageProcessor.java:113)
+	at java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:511)
+	at java.util.concurrent.FutureTask.run(FutureTask.java:266)
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1149)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:624)
+	at java.lang.Thread.run(Thread.java:748)
+Caused by: java.lang.reflect.InvocationTargetException
+	at sun.reflect.GeneratedMethodAccessor4.invoke(Unknown Source)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:498)
+	at org.eclipse.lsp4j.jsonrpc.services.GenericEndpoint.lambda$null$0(GenericEndpoint.java:65)
+	... 11 more
+Caused by: java.lang.IllegalArgumentException: 47 is not a valid line number, allowed [0..0]
+	at scala.meta.internal.inputs.InternalInput.lineToOffset(InternalInput.scala:37)
+	at scala.meta.internal.inputs.InternalInput.lineToOffset$(InternalInput.scala:32)
+	at scala.meta.inputs.Input$VirtualFile.lineToOffset(Input.scala:80)
+	at scala.meta.inputs.Position$Range$.apply(Position.scala:59)
+	at scala.meta.internal.mtags.MtagsEnrichments$XtensionPositionLspInverse.toMeta(MtagsEnrichments.scala:179)
+	at scala.meta.internal.parsing.Trees.$anonfun$findLastEnclosingAt$4(Trees.scala:76)
+	at scala.Option.flatMap(Option.scala:283)
+	at scala.meta.internal.parsing.Trees.findLastEnclosingAt(Trees.scala:75)
+	at scala.meta.internal.metals.codeactions.PatternMatchRefactor.contribute(PatternMatchRefactor.scala:96)
+	at scala.meta.internal.metals.CodeActionProvider$$anonfun$1.applyOrElse(CodeActionProvider.scala:64)
+	at scala.meta.internal.metals.CodeActionProvider$$anonfun$1.applyOrElse(CodeActionProvider.scala:63)
+	at scala.collection.immutable.List.collect(List.scala:275)
+	at scala.meta.internal.metals.CodeActionProvider.codeActions(CodeActionProvider.scala:63)
+	at scala.meta.internal.metals.MetalsLanguageServer.$anonfun$codeAction$1(MetalsLanguageServer.scala:1639)
+	at scala.meta.internal.metals.CancelTokens$.future(CancelTokens.scala:38)
+	at scala.meta.internal.metals.MetalsLanguageServer.codeAction(MetalsLanguageServer.scala:1638)
+	... 15 more
+
+2025.01.24 15:34:03 WARN  no build target for: /home/kai/ChiselProject/Benchmarks/_Benchmark_my/_Bootcamp/MyRoutingArbiter/_testcase-chisel-temp-script/dut/dut0.scala[0m
+2025.01.24 15:34:07 WARN  no build target for: /home/kai/ChiselProject/Benchmarks/_Benchmark_my/_Bootcamp/MyRoutingArbiter/_testcase-chisel-temp-script/dut/dut0.scala[0m
+2025.01.24 15:34:07 WARN  no build target for: /home/kai/ChiselProject/Benchmarks/_Benchmark_my/_Bootcamp/MyRoutingArbiter/_testcase-chisel-temp-script/dut/dut0.scala[0m
+2025.01.24 15:34:14 WARN  no build target for: /home/kai/ChiselProject/Benchmarks/_Benchmark_my/_Bootcamp/MyRoutingArbiter/_testcase-chisel-temp-script/dut/dut1.scala[0m
+2025.01.24 15:34:17 WARN  no build target for: /home/kai/ChiselProject/Benchmarks/_Benchmark_my/_Bootcamp/MyRoutingArbiter/_testcase-chisel-temp-script/dut/dut1.scala[0m
+2025.01.24 15:34:22 WARN  no build target for: /home/kai/ChiselProject/Benchmarks/_Benchmark_my/_Bootcamp/MyRoutingArbiter/_testcase-chisel-temp-script/dut/dut1.scala[0m
+2025.01.24 15:38:18 WARN  no build target for: /home/kai/ChiselProject/Benchmarks/_Benchmark_my/_Bootcamp/MyRoutingArbiter/_testcase-chisel-temp-script/dut/dut2.scala[0m
+2025.01.24 15:38:25 WARN  no build target for: /home/kai/ChiselProject/Benchmarks/_Benchmark_my/_Bootcamp/MyRoutingArbiter/_testcase-chisel-temp-script/dut/dut2.scala[0m
+Jan 24, 2025 3:38:25 PM org.eclipse.lsp4j.jsonrpc.RemoteEndpoint fallbackResponseError
+SEVERE: Internal error: java.lang.reflect.InvocationTargetException
+java.lang.RuntimeException: java.lang.reflect.InvocationTargetException
+	at org.eclipse.lsp4j.jsonrpc.services.GenericEndpoint.lambda$null$0(GenericEndpoint.java:67)
+	at org.eclipse.lsp4j.jsonrpc.services.GenericEndpoint.request(GenericEndpoint.java:120)
+	at org.eclipse.lsp4j.jsonrpc.RemoteEndpoint.handleRequest(RemoteEndpoint.java:261)
+	at org.eclipse.lsp4j.jsonrpc.RemoteEndpoint.consume(RemoteEndpoint.java:190)
+	at org.eclipse.lsp4j.jsonrpc.json.StreamMessageProducer.handleMessage(StreamMessageProducer.java:194)
+	at org.eclipse.lsp4j.jsonrpc.json.StreamMessageProducer.listen(StreamMessageProducer.java:94)
+	at org.eclipse.lsp4j.jsonrpc.json.ConcurrentMessageProcessor.run(ConcurrentMessageProcessor.java:113)
+	at java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:511)
+	at java.util.concurrent.FutureTask.run(FutureTask.java:266)
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1149)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:624)
+	at java.lang.Thread.run(Thread.java:748)
+Caused by: java.lang.reflect.InvocationTargetException
+	at sun.reflect.GeneratedMethodAccessor10.invoke(Unknown Source)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:498)
+	at org.eclipse.lsp4j.jsonrpc.services.GenericEndpoint.lambda$null$0(GenericEndpoint.java:65)
+	... 11 more
+Caused by: file:///home/kai/ChiselProject/Benchmarks/_Benchmark_my/_Bootcamp/MyRoutingArbiter/_testcase-chisel-temp-script/dut/dut2.scala:6: error: file:///home/kai/ChiselProject/Benchmarks/_Benchmark_my/_Bootcamp/MyRoutingArbiter/_testcase-chisel-temp-script/dut/dut2.scala:6: error: expected identifier; obtained lparen
+class (val numChannels: Int) extends Module {
+      ^
+class (val numChannels: Int) extends Module {
+      ^
+	at scala.meta.internal.mtags.ScalaToplevelMtags.fail(ScalaToplevelMtags.scala:358)
+	at scala.meta.internal.mtags.ScalaToplevelMtags.newIdentifier(ScalaToplevelMtags.scala:343)
+	at scala.meta.internal.mtags.ScalaToplevelMtags.emitMember(ScalaToplevelMtags.scala:245)
+	at scala.meta.internal.mtags.ScalaToplevelMtags.loop(ScalaToplevelMtags.scala:118)
+	at scala.meta.internal.mtags.ScalaToplevelMtags.indexRoot(ScalaToplevelMtags.scala:50)
+	at scala.meta.internal.mtags.MtagsIndexer.index(MtagsIndexer.scala:19)
+	at scala.meta.internal.mtags.MtagsIndexer.index$(MtagsIndexer.scala:18)
+	at scala.meta.internal.mtags.ScalaToplevelMtags.index(ScalaToplevelMtags.scala:40)
+	at scala.meta.internal.mtags.Mtags$.allToplevels(Mtags.scala:96)
+	at scala.meta.internal.metals.DefinitionProvider.fromMtags(DefinitionProvider.scala:269)
+	at scala.meta.internal.metals.DefinitionProvider.$anonfun$positionOccurrence$3(DefinitionProvider.scala:202)
+	at scala.Option.orElse(Option.scala:477)
+	at scala.meta.internal.metals.DefinitionProvider.$anonfun$positionOccurrence$1(DefinitionProvider.scala:202)
+	at scala.Option.flatMap(Option.scala:283)
+	at scala.meta.internal.metals.DefinitionProvider.positionOccurrence(DefinitionProvider.scala:197)
+	at scala.meta.internal.metals.MetalsLanguageServer.$anonfun$definitionOrReferences$1(MetalsLanguageServer.scala:2463)
+	at scala.Option.map(Option.scala:242)
+	at scala.meta.internal.metals.MetalsLanguageServer.definitionOrReferences(MetalsLanguageServer.scala:2459)
+	at scala.meta.internal.metals.MetalsLanguageServer.$anonfun$definition$1(MetalsLanguageServer.scala:1422)
+	at scala.meta.internal.metals.CancelTokens$.future(CancelTokens.scala:38)
+	at scala.meta.internal.metals.MetalsLanguageServer.definition(MetalsLanguageServer.scala:1421)
+	... 15 more
+
+2025.01.24 15:38:29 WARN  no build target for: /home/kai/ChiselProject/Benchmarks/_Benchmark_my/_Bootcamp/MyRoutingArbiter/_testcase-chisel-temp-script/dut/dut2.scala[0m
+2025.01.24 15:38:39 WARN  no build target for: /home/kai/ChiselProject/Benchmarks/_Benchmark_my/_Bootcamp/MyRoutingArbiter/_testcase-chisel-temp-script/dut/dut3.scala[0m
+2025.01.24 15:38:44 WARN  no build target for: /home/kai/ChiselProject/Benchmarks/_Benchmark_my/_Bootcamp/MyRoutingArbiter/_testcase-chisel-temp-script/dut/dut3.scala[0m
+Exception in thread "pool-3-thread-1" java.lang.Error: java.lang.InterruptedException
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1155)
+	at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:624)
+	at java.lang.Thread.run(Thread.java:748)
+Caused by: java.lang.InterruptedException
+	at scala.meta.internal.metals.FutureCancelToken.checkCanceled(FutureCancelToken.scala:29)
+	at scala.meta.internal.pc.CompilerAccess.onCompilerJobQueue$$anonfun$1(CompilerAccess.scala:195)
+	at scala.meta.internal.pc.CompilerJobQueue$Job.run(CompilerJobQueue.scala:139)
+	at java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1149)
+	... 2 more
+2025.01.24 15:38:49 WARN  no build target for: /home/kai/ChiselProject/Benchmarks/_Benchmark_my/_Bootcamp/MyRoutingArbiter/_testcase-chisel-temp-script/dut/dut4.scala[0m
+2025.01.24 15:38:53 WARN  no build target for: /home/kai/ChiselProject/Benchmarks/_Benchmark_my/_Bootcamp/MyRoutingArbiter/_testcase-chisel-temp-script/dut/dut4.scala[0m
+2025.01.24 15:39:01 WARN  no build target for: /home/kai/ChiselProject/Benchmarks/_Benchmark_my/_Bootcamp/MyRoutingArbiter/_testcase-chisel-temp-script/dut/dut5.scala[0m
+2025.01.24 15:39:04 WARN  no build target for: /home/kai/ChiselProject/Benchmarks/_Benchmark_my/_Bootcamp/MyRoutingArbiter/_testcase-chisel-temp-script/dut/dut5.scala[0m
+2025.01.24 15:39:10 WARN  no build target for: /home/kai/ChiselProject/Benchmarks/_Benchmark_my/_Bootcamp/MyRoutingArbiter/_testcase-chisel-temp-script/dut/dut6.scala[0m
+2025.01.24 15:39:13 WARN  no build target for: /home/kai/ChiselProject/Benchmarks/_Benchmark_my/_Bootcamp/MyRoutingArbiter/_testcase-chisel-temp-script/dut/dut6.scala[0m
+2025.01.24 15:39:13 WARN  no build target for: /home/kai/ChiselProject/Benchmarks/_Benchmark_my/_Bootcamp/MyRoutingArbiter/_testcase-chisel-temp-script/dut/dut6.scala[0m
+2025.01.24 15:39:17 WARN  no build target for: /home/kai/ChiselProject/Benchmarks/_Benchmark_my/_Bootcamp/MyRoutingArbiter/_testcase-chisel-temp-script/dut/dut7.scala[0m
+2025.01.24 15:39:21 WARN  no build target for: /home/kai/ChiselProject/Benchmarks/_Benchmark_my/_Bootcamp/MyRoutingArbiter/_testcase-chisel-temp-script/dut/dut8.scala[0m
+2025.01.24 15:39:24 WARN  no build target for: /home/kai/ChiselProject/Benchmarks/_Benchmark_my/_Bootcamp/MyRoutingArbiter/_testcase-chisel-temp-script/dut/dut8.scala[0m
+2025.01.24 15:39:29 WARN  no build target for: /home/kai/ChiselProject/Benchmarks/_Benchmark_my/_Bootcamp/MyRoutingArbiter/_testcase-chisel-temp-script/dut/dut9.scala[0m
+2025.01.24 15:39:33 WARN  no build target for: /home/kai/ChiselProject/Benchmarks/_Benchmark_my/_Bootcamp/MyRoutingArbiter/_testcase-chisel-temp-script/dut/dut9.scala[0m
+2025.02.05 11:22:59 INFO  tracing is disabled for protocol LSP, to enable tracing of incoming and outgoing JSON messages create an empty file at /home/kai/ChiselProject/Benchmarks/_Benchmark_my/_Bootcamp/MyRoutingArbiter/.metals/lsp.trace.json or /home/kai/.cache/metals/lsp.trace.json
+2025.02.05 11:22:59 INFO  logging to file /home/kai/ChiselProject/Benchmarks/_Benchmark_my/_Bootcamp/MyRoutingArbiter/.metals/metals.log
+2025.02.05 11:22:59 INFO  Started: Metals version 0.11.4 in workspace '/home/kai/ChiselProject/Benchmarks/_Benchmark_my/_Bootcamp/MyRoutingArbiter' for client Visual Studio Code 1.96.0.
+2025.02.05 11:23:00 INFO  time: initialize in 0.72s
+2025.02.05 11:23:00 WARN  Flyway upgrade recommended: H2 2.1.212 is newer than this version of Flyway and support has not been tested. The latest supported version of H2 is 2.1.210.
+2025.02.05 11:23:00 WARN  Build server is not auto-connectable.
+2025.02.05 11:23:00 WARN  no build tool detected in workspace '/home/kai/ChiselProject/Benchmarks/_Benchmark_my/_Bootcamp/MyRoutingArbiter'. The most common cause for this problem is that the editor was opened in the wrong working directory, for example if you use sbt then the workspace directory should contain build.sbt. 
+2025.02.05 11:23:01 WARN  no build target for: /home/kai/ChiselProject/Benchmarks/_Benchmark_my/_Bootcamp/MyRoutingArbiter/_testcase-chisel-temp-script/dut/dut0.scala
+2025.02.05 11:23:03 INFO  no build target found for /home/kai/ChiselProject/Benchmarks/_Benchmark_my/_Bootcamp/MyRoutingArbiter/_testcase-chisel-temp-script/dut/dut0.scala. Using presentation compiler with project's scala-library version: 3.1.2
+2025.02.05 11:23:03 WARN  Flyway upgrade recommended: H2 2.1.212 is newer than this version of Flyway and support has not been tested. The latest supported version of H2 is 2.1.210.
+2025.02.05 11:23:17 INFO  tracing is disabled for protocol LSP, to enable tracing of incoming and outgoing JSON messages create an empty file at /home/kai/ChiselProject/Benchmarks/_Benchmark_my/_Bootcamp/MyRoutingArbiter/.metals/lsp.trace.json or /home/kai/.cache/metals/lsp.trace.json
+2025.02.05 11:23:17 INFO  logging to file /home/kai/ChiselProject/Benchmarks/_Benchmark_my/_Bootcamp/MyRoutingArbiter/.metals/metals.log
+2025.02.05 11:23:17 INFO  Started: Metals version 0.11.4 in workspace '/home/kai/ChiselProject/Benchmarks/_Benchmark_my/_Bootcamp/MyRoutingArbiter' for client Visual Studio Code 1.96.0.
+2025.02.05 11:23:18 INFO  time: initialize in 0.72s
+2025.02.05 11:23:18 WARN  Flyway upgrade recommended: H2 2.1.212 is newer than this version of Flyway and support has not been tested. The latest supported version of H2 is 2.1.210.
+2025.02.05 11:23:18 WARN  Build server is not auto-connectable.
+2025.02.05 11:23:18 WARN  no build tool detected in workspace '/home/kai/ChiselProject/Benchmarks/_Benchmark_my/_Bootcamp/MyRoutingArbiter'. The most common cause for this problem is that the editor was opened in the wrong working directory, for example if you use sbt then the workspace directory should contain build.sbt. 
+2025.02.05 11:23:19 WARN  no build target for: /home/kai/ChiselProject/Benchmarks/_Benchmark_my/_Bootcamp/MyRoutingArbiter/_testcase-chisel-temp-script/dut/dut0.scala
+2025.02.05 11:23:19 INFO  no build target found for /home/kai/ChiselProject/Benchmarks/_Benchmark_my/_Bootcamp/MyRoutingArbiter/_testcase-chisel-temp-script/dut/dut0.scala. Using presentation compiler with project's scala-library version: 3.1.2
+2025.02.05 11:23:21 INFO  time: code lens generation in 2.19s
+2025.02.05 12:35:37 INFO  shutting down Metals
+2025.02.06 13:30:42 INFO  tracing is disabled for protocol LSP, to enable tracing of incoming and outgoing JSON messages create an empty file at /home/kai/ChiselProject/Benchmarks/_Benchmark_my/_Bootcamp/MyRoutingArbiter/.metals/lsp.trace.json or /home/kai/.cache/metals/lsp.trace.json
+2025.02.06 13:30:43 INFO  logging to file /home/kai/ChiselProject/Benchmarks/_Benchmark_my/_Bootcamp/MyRoutingArbiter/.metals/metals.log
+2025.02.06 13:30:43 INFO  Started: Metals version 0.11.4 in workspace '/home/kai/ChiselProject/Benchmarks/_Benchmark_my/_Bootcamp/MyRoutingArbiter' for client Visual Studio Code 1.96.0.
+2025.02.06 13:30:43 INFO  time: initialize in 0.65s
+2025.02.06 13:30:43 WARN  Flyway upgrade recommended: H2 2.1.212 is newer than this version of Flyway and support has not been tested. The latest supported version of H2 is 2.1.210.
+2025.02.06 13:30:43 WARN  Build server is not auto-connectable.
+2025.02.06 13:30:43 WARN  no build tool detected in workspace '/home/kai/ChiselProject/Benchmarks/_Benchmark_my/_Bootcamp/MyRoutingArbiter'. The most common cause for this problem is that the editor was opened in the wrong working directory, for example if you use sbt then the workspace directory should contain build.sbt. 
+2025.02.06 13:30:44 WARN  no build target for: /home/kai/ChiselProject/Benchmarks/_Benchmark_my/_Bootcamp/MyRoutingArbiter/_testcase-chisel-temp-script/dut/dut0.scala
+2025.02.06 13:30:45 INFO  no build target found for /home/kai/ChiselProject/Benchmarks/_Benchmark_my/_Bootcamp/MyRoutingArbiter/_testcase-chisel-temp-script/dut/dut0.scala. Using presentation compiler with project's scala-library version: 3.1.2
+2025.02.06 13:30:46 INFO  time: code lens generation in 2.08s
+2025.02.06 13:32:34 WARN  no build target for: /home/kai/ChiselProject/Benchmarks/_Benchmark_my/_Bootcamp/MyRoutingArbiter/chisel-version/t8/src/main/scala/dut.scala
+2025.02.06 13:32:53 WARN  no build target for: /home/kai/ChiselProject/Benchmarks/_Benchmark_my/_Bootcamp/MyRoutingArbiter/chisel-version/t8/src/main/scala/dut.scala
+2025.02.06 13:33:11 WARN  no build target for: /home/kai/ChiselProject/Benchmarks/_Benchmark_my/_Bootcamp/MyRoutingArbiter/chisel-version/t3/src/main/scala/dut.scala
+2025.02.06 13:33:28 WARN  no build target for: /home/kai/ChiselProject/Benchmarks/_Benchmark_my/_Bootcamp/MyRoutingArbiter/chisel-version/t3/src/main/scala/dut.scala
+2025.02.06 13:34:59 WARN  no build target for: /home/kai/ChiselProject/Benchmarks/_Benchmark_my/_Bootcamp/MyRoutingArbiter/_test/_cache/chisel-version/t8/src/main/scala/dut.scala
+2025.02.06 13:34:59 WARN  no build target for: /home/kai/ChiselProject/Benchmarks/_Benchmark_my/_Bootcamp/MyRoutingArbiter/_test/_cache/chisel-version/t3/src/main/scala/dut.scala
+2025.02.06 13:35:03 WARN  no build target for: /home/kai/ChiselProject/Benchmarks/_Benchmark_my/_Bootcamp/MyRoutingArbiter/_test/_2chisel-gpt4o/_cache/chisel-version/t8/src/main/scala/dut.scala
+2025.02.06 13:35:03 WARN  no build target for: /home/kai/ChiselProject/Benchmarks/_Benchmark_my/_Bootcamp/MyRoutingArbiter/_test/_2chisel-gpt4o/_cache/chisel-version/t3/src/main/scala/dut.scala
+2025.02.06 13:35:12 WARN  no build target for: /home/kai/ChiselProject/Benchmarks/_Benchmark_my/_Bootcamp/MyRoutingArbiter/_test/_2chisel-gpt4o/_cache-v1/chisel-version/t8/src/main/scala/dut.scala
+2025.02.06 13:35:12 WARN  no build target for: /home/kai/ChiselProject/Benchmarks/_Benchmark_my/_Bootcamp/MyRoutingArbiter/_test/_2chisel-gpt4o/_cache-v1/chisel-version/t3/src/main/scala/dut.scala

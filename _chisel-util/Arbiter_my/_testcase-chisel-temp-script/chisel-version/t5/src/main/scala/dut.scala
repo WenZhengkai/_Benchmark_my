@@ -2,35 +2,32 @@ import chisel3._
 import chisel3.util._
 
 class dut[T <: Data](gen: T, n: Int) extends Module {
-  require(n >= 1, "Number of producers must be at least 1")
-  
   val io = IO(new Bundle {
     val in = Flipped(Vec(n, Decoupled(gen)))
     val out = Decoupled(gen)
     val chosen = Output(UInt(log2Ceil(n).W))
   })
 
-  // Priority Resolution: Select the first valid input with the lowest index
-  val validVec = io.in.map(_.valid)
-  val grantVec = ArbiterCtrl_my(validVec)
+  // Initialize the priority signals and default values
+  val grant = ArbiterCtrl_my(io.in.map(_.valid))
+  io.out.valid := io.in.zip(grant).map { case (in, g) => in.valid && g }.reduce(_ || _)
+  io.out.bits := Mux1H(io.in.zipWithIndex.map { case (in, i) => grant(i) -> in.bits })
+
+  // Control logic for `chosen` output
+  io.chosen := PriorityEncoder(io.in.map(_.valid))
   
-  io.chosen := PriorityMux(validVec, (0 until n).map(_.U))
-  
-  // Connect the selected producer to the output
-  io.out.bits := Mux1H(grantVec, io.in.map(_.bits))
-  io.out.valid := validVec.reduce(_ || _)
-  
-  // Generate ready signals for each producer
-  io.in.zip(grantVec).foreach { case (in, grant) =>
-    in.ready := grant && io.out.ready
+  // Assign ready signals based on output readiness and grant
+  for ((in, g) <- io.in.zip(grant)) {
+    in.ready := io.out.ready && g
   }
 }
 
-private object ArbiterCtrl_my {
+object ArbiterCtrl_my {
   def apply(request: Seq[Bool]): Seq[Bool] = request.length match {
     case 0 => Seq()
     case 1 => Seq(true.B)
-    case _ => true.B +: request.tail.init.scanLeft(request.head)(_ || _).map(!_ || _)
+    case _ => true.B +: request.tail.init.scanLeft(request.head)(_ || _).map(!_):+request.init.last
   }
 }
+
 

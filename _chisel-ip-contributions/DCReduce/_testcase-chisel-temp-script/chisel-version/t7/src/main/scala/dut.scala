@@ -1,35 +1,43 @@
+
 import chisel3._
 import chisel3.util._
 import chisel.lib.dclib._
 
 class dut[D <: Data](data: D, n: Int, op: (D, D) => D) extends Module {
-  require(n >= 2, "The module requires at least two inputs.")
+  require(n >= 2, "The number of inputs for DCReduce must be at least 2.")
   val io = IO(new Bundle {
-    val a = Input(Vec(n, Flipped(Decoupled(data.cloneType))))
-    val z = Output(Decoupled(data.cloneType))
+    val a = Vec(n, Flipped(Decoupled(data.cloneType)))
+    val z = Decoupled(data.cloneType)
   })
 
-  // Task 1: Implement Initialization of Internal Inputs
-  val aInt = VecInit(io.a.map(DCInput(_)))
+  // Task 1: Initialization of Internal Structures
+  // Initialize internal inputs
+  val aInt = io.a.map(DCInput(_))
 
-  // Task 2: Establish Intermediate Output Wire
-  val zInt = Wire(Decoupled(data))
+  // Define an intermediate wire for the result
+  val zInt = Wire(Decoupled(data.cloneType))
 
-  // Task 3: Compute Validity Signal
+  // Task 2: Signal Generation for Validity Checking
+  // Compute all_valid signal
   val all_valid = aInt.map(_.valid).reduce(_ && _)
 
-  // Task 4: Implement Reduction Operation
-  when(all_valid) {
-    zInt.bits := aInt.map(_.bits).reduce(op)
-  }.otherwise {
-    zInt.bits := DontCare
-  }
+  // Task 3: Implement Reduction Operation
+  // Perform the reduction operation on the bits of valid inputs
+  zInt.bits := aInt.map(_.bits).reduce(op)
 
-  // Task 5: Manage Output Control and Validity
+  // Task 4: Output Control Logic
+  // Manage the output ready and valid signals
   zInt.valid := all_valid && io.z.ready
-  aInt.foreach(_.ready := zInt.valid)
 
-  // Task 6: Connect and Interface Output
+  // Set each input's ready signal
+  aInt.foreach(_.ready := zInt.valid && io.z.ready)
+
+  // Task 5: Interface the Output with DCOutput
+  // Connect intermediate output to final output using DCOutput
   val zDcout = DCOutput(zInt)
+  
+  // Connect `zDcout` to module output `io.z`
   io.z <> zDcout
 }
+
+// Example configuration and testing omitted, this focuses on the module definition itself

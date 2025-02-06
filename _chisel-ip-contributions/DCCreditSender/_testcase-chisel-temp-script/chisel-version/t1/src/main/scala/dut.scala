@@ -1,14 +1,12 @@
 import chisel3._
 import chisel3.util._
 
-// CreditIO Definition
 class CreditIO[D <: Data](data: D) extends Bundle {
   val valid = Output(Bool())
   val credit = Input(Bool())
-  val bits = Output(data)
+  val bits = Output(data.cloneType)
 }
 
-// DCCreditSender Module
 class dut[D <: Data](data: D, maxCredit: Int) extends Module {
   require(maxCredit >= 1, "maxCredit must be greater than or equal to 1")
 
@@ -18,38 +16,44 @@ class dut[D <: Data](data: D, maxCredit: Int) extends Module {
     val curCredit = Output(UInt(log2Ceil(maxCredit).W))
   })
 
-  // Task 1: Define Internal Registers & Parameters
+  // Credit register to keep track of dequeue credit signals
   val icredit = RegInit(false.B)
+
+  // Credit counter, initialized to maxCredit
   val curCredit = RegInit(maxCredit.U(log2Ceil(maxCredit).W))
+
+  // Registers to hold output data and valid status
   val dataOut = Reg(data.cloneType)
   val validOut = RegInit(false.B)
 
-  // Task 2: Implement Credit Register (icredit)
-  icredit := io.deq.credit
+  // Enqueue readiness logic
+  io.enq.ready := (curCredit > 0.U)
 
-  // Task 3: Create Credit Counter Logic
-  when(io.enq.fire() && !io.deq.credit) {
-    curCredit := curCredit - 1.U
-  }.elsewhen(!io.enq.fire() && io.deq.credit) {
-    curCredit := curCredit + 1.U
-  }
-
-  // Task 4: Implement the Ready Signal
-  io.enq.ready := curCredit > 0.U
-
-  // Task 5: Develop Data & Valid Registers
+  // Data register logic: capture incoming data when enqueue fires and credit available
   when(io.enq.fire()) {
     dataOut := io.enq.bits
-    validOut := true.B
-  }.elsewhen(io.deq.credit) {
-    validOut := false.B
   }
 
-  // Task 6: Connect Outputs
+  // Validity condition for dequeued data
+  validOut := io.enq.fire() || (validOut && !io.deq.credit)
+
+  // Update the output interface
   io.deq.valid := validOut
   io.deq.bits := dataOut
 
-  // Task 7: Set Current Credit Output
+  // Credit management logic for icredit and curCredit
+  icredit := io.deq.credit
+  when(io.deq.credit && !io.enq.fire()) {
+    // Increment credit if credit signal is received but no enqueue operation
+    curCredit := curCredit + 1.U
+  }.elsewhen(!io.deq.credit && io.enq.fire()) {
+    // Decrement credit if enqueue operation occurs without crediting
+    curCredit := curCredit - 1.U
+  }
+
+  // Keep curCredit updated
   io.curCredit := curCredit
 }
 
+// To instantiate this module, you need to do something like:
+// val creditSender = Module(new DCCreditSender(UInt(8.W), 16))

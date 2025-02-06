@@ -1,36 +1,29 @@
 import chisel3._
 import chisel3.util._
 
-/**
- * MyRoutingArbiter
- * 
- * A hardware arbitration module that routes data from multiple input channels to a single output channel.
- * Priority is given to the lowest-indexed valid input channel.
- * 
- * @param numChannels Number of input channels.
- */
-class dut(val numChannels: Int) extends Module {
-  require(numChannels > 0, "Number of channels must be greater than 0")
-
+class dut(numChannels: Int) extends Module {
   val io = IO(new Bundle {
-    val in = Input(Vec(numChannels, Flipped(Decoupled(UInt(8.W))))) // Input channels
-    val out = Decoupled(UInt(8.W))                                 // Output channel
+    val in = Vec(numChannels, Flipped(Decoupled(UInt(8.W))))
+    val out = Decoupled(UInt(8.W))
   })
 
-  // Determine if any input channel is valid
-  val validVec = io.in.map(_.valid)             // Array of valid signals from input channels
-  io.out.valid := validVec.reduce(_ || _)       // Output is valid if at least one input is valid
+  // Task 1: Implement Output Validity Logic
+  // Objective: Set the out.valid signal to true if at least one of the input channels is valid.
+  io.out.valid := io.in.map(_.valid).reduce(_ || _)
 
-  // PriorityMux to select the first valid input channel
-  val firstValidIndex = PriorityMux(validVec, (0 until numChannels).map(_.U)) // Index of the first valid channel
+  // Task 2: Implement Priority Selection using PriorityMux
+  // Objective: Select the channel index of the first valid input channel using a PriorityMux.
+  val valid_indices = io.in.zipWithIndex.map { case (channel, index) => index.U -> channel.valid }
+  val selectedIdx = PriorityMux(valid_indices)
 
-  // Route data from the selected input channel to the output
-  io.out.bits := Mux1H(validVec, io.in.map(_.bits)) // Data from the first valid channel
+  // Task 3: Implement Data Routing
+  // Objective: Route the data from the selected input channel to the output.
+  io.out.bits := Mux1H(io.in.map(_.valid), io.in.map(_.bits))
 
-  // Generate ready signals for each input channel
-  for (i <- 0 until numChannels) {
-    io.in(i).ready := io.out.ready && (firstValidIndex === i.U) // Ready if the output is ready and this channel is selected
+  // Task 4: Implement Input Readiness Logic
+  // Objective: Set each input channel's ready signal based on the selected channel index and output readiness.
+  for ((channel, idx) <- io.in.zipWithIndex) {
+    channel.ready := io.out.ready && (selectedIdx === idx.U)
   }
 }
-
 

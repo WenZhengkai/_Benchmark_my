@@ -5,6 +5,8 @@ class CreditIO[D <: Data](data: D) extends Bundle {
   val valid = Output(Bool())
   val credit = Input(Bool())
   val bits = Output(data.cloneType)
+
+  override def cloneType: this.type = new CreditIO(data).asInstanceOf[this.type]
 }
 
 class dut[D <: Data](data: D, maxCredit: Int) extends Module {
@@ -16,38 +18,28 @@ class dut[D <: Data](data: D, maxCredit: Int) extends Module {
     val curCredit = Output(UInt(log2Ceil(maxCredit).W))
   })
 
-  // Task 1: Define Internal Registers & Parameters
-  val icredit = RegInit(false.B)
+  // Internal credit register and counter
+  val icredit = RegNext(io.deq.credit)
   val curCredit = RegInit(maxCredit.U(log2Ceil(maxCredit).W))
-  val dataOut = Reg(data.cloneType)
-  val validOut = RegInit(false.B)
 
-  // Task 2: Implement Credit Register (icredit)
-  icredit := io.deq.credit
+  // Data and Valid registers for output
+  val dataOut = RegEnable(io.enq.bits, io.enq.fire)
+  val validOut = RegNext(io.enq.fire)
 
-  // Task 3: Create Credit Counter Logic
-  when (icredit && !io.enq.fire()) {
-    // Increment credit if credit is received and nothing is enqueued
+  // Logic for dequeue interface signals
+  io.deq.bits := dataOut
+  io.deq.valid := validOut
+
+  // Ready signal logic
+  io.enq.ready := curCredit > 0.U
+
+  // Logic for credit counter
+  when (icredit && !io.enq.fire) {
     curCredit := curCredit + 1.U
-  } .elsewhen (io.enq.fire() && !icredit) {
-    // Decrement credit if data is enqueued and no credit is received
+  } .elsewhen (!icredit && io.enq.fire) {
     curCredit := curCredit - 1.U
   }
 
-  // Task 4: Implement the Ready Signal
-  io.enq.ready := curCredit > 0.U
-
-  // Task 5: Develop Data & Valid Registers
-  when (io.enq.fire()) {
-    dataOut := io.enq.bits
-  }
-
-  validOut := io.enq.fire() || (validOut && !icredit)
-
-  // Task 6: Connect Outputs
-  io.deq.valid := validOut
-  io.deq.bits := dataOut
-
-  // Task 7: Set Current Credit Output
+  // Connect output credit count
   io.curCredit := curCredit
 }

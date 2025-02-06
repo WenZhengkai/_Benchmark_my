@@ -41,14 +41,13 @@ class CreditIO[D <: Data](data: D) extends Bundle {
 
 - **Credit Register (icredit):** Internally maintains the latched status of the dequeue credit signal. This helps in decision-making when the module determines whether to credit or debit its credit count.
 
-- **Credit Counter (curCredit):** A register initialized to the `maxCredit` value that keeps track of the currently available credits. Its value is incremented when a credit is received (input credit high, output data not enqueued), and decremented when the enqueued data is sent (output data enqueued, no credit received).
+- **Credit Counter (curCredit):** A register initialized to the `maxCredit` value that keeps track of the currently available credits. Its value is incremented when a credit is received (icredit high, enq.fire is low), and decremented when the enqueued data is sent (icredit low, enq.fire is high).
 
 - **Ready Signal (`io.enq.ready`):** A readiness indication flag for the enqueue interface, toggling high when `curCredit` is greater than zero, signifying it's ready to accept new data.
 
 - **Data Register (dataOut) & Valid Register (validOut):** Temporary registers for holding data payloads meant for dequeue and maintaining a valid status flag respectively utilizing RegEnable and RegNext primitives.
 
 ```
-
 
 Give me the complete Chisel code.
 
@@ -94,7 +93,7 @@ class CreditIO[D <: Data](data: D) extends Bundle {
 
 - **Credit Register (icredit):** Internally maintains the latched status of the dequeue credit signal. This helps in decision-making when the module determines whether to credit or debit its credit count.
 
-- **Credit Counter (curCredit):** A register initialized to the `maxCredit` value that keeps track of the currently available credits. Its value is incremented when a credit is received (input credit high, output data not enqueued), and decremented when the enqueued data is sent (output data enqueued, no credit received).
+- **Credit Counter (curCredit):** A register initialized to the `maxCredit` value that keeps track of the currently available credits. Its value is incremented when a credit is received (icredit high, enq.fire is low), and decremented when the enqueued data is sent (icredit low, enq.fire is high).
 
 - **Ready Signal (`io.enq.ready`):** A readiness indication flag for the enqueue interface, toggling high when `curCredit` is greater than zero, signifying it's ready to accept new data.
 
@@ -162,45 +161,39 @@ class CreditIO[D <: Data](data: D) extends Bundle {
 }
 ``
 ## Design Task
-Task 1: Define Internal Registers & Parameters
-Objective: Initialize and define the internal registers and parameters needed for the credit and data management.
-Step:
+### Task 1: Implement Credit Register (`icredit`)
+**Objective:** Create a register to maintain the latched status of the dequeue credit signal.
+**Step:**
+- Declare a register `icredit` that captures the credit input signal from the `deq` interface.
+- Update `icredit` based on the input credit signal each cycle.
 
-Declare the icredit register to latch the status of the dequeue credit signal.
-Initialize the curCredit register to handle available credit counts starting from maxCredit.
-Define the dataOut and validOut registers to store the data and its valid status for output.
-Task 2: Implement Credit Register (icredit)
-Objective: Maintain the latched status of the dequeue credit signal to aid decision-making processes.
-Step:
+### Task 2: Implement Credit Counter (`curCredit`)
+**Objective:** Develop a register to track the number of available credits.
+**Step:**
+- Initialize `curCredit` with the value of `maxCredit`.
+- Increment `curCredit` when credit is available (`icredit` is high) and no new data is enqueued (`enq.fire` is low).
+- Decrement `curCredit` when data is enqueued (`enq.fire` is high) and no credit is available (`icredit` is low).
+- Ensure `curCredit` cannot exceed `maxCredit` or fall below zero.
 
-Use a register to store the last state of the credit signal (credit) from the dequeue interface.
-Update this register value at every clock cycle based on the incoming credit signal.
-Task 3: Create Credit Counter Logic
-Objective: Manage the credit count through incrementing and decrementing logic.
-Step:
+### Task 3: Define Ready Signal (`io.enq.ready`)
+**Objective:** Create a signal to indicate readiness to accept new data on the enqueue interface.
+**Step:**
+- Implement the logic for `io.enq.ready` to be true when `curCredit` is greater than zero.
+- Connect `io.enq.ready` to the input side ensuring that new data can only be enqueued when ready.
 
-Design logic to increment curCredit when a credit is received (credit high) and no data is being enqueued.
-Design logic to decrement curCredit when data is being enqueued (enq.ready high) and no credit is received.
-Task 4: Implement the Ready Signal
-Objective: Determine and output the readiness status of the enqueue interface based on the current credit status.
-Step:
+### Task 4: Develop Data Register (`dataOut`) and Valid Register (`validOut`)
+**Objective:** Implement temporary registers for handling outgoing data and valid status.
+**Step:**
+- Use `RegEnable` to latch incoming data (`enq.bits`) into `dataOut` when data is enqueued (`enq.fire`).
+- Use `RegNext` to set `validOut` high following a cycle when data has been successfully captured into `dataOut`.
+- Connect `dataOut` and `validOut` to the `deq` interface (`bits` and `valid` respectively).
 
-Set io.enq.ready to high when curCredit is greater than zero, indicating readiness to accept new data.
-Otherwise, set it to low when credits are exhausted.
-Task 5: Develop Data & Valid Registers
-Objective: Manage the temporary registry and upkeep of data payloads and valid status using Chisel primitives.
-Step:
-
-Use RegEnable to conditionally update the dataOut register with the incoming data from the enqueue interface when io.enq.fire().
-Use RegNext or suitable logic to update validOut based on data movement conditions to maintain valid status for the output.
-Task 6: Connect Outputs
-Objective: Configure the output interface signals (deq.valid, deq.bits) for delivering the queued data and status.
-Step:
-
-Connect deq.valid to be driven by validOut indicating when data is valid for reading.
-Connect deq.bits to output the data stored in dataOut.
-Task 7: Set Current Credit Output
-Objective: Output the current credit count for monitoring purposes.
+### Task 5: Connect Output Interface (`deq`) to Internal Logic
+**Objective:** Connect internal registers and control signals to the `deq` output interface.
+**Step:**
+- Attach `validOut` to `io.deq.valid` to indicate availability of valid data.
+- Attach `dataOut` to `io.deq.bits` to carry the data payload.
+- Handle `io.deq.credit` as an input to the `icredit` logic.
 ```
 
 Give me the complete Chisel code.
