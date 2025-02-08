@@ -1,0 +1,57 @@
+circuit dut :
+  module dut :
+    input clock : Clock
+    input reset : UInt<1>
+    output io : { flip enq : { flip ready : UInt<1>, valid : UInt<1>, bits : UInt<8>}, deq : { flip ready : UInt<1>, valid : UInt<1>, bits : UInt<8>}, count : UInt<5>}
+
+    cmem ram : UInt<8> [16] @[dut.scala 13:16]
+    reg enqPtr : UInt<4>, clock with :
+      reset => (reset, UInt<4>("h0")) @[dut.scala 16:23]
+    reg deqPtr : UInt<4>, clock with :
+      reset => (reset, UInt<4>("h0")) @[dut.scala 17:23]
+    reg maybeFull : UInt<1>, clock with :
+      reset => (reset, UInt<1>("h0")) @[dut.scala 18:26]
+    node ptrMatch = eq(enqPtr, deqPtr) @[dut.scala 20:25]
+    node _empty_T = eq(maybeFull, UInt<1>("h0")) @[dut.scala 21:27]
+    node empty = and(ptrMatch, _empty_T) @[dut.scala 21:24]
+    node full = and(ptrMatch, maybeFull) @[dut.scala 22:23]
+    node _io_enq_ready_T = eq(full, UInt<1>("h0")) @[dut.scala 25:19]
+    io.enq.ready <= _io_enq_ready_T @[dut.scala 25:16]
+    node _T = and(io.enq.ready, io.enq.valid) @[Decoupled.scala 51:35]
+    when _T : @[dut.scala 26:23]
+      infer mport MPORT = ram[enqPtr], clock @[dut.scala 27:8]
+      MPORT <= io.enq.bits @[dut.scala 27:17]
+      node _enqPtr_T = eq(enqPtr, UInt<4>("hf")) @[dut.scala 28:26]
+      node _enqPtr_T_1 = add(enqPtr, UInt<1>("h1")) @[dut.scala 28:59]
+      node _enqPtr_T_2 = tail(_enqPtr_T_1, 1) @[dut.scala 28:59]
+      node _enqPtr_T_3 = mux(_enqPtr_T, UInt<1>("h0"), _enqPtr_T_2) @[dut.scala 28:18]
+      enqPtr <= _enqPtr_T_3 @[dut.scala 28:12]
+      node _T_1 = eq(enqPtr, UInt<4>("hf")) @[dut.scala 29:17]
+      when _T_1 : @[dut.scala 29:38]
+        maybeFull <= UInt<1>("h1") @[dut.scala 30:17]
+    node _io_deq_valid_T = eq(empty, UInt<1>("h0")) @[dut.scala 35:19]
+    io.deq.valid <= _io_deq_valid_T @[dut.scala 35:16]
+    infer mport io_deq_bits_MPORT = ram[deqPtr], clock @[dut.scala 36:21]
+    io.deq.bits <= io_deq_bits_MPORT @[dut.scala 36:15]
+    node _T_2 = and(io.deq.ready, io.deq.valid) @[Decoupled.scala 51:35]
+    when _T_2 : @[dut.scala 37:23]
+      node _deqPtr_T = eq(deqPtr, UInt<4>("hf")) @[dut.scala 38:26]
+      node _deqPtr_T_1 = add(deqPtr, UInt<1>("h1")) @[dut.scala 38:59]
+      node _deqPtr_T_2 = tail(_deqPtr_T_1, 1) @[dut.scala 38:59]
+      node _deqPtr_T_3 = mux(_deqPtr_T, UInt<1>("h0"), _deqPtr_T_2) @[dut.scala 38:18]
+      deqPtr <= _deqPtr_T_3 @[dut.scala 38:12]
+      node _T_3 = eq(deqPtr, UInt<4>("hf")) @[dut.scala 39:17]
+      when _T_3 : @[dut.scala 39:38]
+        maybeFull <= UInt<1>("h0") @[dut.scala 40:17]
+    node _io_count_T = mux(maybeFull, UInt<5>("h10"), UInt<1>("h0")) @[dut.scala 55:8]
+    node _io_count_T_1 = gt(deqPtr, enqPtr) @[dut.scala 56:16]
+    node _io_count_T_2 = add(UInt<5>("h10"), enqPtr) @[dut.scala 56:37]
+    node _io_count_T_3 = tail(_io_count_T_2, 1) @[dut.scala 56:37]
+    node _io_count_T_4 = sub(_io_count_T_3, deqPtr) @[dut.scala 56:47]
+    node _io_count_T_5 = tail(_io_count_T_4, 1) @[dut.scala 56:47]
+    node _io_count_T_6 = sub(enqPtr, deqPtr) @[dut.scala 56:64]
+    node _io_count_T_7 = tail(_io_count_T_6, 1) @[dut.scala 56:64]
+    node _io_count_T_8 = mux(_io_count_T_1, _io_count_T_5, _io_count_T_7) @[dut.scala 56:8]
+    node _io_count_T_9 = mux(ptrMatch, _io_count_T, _io_count_T_8) @[dut.scala 54:18]
+    io.count <= _io_count_T_9 @[dut.scala 54:12]
+

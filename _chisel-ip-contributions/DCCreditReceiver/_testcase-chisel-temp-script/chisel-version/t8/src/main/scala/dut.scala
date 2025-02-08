@@ -1,18 +1,13 @@
 import chisel3._
 import chisel3.util._
 
-// Define the CreditIO interface
 class CreditIO[D <: Data](data: D) extends Bundle {
   val valid = Output(Bool())
   val credit = Input(Bool())
   val bits = Output(data.cloneType)
 }
 
-// Define the DCCreditReceiver module
 class dut[D <: Data](data: D, maxCredit: Int) extends Module {
-  require(maxCredit > 0, "maxCredit must be greater than 0")
-
-  // IO definitions
   val io = IO(new Bundle {
     val enq = Flipped(new CreditIO(data))
     val deq = Decoupled(data)
@@ -20,30 +15,34 @@ class dut[D <: Data](data: D, maxCredit: Int) extends Module {
   })
 
   // Internal FIFO queue
-  val fifo = Module(new Queue(data, maxCredit))
-  val fifoCount = RegInit(0.U(log2Ceil(maxCredit + 1).W))
+  val outFifo = Module(new Queue(data, maxCredit))
 
-  // Wires for bypass logic
-  val fifoEmpty = fifo.io.count === 0.U
-  val bypassValid = io.enq.valid && io.deq.ready && fifoEmpty
-  val bypassBits = io.enq.bits
+  // Registers to store delayed input signals
+  val ivalid = RegNext(io.enq.valid, init = false.B)
+  val idata = RegEnable(io.enq.bits, io.enq.valid)
 
-  // Registers for delayed logic
-  val enqueueReady = Wire(Bool())
-  val dequeueReady = Wire(Bool())
-
-  // Credit logic
+  // Wire logic
   val nextCredit = Wire(Bool())
-  io.enq.credit := nextCredit
 
-  // Bypass logic
-  when(bypassValid) {
-    io.deq.valid := true.B
-    io.deq.bits := bypassBits
-    enqueueReady := false.B
-    dequeueReady := false.B
-    nextCredit := true.B
+  // FIFO logic - Bypass + Queue management
+  when(!outFifo.io.deq.valid && outFifo.io.count === 0.U) { // Bypass mode condition
+    io.deq.valid := ivalid
+    io.deq.bits := idata
+    outFifo.io.enq.valid := Mux(io.deq.ready, false.B, ivalid)
+    nextCredit := Mux(io.deq.ready, ivalid, false.B)
+    outFifo.io.deq.ready := false.B
+  } .otherwise { // Normal operation, when FIFO is being used
+    io.deq <> outFifo.io.deq
+    outFifo.io.enq.valid := io.enq.valid
+    outFifo.io.enq.bits := io.enq.bits
+    nextCredit := outFifo.io.deq.fire
   }
-}
 
+  // Updating credit signal
+  val ocredit = RegNext(nextCredit, init = false.B)
+  io.enq.credit := ocredit
+
+  // Exposing FIFO count
+  io.fifoCount := outFifo.io.count
+}
 

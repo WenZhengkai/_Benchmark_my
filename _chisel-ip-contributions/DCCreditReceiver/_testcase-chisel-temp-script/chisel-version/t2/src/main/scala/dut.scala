@@ -1,50 +1,53 @@
 import chisel3._
 import chisel3.util._
 
-// Definition of CreditIO
 class CreditIO[D <: Data](data: D) extends Bundle {
   val valid = Output(Bool())
   val credit = Input(Bool())
   val bits = Output(data.cloneType)
 }
 
-// Definition of DCCreditReceiver module
 class dut[D <: Data](data: D, maxCredit: Int) extends Module {
-  require(maxCredit > 0, "maxCredit must be greater than 0")
-
   val io = IO(new Bundle {
-    val enq = Flipped(new CreditIO(data))    // Credit-based enqueue interface
-    val deq = DecoupledIO(data)              // Decoupled dequeue interface
-    val fifoCount = Output(UInt(log2Ceil(maxCredit + 1).W)) // FIFO entry count
+    val enq = Flipped(new CreditIO(data))
+    val deq = Decoupled(data)
+    val fifoCount = Output(UInt(log2Ceil(maxCredit + 1).W))
   })
 
-  // Internal FIFO Queue
-  val fifo = Module(new Queue(data, maxCredit))
+  // Internal registers
+  val ivalid = RegNext(io.enq.valid)
+  val idata = RegNext(io.enq.bits)
+  val ocredit = RegInit(false.B)
 
-  // Wires to track bypass and internal FIFO logic
-  val bypassValid = Wire(Bool())
-  val bypassReady = Wire(Bool())
-  val bypassFired = Wire(Bool())
+  // FIFO instantiation
+  val outFifo = Module(new Queue(data, maxCredit))
 
-  // Bypass logic condition
-  bypassValid := io.enq.valid && fifo.io.count === 0.U // Enqueue valid & FIFO empty
-  bypassReady := io.deq.ready                          // Consumer is ready
-  bypassFired := bypassValid && bypassReady            // Bypass handshake
+  // Wire Logic
+  val nextCredit = WireInit(false.B)
 
-  // Managing fifo enqueue/dequeue
-  fifo.io.enq.valid := io.enq.valid && !bypassValid    // Enqueue to FIFO when not bypass
-  fifo.io.enq.bits := io.enq.bits                     // Pass input data to FIFO
-  fifo.io.deq.ready := io.deq.ready && !bypassValid   // Dequeue FIFO when not in bypass mode
+  // Bypass logic
+  when(!outFifo.io.deq.valid && (outFifo.io.count === 0.U)) {
+    // Bypass mode: directly connect input to output
+    io.deq.valid := ivalid
+    io.deq.bits := idata
+    outFifo.io.enq.valid := Mux(io.deq.ready, false.B, ivalid)
+    nextCredit := Mux(io.deq.ready, ivalid, false.B)
+    outFifo.io.deq.ready := false.B
+  } .otherwise {
+    // Normal FIFO operation
+    outFifo.io.enq.valid := ivalid
+    outFifo.io.enq.bits := idata
+    io.deq <> outFifo.io.deq
+    nextCredit := outFifo.io.deq.fire
+  }
 
-  // Output data from bypass or FIFO
-  io.deq.valid := bypassValid || fifo.io.deq.valid    // Valid when bypass or FIFO ready
-  io.deq.bits := Mux(bypassValid, io.enq.bits, fifo.io.deq.bits) // Choose data from bypass or FIFO
+  // Update credit signal
+  ocredit := nextCredit
+  io.enq.credit := ocredit
 
-  // Send credit back to sender
-  io.enq.credit := bypassFired || fifo.io.deq.fire    // Credit on bypass success or FIFO dequeue
-
-  // Output FIFO count
-  io.fifoCount := fifo.io.count                       // Expose FIFO entry count
+  // FIFO count
+  io.fifoCount := outFifo.io.count
 }
 
-
+// To instantiate this module, you would write:
+// val receiver = Module(new dut(UInt(8.W), 16))

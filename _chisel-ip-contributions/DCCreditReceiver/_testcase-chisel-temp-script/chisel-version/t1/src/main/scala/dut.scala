@@ -1,51 +1,45 @@
 import chisel3._
 import chisel3.util._
 
-/** CreditIO Interface - Represents the credit-based flow control interface */
 class CreditIO[D <: Data](data: D) extends Bundle {
-  val valid = Output(Bool())   // Indicates if the incoming data is valid.
-  val credit = Input(Bool())   // Signal from the receiver indicating it is ready for more data (credit returned).
-  val bits = Output(data.cloneType) // The data payload.
+  val valid = Output(Bool())
+  val credit = Input(Bool())
+  val bits = Output(data.cloneType)
 }
 
-/** DCCreditReceiver Module */
 class dut[D <: Data](data: D, maxCredit: Int) extends Module {
   val io = IO(new Bundle {
-    val enq = Flipped(new CreditIO(data))         // Incoming credit-based interface.
-    val deq = Decoupled(data.cloneType)           // Outgoing decoupled interface.
-    val fifoCount = Output(UInt(log2Ceil(maxCredit + 1).W)) // Number of elements in the FIFO buffer.
+    val enq = Flipped(new CreditIO(data))
+    val deq = Decoupled(data)
+    val fifoCount = Output(UInt(log2Ceil(maxCredit + 1).W))
   })
+  
+  // Internal FIFO queue
+  val outFifo = Module(new Queue(data, maxCredit))
+  
+  // Registers to store delayed input signals
+  val ivalid = RegNext(io.enq.valid, init = false.B)
+  val idata = RegNext(io.enq.bits)
 
-  // Internal FIFO Queue
-  val fifo = Module(new Queue(data, maxCredit))
+  // Wire for generating the next credit signal
+  val nextCredit = WireDefault(0.B)
 
-  // Wires and Registers
-  val bypassMode = Wire(Bool())                // Whether the bypass mode is enabled (FIFO is empty).
-  val nextCredit = Wire(Bool())                // Determines when a credit should be issued.
-  val ocredit = RegInit(false.B)               // Output credit signal (will drive io.enq.credit).
+  // Connect outputs
+  io.deq.bits := Mux(!outFifo.io.deq.valid && outFifo.io.count === 0.U, idata, outFifo.io.deq.bits)
+  io.deq.valid := Mux(!outFifo.io.deq.valid && outFifo.io.count === 0.U, ivalid, outFifo.io.deq.valid)
+  io.fifoCount := outFifo.io.count
 
-  // Bypass Logic: FIFO is empty and the consumer is ready
-  bypassMode := fifo.io.count === 0.U && io.deq.ready
+  // FIFO enqueue logic
+  outFifo.io.enq.bits := idata
+  outFifo.io.enq.valid := Mux(io.deq.ready, false.B, ivalid)
 
-  // Connecting the FIFO enqueue logic
-  fifo.io.enq.valid := io.enq.valid && !bypassMode // Push to FIFO only when not bypassing
-  fifo.io.enq.bits := io.enq.bits
+  // FIFO dequeue logic
+  outFifo.io.deq.ready := io.deq.ready
 
-  // Connecting the FIFO dequeue logic
-  fifo.io.deq.ready := io.deq.ready // FIFO ready when downstream is ready
-
-  // Connecting the output dequeue logic
-  io.deq.valid := Mux(bypassMode, io.enq.valid, fifo.io.deq.valid) // Use FIFO or bypass
-  io.deq.bits := Mux(bypassMode, io.enq.bits, fifo.io.deq.bits) // Use FIFO or bypass
-
-  // Credit generation logic: When to issue a credit back to the sender
-  nextCredit := Mux(bypassMode, io.deq.fire, fifo.io.deq.fire)
-  ocredit := nextCredit
-
-  // Connecting Credit Output
+  // Credit management
+  nextCredit := Mux(io.deq.ready, ivalid, outFifo.io.deq.fire)
+  val ocredit = RegNext(nextCredit, init = false.B)
   io.enq.credit := ocredit
-
-  // Connecting FIFO count output
-  io.fifoCount := fifo.io.count
 }
+
 

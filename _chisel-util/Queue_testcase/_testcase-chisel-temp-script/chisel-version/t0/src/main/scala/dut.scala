@@ -3,69 +3,57 @@ import chisel3.util._
 
 class dut[T <: Data](gen: T, entries: Int, hasFlush: Boolean = false) extends Module {
   val io = IO(new Bundle {
-    val enq = Flipped(Decoupled(gen))
-    val deq = Decoupled(gen)
-    val flush = if (hasFlush) Some(Input(Bool())) else None
-    val count = Output(UInt(log2Ceil(entries + 1).W))
+    val enq = Flipped(Decoupled(gen))  // Enqueue interface
+    val deq = Decoupled(gen)           // Dequeue interface
+    val count = Output(UInt(log2Ceil(entries + 1).W)) // Number of elements in the queue
+    val flush = if (hasFlush) Some(Input(Bool())) else None // Optional flush signal
   })
 
-  // Task 1: Implement `ram` (Memory for Storage)
+  // Memory to store queue data entries
   val ram = Mem(entries, gen)
 
-  // Task 2: Implement Pointer Management
-  val enq_ptr = RegInit(0.U(log2Ceil(entries).W))
-  val deq_ptr = RegInit(0.U(log2Ceil(entries).W))
-  val ptr_match = (enq_ptr === deq_ptr)
+  // Pointer management
+  val enqPtr = RegInit(0.U(log2Ceil(entries).W))
+  val deqPtr = RegInit(0.U(log2Ceil(entries).W))
+  val maybeFull = RegInit(false.B)
 
-  // Task 3: Implement Full/Empty Logic
-  val maybe_full = RegInit(false.B)
-  val full = ptr_match && maybe_full
-  val empty = ptr_match && !maybe_full
+  val ptrMatch = enqPtr === deqPtr
+  val empty = ptrMatch && !maybeFull
+  val full = ptrMatch && maybeFull
 
-  // Task 4: Implement Data Enqueue Logic
-  val do_enq = io.enq.valid && !full
-  when (do_enq) {
-    ram(enq_ptr) := io.enq.bits
-    enq_ptr := enq_ptr + 1.U
-    when (enq_ptr === (entries - 1).U) {
-      enq_ptr := 0.U
-    }
-  }
-
-  // Task 5: Implement Data Dequeue Logic
-  val do_deq = io.deq.ready && !empty
-  io.deq.bits := ram(deq_ptr)
-  when (do_deq) {
-    deq_ptr := deq_ptr + 1.U
-    when (deq_ptr === (entries - 1).U) {
-      deq_ptr := 0.U
-    }
-  }
-
-  // Handle the maybe_full register update
-  when (do_enq =/= do_deq) {
-    maybe_full := do_enq
-  }
-
-  // Task 6: Implement Flush Mechanism (Optional Feature)
-  if (hasFlush) {
-    when (io.flush.get) {
-      enq_ptr := 0.U
-      deq_ptr := 0.U
-      maybe_full := false.B
-    }
-  }
-
-  // Task 7: Implement Count Calculation Logic
-  io.count := Mux(enq_ptr >= deq_ptr,
-    enq_ptr - deq_ptr,
-    entries.U + enq_ptr - deq_ptr)
-
-  // Task 8: Implement Module Interface and Signals
+  // Enqueue logic
   io.enq.ready := !full
-  io.deq.valid := !empty
+  when(io.enq.fire()) {
+    ram(enqPtr) := io.enq.bits
+    enqPtr := Mux(enqPtr === (entries - 1).U, 0.U, enqPtr + 1.U)
+    when(enqPtr === (entries - 1).U) {
+      maybeFull := true.B
+    }
+  }
 
-  // Task 9: Integrate and Handle Corner Cases
-  // Tasks are integrated within the logic above.
+  // Dequeue logic
+  io.deq.valid := !empty
+  io.deq.bits := ram(deqPtr)
+  when(io.deq.fire()) {
+    deqPtr := Mux(deqPtr === (entries - 1).U, 0.U, deqPtr + 1.U)
+    when(deqPtr === (entries - 1).U) {
+      maybeFull := false.B
+    }
+  }
+
+  // Flush mechanism
+  if (hasFlush) {
+    when(io.flush.get) {
+      enqPtr := 0.U
+      deqPtr := 0.U
+      maybeFull := false.B
+    }
+  }
+
+  // Calculate and output count
+  io.count := Mux(ptrMatch,
+    Mux(maybeFull, entries.U, 0.U),
+    Mux(deqPtr > enqPtr, (entries.U + enqPtr) - deqPtr, enqPtr - deqPtr)
+  )
 }
 

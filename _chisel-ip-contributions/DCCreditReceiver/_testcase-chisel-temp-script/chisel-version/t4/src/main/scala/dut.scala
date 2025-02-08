@@ -10,49 +10,43 @@ class CreditIO[D <: Data](data: D) extends Bundle {
 class dut[D <: Data](data: D, maxCredit: Int) extends Module {
   val io = IO(new Bundle {
     val enq = Flipped(new CreditIO(data))
-    val deq = Decoupled(data)
+    val deq = DecoupledIO(data)
     val fifoCount = Output(UInt(log2Ceil(maxCredit + 1).W))
   })
 
-  // FIFO Instantiation with a depth of maxCredit
-  val fifo = Module(new Queue(data, maxCredit))
-
-  // Registers for input synchronization
+  // Internal registers
   val ivalid = RegInit(false.B)
   val idata = Reg(data.cloneType)
+  val ocredit = RegNext(next = false.B, init = false.B)
 
-  when(io.enq.valid) {
+  // FIFO queue instantiation
+  val outFifo = Module(new Queue(data, maxCredit))
+  outFifo.io.enq.valid := ivalid && !io.deq.ready
+  outFifo.io.enq.bits := idata
+  outFifo.io.deq.ready := io.deq.ready
+
+  // FIFO count visibility
+  io.fifoCount := outFifo.io.count
+
+  // Bypass mode
+  val bypass = !outFifo.io.deq.valid && (outFifo.io.count === 0.U)
+
+  // Update internal registers
+  when(io.enq.valid && io.enq.credit) {
     ivalid := true.B
     idata := io.enq.bits
-  }.otherwise {
-    ivalid := false.B
   }
 
-  // Wire to determine if FIFO is in bypass mode
-  val bypass = WireDefault(false.B)
+  // Handle output to deq interface
+  io.deq.valid := Mux(bypass, ivalid, outFifo.io.deq.valid)
+  io.deq.bits := Mux(bypass, idata, outFifo.io.deq.bits)
 
-  // Bypass logic:
-  // If the FIFO is empty and the consumer is ready, bypass the FIFO
-  bypass := fifo.io.count === 0.U && io.deq.ready
+  // Determine if next credit should be issued
+  val nextCredit = WireInit(false.B)
+  nextCredit := Mux(bypass && io.deq.ready, ivalid, outFifo.io.deq.fire)
 
-  // Dequeue logic
-  when(bypass) {
-    io.deq.valid := io.enq.valid
-    io.deq.bits := io.enq.bits
-  }.otherwise {
-    // Enqueue to FIFO
-    fifo.io.enq.valid := io.enq.valid
-    fifo.io.enq.bits := io.enq.bits
-
-    // Connect FIFO to dequeue side
-    io.deq <> fifo.io.deq
-  }
-
-  // Credit mechanism
-  val nextCredit = WireDefault(io.deq.fire)
-  io.enq.credit := Mux(bypass, io.deq.ready && io.deq.valid, fifo.io.deq.fire)
-
-  // Expose the FIFO count
-  io.fifoCount := fifo.io.count
+  // Output credit back to the enqueuing interface
+  io.enq.credit := ocredit
+  ocredit := nextCredit
 }
 

@@ -14,34 +14,44 @@ class dut[D <: Data](data: D, maxCredit: Int) extends Module {
     val fifoCount = Output(UInt(log2Ceil(maxCredit + 1).W))
   })
 
-  // Internal FIFO queue to manage incoming data
-  val fifo = Module(new Queue(data, maxCredit))
-  
-  // Bypass logic
-  val bypass = Wire(Bool())
-  bypass := (fifo.io.count === 0.U) && io.deq.ready
+  // Internal registers to store the delayed input signals
+  val ivalid = RegInit(false.B)
+  val idata = Reg(data.cloneType)
+  val ocredit = RegInit(false.B)
 
-  // Manage enqueue and dequeue
-  fifo.io.enq.valid := io.enq.valid && !bypass
-  fifo.io.enq.bits := io.enq.bits
-  io.deq.valid := Mux(bypass, io.enq.valid, fifo.io.deq.valid)
-  io.deq.bits := Mux(bypass, io.enq.bits, fifo.io.deq.bits)
-  fifo.io.deq.ready := io.deq.ready && !bypass
-
-  // Credit logic
-  val nextCredit = Wire(Bool())
-  nextCredit := io.deq.ready && (bypass || fifo.io.deq.valid)
-  val creditReg = RegInit(false.B)
-  
-  when(nextCredit) {
-    creditReg := true.B
+  // Update registers with incoming data
+  when(io.enq.valid && io.enq.credit) {
+    ivalid := true.B
+    idata := io.enq.bits
   }.otherwise {
-    creditReg := false.B
+    ivalid := false.B
+  }
+
+  // Create a FIFO queue with the specified maximum credit (depth)
+  val outFifo = Module(new Queue(data, maxCredit))
+
+  // Connect enqueue signals to the Queue
+  outFifo.io.enq.valid := Mux(io.deq.ready, false.B, ivalid)
+  outFifo.io.enq.bits := idata
+
+  // Bypass logic and credit generation
+  val nextCredit = WireDefault(false.B)
+
+  // Dequeue logic
+  when(!outFifo.io.deq.valid && (outFifo.io.count === 0.U)) { // FIFO empty and bypass mode
+    io.deq.valid := ivalid
+    io.deq.bits := idata
+    nextCredit := Mux(io.deq.ready, ivalid, false.B)
+  }.otherwise {
+    io.deq <> outFifo.io.deq
+    nextCredit := outFifo.io.deq.fire
   }
   
-  io.enq.credit := creditReg
-
-  // FIFO count output
-  io.fifoCount := fifo.io.count
+  // Credit logic
+  ocredit := nextCredit
+  io.enq.credit := ocredit
+  
+  // FIFO count
+  io.fifoCount := outFifo.io.count
 }
 

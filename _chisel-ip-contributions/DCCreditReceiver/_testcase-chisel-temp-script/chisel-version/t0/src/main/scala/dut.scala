@@ -7,47 +7,40 @@ class CreditIO[D <: Data](data: D) extends Bundle {
   val bits = Output(data.cloneType)
 }
 
-class dut[D <: Data](data: D, maxCredit: Int) extends Module {
+class dut[D <: Data](dataType: D, maxCredit: Int) extends Module {
   val io = IO(new Bundle {
-    val enq = Flipped(new CreditIO(data))
-    val deq = Decoupled(data)
+    val enq = Flipped(new CreditIO(dataType))
+    val deq = Decoupled(dataType)
     val fifoCount = Output(UInt(log2Ceil(maxCredit + 1).W))
   })
 
-  // Internal FIFO queue
-  val fifo = Module(new Queue(data, maxCredit))
+  // Internal FIFO buffer
+  val outFifo = Module(new Queue(dataType, maxCredit))
   
-  // Internal registers to track input valid and bits
-  val ivalid = RegInit(false.B)
-  val idata = Reg(data.cloneType)
-
-  // Handling input data and valid signal
-  when(io.enq.valid && io.enq.credit) {
-    ivalid := true.B
-    idata := io.enq.bits
-  }.otherwise {
-    ivalid := false.B
-  }
+  // Registers for input valid and data
+  val ivalid = RegNext(io.enq.valid, init = false.B)
+  val idata = RegNext(io.enq.bits)
 
   // Bypass logic
-  val bypass = Wire(Bool())
-  bypass := fifo.io.count === 0.U && io.deq.ready
-
-  // Output to consumer
-  io.deq.valid := Mux(bypass, ivalid, fifo.io.deq.valid)
-  io.deq.bits := Mux(bypass, idata, fifo.io.deq.bits)
-  fifo.io.deq.ready := !bypass && io.deq.ready
-
-  // Credit logic
+  val bypassMode = !outFifo.io.deq.valid && (outFifo.io.count === 0.U)
+  
+  io.deq.valid := Mux(bypassMode, ivalid, outFifo.io.deq.valid)
+  io.deq.bits := Mux(bypassMode, idata, outFifo.io.deq.bits)
+  outFifo.io.deq.ready := !bypassMode && io.deq.ready
+  
+  // Enqueue logic
+  outFifo.io.enq.valid := Mux(io.deq.ready, false.B, ivalid)
+  outFifo.io.enq.bits := idata
+  
+  // Credit update logic
   val nextCredit = Wire(Bool())
-  nextCredit := (bypass && io.deq.fire) || (!bypass && fifo.io.deq.fire)
-  io.enq.credit := nextCredit
-
-  // Connect input to FIFO
-  fifo.io.enq.valid := io.enq.valid && !bypass
-  fifo.io.enq.bits := io.enq.bits
+  nextCredit := Mux(bypassMode, Mux(io.deq.ready, ivalid, false.B), outFifo.io.deq.fire)
+  
+  // Connect credit signal to input
+  val ocredit = RegNext(nextCredit, init = false.B)
+  io.enq.credit := ocredit
 
   // FIFO count output
-  io.fifoCount := fifo.io.count
+  io.fifoCount := outFifo.io.count
 }
 

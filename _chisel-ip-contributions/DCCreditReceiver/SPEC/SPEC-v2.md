@@ -28,13 +28,13 @@ This module:
 1. **`io.enq`** (Flipped `CreditIO`):
    - A credit-based interface for incoming data and control signals.
 
-``` scala
+`` scala
 class CreditIO[D <: Data](data: D) extends Bundle {
   val valid = Output(Bool())
   val credit = Input(Bool())
   val bits = Output(data.cloneType)
 }
-```
+``
 
 ---
 
