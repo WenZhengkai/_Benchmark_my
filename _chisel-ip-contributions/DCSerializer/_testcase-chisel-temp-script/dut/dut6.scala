@@ -2,45 +2,47 @@ import chisel3._
 import chisel3.util._
 
 class dut[D <: Data](data: D, width: Int) extends Module {
-  require(data.getWidth > width, "Data width must be greater than serialized output width.")
+  require(width > 0, "Width must be greater than 0.")
+  require(width < data.getWidth, s"Width ($width) must be less than data.getWidth (${data.getWidth}).")
 
   val io = IO(new Bundle {
-    val dataIn = Flipped(Decoupled(data))
-    val dataOut = Decoupled(UInt(width.W))
+    val dataIn = Flipped(Decoupled(data))       // Input handshaking interface
+    val dataOut = Decoupled(UInt(width.W))     // Output handshaking interface
   })
 
-  // Task 1: Cycle Calculation Logic
-  val cycles = (data.getWidth + width - 1) / width
+  // Task 1: Calculate the number of cycles required to serialize the input data
+  val cycles = (data.getWidth + width - 1) / width   // Ceiling division
 
-  // Task 2: Cycle Counter Register
-  val cycleCount = RegInit(0.U(log2Ceil(cycles).W))
+  // Task 2: Implement cycle counter logic to track serialization progress
+  val cycleCount = RegInit(0.U(log2Ceil(cycles + 1).W))
 
-  when(io.dataOut.fire()) {
-    cycleCount := cycleCount + 1.U
-  }
+  // Task 3: Split input data into fixed-width words
+  // Calculate padded width
+  val paddedWidth = cycles * width
 
-  when(io.dataIn.fire()) {
-    cycleCount := 0.U
-  }
+  // Pad the input data to paddedWidth bits (add MSB zeros if needed)
+  val paddedData = Cat(0.U((paddedWidth - data.getWidth).W), io.dataIn.bits.asUInt)
 
-  // Task 3: Data Selection and Storage
-  val dataSelect = Wire(Vec(cycles, UInt(width.W)))
+  // Split paddedData into a vector of `width`-bit chunks
+  val dataChunks = VecInit.tabulate(cycles)(i => paddedData(i * width + width - 1, i * width))
 
-  for (i <- 0 until cycles) {
-    val lower = i * width
-    val upper = math.min((i + 1) * width, data.getWidth) // ensure we don't exceed the data width
-    dataSelect(i) := io.dataIn.bits.asUInt()(upper - 1, lower)
-  }
+  // Output serialization logic
+  io.dataOut.bits := dataChunks(cycleCount)
 
-  io.dataOut.bits := dataSelect(cycleCount)
+  // Task 4: Implement handshaking logic for I/O control
 
-  // Task 4: Handshaking Logic for Data Input
+  // Drive `io.dataIn.ready` signal: Module is ready for new input when all data is serialized
   io.dataIn.ready := (cycleCount === (cycles - 1).U) && io.dataOut.ready
 
-  // Task 5: Handshaking Logic for Data Output
+  // Drive `io.dataOut.valid` signal
   io.dataOut.valid := io.dataIn.valid
 
-  // Optional: end the transaction when the last word has been sent
-  // (manage transaction completion externally as needed)
+  // Update `cycleCount` logic
+  when(io.dataOut.fire) {
+    // Increment cycleCount when `io.dataOut.fire` (valid & ready handshake occurs)
+    cycleCount := Mux(cycleCount === (cycles - 1).U, 0.U, cycleCount + 1.U)
+  }.elsewhen(io.dataIn.fire) {
+    // Reset cycleCount when new data is loaded
+    cycleCount := 0.U
+  }
 }
-

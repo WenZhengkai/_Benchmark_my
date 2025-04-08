@@ -1,31 +1,35 @@
 import chisel3._
 import chisel3.util._
 
+/**
+ * dut - A demultiplexing module that routes an input channel to one of multiple output channels based on a selector signal
+ * @param data The data type for the input and output channels
+ * @param n The number of output channels
+ */
 class dut[T <: Data](data: T, n: Int) extends Module {
+  require(n > 1, "n (number of output channels) must be greater than 1")
+
   val io = IO(new Bundle {
-    val sel = Input(UInt(log2Ceil(n).W))
-    val c = Flipped(DecoupledIO(data))
-    val p = Vec(n, DecoupledIO(data))
+    val sel = Input(UInt(log2Ceil(n).W))        // Selector signal
+    val c = Flipped(Decoupled(data))           // Input channel
+    val p = Vec(n, Decoupled(data))            // Output channels
   })
 
-  // Task 2: Initialize Ready Signal
+  // Task 1: Initialize Input Ready Signal
   io.c.ready := false.B
 
-  // Task 3: Iterate Over Output Channels
+  // Task 2: Connect Input Data to All Output Channels
   for (i <- 0 until n) {
-    // Task 4: Assign Data to Output Channels
-    io.p(i).bits := io.c.bits
+    io.p(i).bits := io.c.bits          // All outputs receive the input data
+    io.p(i).valid := false.B           // Default valid signal for outputs is `false.B`
+  }
 
-    // Task 5: Implement Selection Logic
-    when (i.U === io.sel) {
-      io.p(i).valid := io.c.valid
-      io.c.ready := io.p(i).ready
-    } .otherwise {
-      // Task 6: Inactivate Non-Selected Channels
-      io.p(i).valid := false.B
+  // Task 3: Conditionally Set Valids and Update Ready Signal
+  for (i <- 0 until n) {
+    when(i.U === io.sel) {             // Check if current channel matches the selector
+      io.p(i).valid := io.c.valid      // Propagate input validity to the selected output
+      io.c.ready := io.p(i).ready      // Input is ready if selected output is ready
     }
   }
 }
 
-// Testbench and simulation setup is required to verify the functionality of the module
-// You would typically use a ChiselTest-based testbench to ensure correctness.

@@ -48,6 +48,26 @@
 
 给出完整代码
 
+### s6-fix.sh
+编写一份shell脚本
+定义当前路径为main_dir
+
+在main_dir/dut内寻找10个scala文件，名称为（dut0.scala,dut1.scala,dut2.scala,...,dut9.scala）
+分别对每个文件搜索代码内容
+1. 搜索是否某一行写了`package xxx`, 其中`xxx`为任意内容，如果有，则将该行用`//`注释
+2. 搜索是否出现
+object XXX extends App {
+...
+}
+其中`XXX`为任意内容
+如果有，则使用`/*  */`将以上`object XXX extends App{...}`内容包裹注释
+3. 如果用户在运行脚本的命令行内输入参数： OrginalName, FixName
+查找文件内所有OrginalName，替换为FixName
+如果没有找到OrginalName，输出“dut[i] 未找到OrginalName”
+如果用户在运行脚本的命令行内未输入参数，则无须该步骤
+
+给出完整代码
+
 
 ### s7-mov.sh
 编写一份shell脚本

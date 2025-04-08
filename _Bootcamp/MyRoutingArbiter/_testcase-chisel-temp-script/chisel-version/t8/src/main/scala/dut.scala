@@ -3,30 +3,35 @@ import chisel3.util._
 
 class dut(numChannels: Int) extends Module {
   val io = IO(new Bundle {
-    val in = Flipped(Vec(numChannels, Decoupled(UInt(8.W))))
-    val out = Decoupled(UInt(8.W))
+    val in = Flipped(Vec(numChannels, Decoupled(UInt(8.W)))) // Input channels
+    val out = Decoupled(UInt(8.W)) // Output channel
   })
 
-  // Task 1: Implement Output Validity Logic
-  // Set the `out.valid` signal to true if at least one of the input channels is valid.
+  // Task 1: Output Validity Signal Generation
+  // Combine valid signals from all input channels
   io.out.valid := io.in.map(_.valid).reduce(_ || _)
 
-  // Task 2: Implement Priority Selection using PriorityMux
-  // Create a list of indices and corresponding valid signals
-  val validIndices = io.in.indices.map(i => (io.in(i).valid, i.U))
-  // Use PriorityMux to select the index of the first valid channel
-  val selectedChannel = PriorityMux(validIndices)
+  // Task 2: Priority Channel Selection Logic
+  // Create a priority-based selection of the input channel
+  val validWithIndex = io.in.zipWithIndex.map { case (channel, index) => (channel.valid, index.U) }
+  val selectedChannel = PriorityMux(validWithIndex.map(_._1), validWithIndex.map(_._2))
 
-  // Task 3: Implement Data Routing
-  // Route the data from the selected input channel to the output
+  // Task 3: Output Data Routing Implementation
+  // Route the data from the selected channel to the output
   io.out.bits := Mux1H(
-    io.in.indices.map(i => (selectedChannel === i.U) -> io.in(i).bits)
+    io.in.zipWithIndex.map { case (channel, index) =>
+      (index.U === selectedChannel) -> channel.bits
+    }
   )
-
-  // Task 4: Implement Input Readiness Logic
-  // Set each input channel's `ready` signal based on the selected channel index and output readiness
-  for (i <- io.in.indices) {
-    io.in(i).ready := io.out.ready && (selectedChannel === i.U)
+  
+  // Task 4: Input Ready Signal Generation
+  // Set the `ready` signal on the input channel that is currently selected
+  io.in.zipWithIndex.foreach { case (channel, index) =>
+    channel.ready := (selectedChannel === index.U) && io.out.ready
   }
+
+  // Task 5: Integration & Final Wiring
+  // No extra logic is required here as the design is modular and flows as specified.
+
 }
 

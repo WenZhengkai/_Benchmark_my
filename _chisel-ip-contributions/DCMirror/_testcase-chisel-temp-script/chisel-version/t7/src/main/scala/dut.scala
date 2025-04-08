@@ -3,37 +3,42 @@ import chisel3.util._
 
 class dut[D <: Data](data: D, n: Int) extends Module {
   val io = IO(new Bundle {
-    val dst = Input(UInt(n.W))
-    val c = Flipped(Decoupled(data.cloneType))
-    val p = Vec(n, Decoupled(data.cloneType))
+    val dst = Input(UInt(n.W))                          // Bit vector of output destinations
+    val c = Flipped(DecoupledIO(data.cloneType))        // Input DecoupledIO interface
+    val p = Vec(n, DecoupledIO(data.cloneType))         // Output Vec of DecoupledIO interfaces
   })
 
-  // Task 1: Define Registers
-  val pData = Reg(data.cloneType)
-  val pValid = RegInit(0.U(n.W))
+  // Task 1: Define Registers and Signals
+  val pData = Reg(data.cloneType)                      // Register to hold the incoming data
+  val pValid = RegInit(0.U(n.W))                       // Valid register for the outputs
+  val pReady = Wire(Vec(n, Bool()))                    // Signal for readiness of all outputs
+  val nxtAccept = Wire(Bool())                         // Signal to determine when the module can accept new data
 
-  // Task 2: Compute `pReady` Vector
-  val pReady = VecInit(io.p.map(_.ready)).asUInt
+  // Connect `pReady` to the output ready signals
+  pReady := io.p.map(_.ready)
 
-  // Task 3: Compute `nxtAccept` Signal
-  val allValidAccepted = (pReady & pValid) === pValid
-  val nxtAccept = (pValid === 0.U) || allValidAccepted
+  // Task 2: Implement Data Register (`pData`)
+  when(nxtAccept) {
+    pData := io.c.bits                                  // Update `pData` when new data is accepted
+  }
 
-  // Task 4: Update Data and Validity
-  when(io.c.valid && nxtAccept) {
-    pData := io.c.bits
-    pValid := io.dst & Fill(n, io.c.valid) // Only update valid for active dst
+  // Task 3: Implement Valid Register (`pValid`)
+  when(nxtAccept) {
+    pValid := Mux(io.c.valid, io.dst, 0.U)             // Update `pValid` when accepting new data
   }.otherwise {
-    pValid := pValid & ~pReady // Retain only outputs that aren't ready
+    // Retain valid bits for outputs that aren't ready
+    pValid := pValid & ~pReady.asUInt                   // Mask out bits that are ready
   }
 
-  // Task 5: Output Assignment
-  io.p.zipWithIndex.foreach { case (out, i) =>
-    out.valid := pValid(i)
-    out.bits := pData
+  // Task 4: Compute the Next Accept Signal (`nxtAccept`)
+  nxtAccept := (pValid === 0.U) || (pValid & pReady.asUInt) === pValid
+
+  // Task 5: Assign Outputs
+  for (i <- 0 until n) {
+    io.p(i).valid := pValid(i)                          // Connect the `valid` signal
+    io.p(i).bits := pData                               // Assign the payload
   }
 
-  // Task 6: Implement Ready/Valid Handshake
-  io.c.ready := nxtAccept
+  // Task 6: Integrate Flow Control
+  io.c.ready := nxtAccept                               // Input is ready when `nxtAccept` is true
 }
-

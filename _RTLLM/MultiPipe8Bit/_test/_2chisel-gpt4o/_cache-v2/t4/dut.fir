@@ -1,0 +1,92 @@
+circuit dut :
+  module dut :
+    input clock : Clock
+    input reset : UInt<1>
+    output io : { flip mul_en_in : UInt<1>, flip mul_a : UInt<8>, flip mul_b : UInt<8>, mul_en_out : UInt<1>, mul_out : UInt<16>}
+
+    reg mul_en_out_reg : UInt<5>, clock with :
+      reset => (reset, UInt<5>("h0")) @[dut.scala 14:31]
+    reg mul_a_reg : UInt, clock with :
+      reset => (reset, UInt<1>("h0")) @[Reg.scala 35:20]
+    when io.mul_en_in : @[Reg.scala 36:18]
+      mul_a_reg <= io.mul_a @[Reg.scala 36:22]
+    reg mul_b_reg : UInt, clock with :
+      reset => (reset, UInt<1>("h0")) @[Reg.scala 35:20]
+    when io.mul_en_in : @[Reg.scala 36:18]
+      mul_b_reg <= io.mul_b @[Reg.scala 36:22]
+    wire temp : UInt<16>[8] @[dut.scala 19:18]
+    node _temp_0_T = bits(io.mul_b, 0, 0) @[dut.scala 23:28]
+    node _temp_0_T_1 = shl(io.mul_a, 0) @[dut.scala 23:42]
+    node _temp_0_T_2 = mux(_temp_0_T, _temp_0_T_1, UInt<1>("h0")) @[dut.scala 23:19]
+    temp[0] <= _temp_0_T_2 @[dut.scala 23:13]
+    node _temp_1_T = bits(io.mul_b, 1, 1) @[dut.scala 23:28]
+    node _temp_1_T_1 = shl(io.mul_a, 1) @[dut.scala 23:42]
+    node _temp_1_T_2 = mux(_temp_1_T, _temp_1_T_1, UInt<1>("h0")) @[dut.scala 23:19]
+    temp[1] <= _temp_1_T_2 @[dut.scala 23:13]
+    node _temp_2_T = bits(io.mul_b, 2, 2) @[dut.scala 23:28]
+    node _temp_2_T_1 = shl(io.mul_a, 2) @[dut.scala 23:42]
+    node _temp_2_T_2 = mux(_temp_2_T, _temp_2_T_1, UInt<1>("h0")) @[dut.scala 23:19]
+    temp[2] <= _temp_2_T_2 @[dut.scala 23:13]
+    node _temp_3_T = bits(io.mul_b, 3, 3) @[dut.scala 23:28]
+    node _temp_3_T_1 = shl(io.mul_a, 3) @[dut.scala 23:42]
+    node _temp_3_T_2 = mux(_temp_3_T, _temp_3_T_1, UInt<1>("h0")) @[dut.scala 23:19]
+    temp[3] <= _temp_3_T_2 @[dut.scala 23:13]
+    node _temp_4_T = bits(io.mul_b, 4, 4) @[dut.scala 23:28]
+    node _temp_4_T_1 = shl(io.mul_a, 4) @[dut.scala 23:42]
+    node _temp_4_T_2 = mux(_temp_4_T, _temp_4_T_1, UInt<1>("h0")) @[dut.scala 23:19]
+    temp[4] <= _temp_4_T_2 @[dut.scala 23:13]
+    node _temp_5_T = bits(io.mul_b, 5, 5) @[dut.scala 23:28]
+    node _temp_5_T_1 = shl(io.mul_a, 5) @[dut.scala 23:42]
+    node _temp_5_T_2 = mux(_temp_5_T, _temp_5_T_1, UInt<1>("h0")) @[dut.scala 23:19]
+    temp[5] <= _temp_5_T_2 @[dut.scala 23:13]
+    node _temp_6_T = bits(io.mul_b, 6, 6) @[dut.scala 23:28]
+    node _temp_6_T_1 = shl(io.mul_a, 6) @[dut.scala 23:42]
+    node _temp_6_T_2 = mux(_temp_6_T, _temp_6_T_1, UInt<1>("h0")) @[dut.scala 23:19]
+    temp[6] <= _temp_6_T_2 @[dut.scala 23:13]
+    node _temp_7_T = bits(io.mul_b, 7, 7) @[dut.scala 23:28]
+    node _temp_7_T_1 = shl(io.mul_a, 7) @[dut.scala 23:42]
+    node _temp_7_T_2 = mux(_temp_7_T, _temp_7_T_1, UInt<1>("h0")) @[dut.scala 23:19]
+    temp[7] <= _temp_7_T_2 @[dut.scala 23:13]
+    node _sumReg1_T = add(temp[0], temp[1]) @[dut.scala 27:33]
+    node _sumReg1_T_1 = tail(_sumReg1_T, 1) @[dut.scala 27:33]
+    reg sumReg1 : UInt, clock with :
+      reset => (reset, UInt<1>("h0")) @[dut.scala 27:24]
+    sumReg1 <= _sumReg1_T_1 @[dut.scala 27:24]
+    node _sumReg2_T = add(temp[2], temp[3]) @[dut.scala 28:33]
+    node _sumReg2_T_1 = tail(_sumReg2_T, 1) @[dut.scala 28:33]
+    reg sumReg2 : UInt, clock with :
+      reset => (reset, UInt<1>("h0")) @[dut.scala 28:24]
+    sumReg2 <= _sumReg2_T_1 @[dut.scala 28:24]
+    node _sumReg3_T = add(temp[4], temp[5]) @[dut.scala 29:33]
+    node _sumReg3_T_1 = tail(_sumReg3_T, 1) @[dut.scala 29:33]
+    reg sumReg3 : UInt, clock with :
+      reset => (reset, UInt<1>("h0")) @[dut.scala 29:24]
+    sumReg3 <= _sumReg3_T_1 @[dut.scala 29:24]
+    node _sumReg4_T = add(temp[6], temp[7]) @[dut.scala 30:33]
+    node _sumReg4_T_1 = tail(_sumReg4_T, 1) @[dut.scala 30:33]
+    reg sumReg4 : UInt, clock with :
+      reset => (reset, UInt<1>("h0")) @[dut.scala 30:24]
+    sumReg4 <= _sumReg4_T_1 @[dut.scala 30:24]
+    node _partialSum1_T = add(sumReg1, sumReg2) @[dut.scala 33:37]
+    node _partialSum1_T_1 = tail(_partialSum1_T, 1) @[dut.scala 33:37]
+    reg partialSum1 : UInt, clock with :
+      reset => (reset, UInt<1>("h0")) @[dut.scala 33:28]
+    partialSum1 <= _partialSum1_T_1 @[dut.scala 33:28]
+    node _partialSum2_T = add(sumReg3, sumReg4) @[dut.scala 34:37]
+    node _partialSum2_T_1 = tail(_partialSum2_T, 1) @[dut.scala 34:37]
+    reg partialSum2 : UInt, clock with :
+      reset => (reset, UInt<1>("h0")) @[dut.scala 34:28]
+    partialSum2 <= _partialSum2_T_1 @[dut.scala 34:28]
+    node _mul_out_reg_T = add(partialSum1, partialSum2) @[dut.scala 35:41]
+    node _mul_out_reg_T_1 = tail(_mul_out_reg_T, 1) @[dut.scala 35:41]
+    reg mul_out_reg : UInt, clock with :
+      reset => (reset, UInt<1>("h0")) @[dut.scala 35:28]
+    mul_out_reg <= _mul_out_reg_T_1 @[dut.scala 35:28]
+    node _mul_en_out_reg_T = bits(mul_en_out_reg, 3, 0) @[dut.scala 38:39]
+    node _mul_en_out_reg_T_1 = cat(_mul_en_out_reg_T, io.mul_en_in) @[Cat.scala 33:92]
+    mul_en_out_reg <= _mul_en_out_reg_T_1 @[dut.scala 38:18]
+    node _io_mul_en_out_T = bits(mul_en_out_reg, 4, 4) @[dut.scala 41:34]
+    io.mul_en_out <= _io_mul_en_out_T @[dut.scala 41:17]
+    node _io_mul_out_T = mux(io.mul_en_out, mul_out_reg, UInt<1>("h0")) @[dut.scala 42:20]
+    io.mul_out <= _io_mul_out_T @[dut.scala 42:14]
+

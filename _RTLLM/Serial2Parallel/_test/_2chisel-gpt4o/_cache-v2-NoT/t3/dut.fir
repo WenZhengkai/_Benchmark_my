@@ -1,0 +1,30 @@
+circuit dut :
+  module dut :
+    input clock : Clock
+    input reset : UInt<1>
+    output io : { flip din_serial : UInt<1>, flip din_valid : UInt<1>, dout_parallel : UInt<8>, dout_valid : UInt<1>}
+
+    reg cnt : UInt<4>, clock with :
+      reset => (reset, UInt<4>("h0")) @[dut.scala 16:20]
+    reg shift_reg : UInt<8>, clock with :
+      reset => (reset, UInt<8>("h0")) @[dut.scala 19:26]
+    reg dout_valid_reg : UInt<1>, clock with :
+      reset => (reset, UInt<1>("h0")) @[dut.scala 22:31]
+    when io.din_valid : @[dut.scala 25:23]
+      node _cnt_T = add(cnt, UInt<1>("h1")) @[dut.scala 27:16]
+      node _cnt_T_1 = tail(_cnt_T, 1) @[dut.scala 27:16]
+      cnt <= _cnt_T_1 @[dut.scala 27:9]
+      node _shift_reg_T = bits(shift_reg, 6, 0) @[dut.scala 30:31]
+      node _shift_reg_T_1 = cat(_shift_reg_T, io.din_serial) @[Cat.scala 33:92]
+      shift_reg <= _shift_reg_T_1 @[dut.scala 30:15]
+      node _T = eq(cnt, UInt<4>("h8")) @[dut.scala 33:15]
+      when _T : @[dut.scala 33:24]
+        cnt <= UInt<1>("h0") @[dut.scala 34:11]
+        dout_valid_reg <= UInt<1>("h1") @[dut.scala 35:22]
+      else :
+        dout_valid_reg <= UInt<1>("h0") @[dut.scala 37:22]
+    else :
+      dout_valid_reg <= UInt<1>("h0") @[dut.scala 41:20]
+    io.dout_parallel <= shift_reg @[dut.scala 45:20]
+    io.dout_valid <= dout_valid_reg @[dut.scala 46:17]
+

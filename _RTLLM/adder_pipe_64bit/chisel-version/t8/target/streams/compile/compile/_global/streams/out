@@ -1,53 +1,11 @@
-[0m[[0m[31merror[0m] [0m[0m/home/kai/ChiselProject/Benchmarks/_Benchmark_my/_RTLLM/adder_pipe_64bit/chisel-version/t8/src/main/scala/dut.scala:41:68: value splitAt is not a member of chisel3.UInt[0m
-[0m[[0m[31merror[0m] [0m[0m    val (sum0, carry0) = (io.adda(15, 0) +& io.addb(15, 0)).asUInt.splitAt(16)[0m
-[0m[[0m[31merror[0m] [0m[0m                                                                   ^[0m
-[0m[[0m[31merror[0m] [0m[0m/home/kai/ChiselProject/Benchmarks/_Benchmark_my/_RTLLM/adder_pipe_64bit/chisel-version/t8/src/main/scala/dut.scala:42:19: type mismatch;[0m
-[0m[[0m[31merror[0m] [0m[0m found   : Any[0m
-[0m[[0m[31merror[0m] [0m[0m required: chisel3.Data[0m
-[0m[[0m[31merror[0m] [0m[0m    stage1_reg := sum0[0m
-[0m[[0m[31merror[0m] [0m[0m                  ^[0m
-[0m[[0m[31merror[0m] [0m[0m/home/kai/ChiselProject/Benchmarks/_Benchmark_my/_RTLLM/adder_pipe_64bit/chisel-version/t8/src/main/scala/dut.scala:43:25: type mismatch;[0m
-[0m[[0m[31merror[0m] [0m[0m found   : Any[0m
-[0m[[0m[31merror[0m] [0m[0m required: chisel3.Data[0m
-[0m[[0m[31merror[0m] [0m[0m    stage1_carry_reg := carry0[0m
-[0m[[0m[31merror[0m] [0m[0m                        ^[0m
-[0m[[0m[31merror[0m] [0m[0m/home/kai/ChiselProject/Benchmarks/_Benchmark_my/_RTLLM/adder_pipe_64bit/chisel-version/t8/src/main/scala/dut.scala:48:89: value splitAt is not a member of chisel3.UInt[0m
-[0m[[0m[31merror[0m] [0m[0m    val (sum1, carry1) = (io.adda(31, 16) +& io.addb(31, 16) + stage1_carry_reg).asUInt.splitAt(16)[0m
-[0m[[0m[31merror[0m] [0m[0m                                                                                        ^[0m
-[0m[[0m[31merror[0m] [0m[0m/home/kai/ChiselProject/Benchmarks/_Benchmark_my/_RTLLM/adder_pipe_64bit/chisel-version/t8/src/main/scala/dut.scala:49:19: type mismatch;[0m
-[0m[[0m[31merror[0m] [0m[0m found   : Any[0m
-[0m[[0m[31merror[0m] [0m[0m required: chisel3.Data[0m
-[0m[[0m[31merror[0m] [0m[0m    stage2_reg := sum1[0m
-[0m[[0m[31merror[0m] [0m[0m                  ^[0m
-[0m[[0m[31merror[0m] [0m[0m/home/kai/ChiselProject/Benchmarks/_Benchmark_my/_RTLLM/adder_pipe_64bit/chisel-version/t8/src/main/scala/dut.scala:50:25: type mismatch;[0m
-[0m[[0m[31merror[0m] [0m[0m found   : Any[0m
-[0m[[0m[31merror[0m] [0m[0m required: chisel3.Data[0m
-[0m[[0m[31merror[0m] [0m[0m    stage2_carry_reg := carry1[0m
-[0m[[0m[31merror[0m] [0m[0m                        ^[0m
-[0m[[0m[31merror[0m] [0m[0m/home/kai/ChiselProject/Benchmarks/_Benchmark_my/_RTLLM/adder_pipe_64bit/chisel-version/t8/src/main/scala/dut.scala:55:89: value splitAt is not a member of chisel3.UInt[0m
-[0m[[0m[31merror[0m] [0m[0m    val (sum2, carry2) = (io.adda(47, 32) +& io.addb(47, 32) + stage2_carry_reg).asUInt.splitAt(16)[0m
-[0m[[0m[31merror[0m] [0m[0m                                                                                        ^[0m
-[0m[[0m[31merror[0m] [0m[0m/home/kai/ChiselProject/Benchmarks/_Benchmark_my/_RTLLM/adder_pipe_64bit/chisel-version/t8/src/main/scala/dut.scala:56:19: type mismatch;[0m
-[0m[[0m[31merror[0m] [0m[0m found   : Any[0m
-[0m[[0m[31merror[0m] [0m[0m required: chisel3.Data[0m
-[0m[[0m[31merror[0m] [0m[0m    stage3_reg := sum2[0m
-[0m[[0m[31merror[0m] [0m[0m                  ^[0m
-[0m[[0m[31merror[0m] [0m[0m/home/kai/ChiselProject/Benchmarks/_Benchmark_my/_RTLLM/adder_pipe_64bit/chisel-version/t8/src/main/scala/dut.scala:57:25: type mismatch;[0m
-[0m[[0m[31merror[0m] [0m[0m found   : Any[0m
-[0m[[0m[31merror[0m] [0m[0m required: chisel3.Data[0m
-[0m[[0m[31merror[0m] [0m[0m    stage3_carry_reg := carry2[0m
-[0m[[0m[31merror[0m] [0m[0m                        ^[0m
-[0m[[0m[31merror[0m] [0m[0m/home/kai/ChiselProject/Benchmarks/_Benchmark_my/_RTLLM/adder_pipe_64bit/chisel-version/t8/src/main/scala/dut.scala:62:89: value splitAt is not a member of chisel3.UInt[0m
-[0m[[0m[31merror[0m] [0m[0m    val (sum3, carry3) = (io.adda(63, 48) +& io.addb(63, 48) + stage3_carry_reg).asUInt.splitAt(16)[0m
-[0m[[0m[31merror[0m] [0m[0m                                                                                        ^[0m
-[0m[[0m[31merror[0m] [0m[0m/home/kai/ChiselProject/Benchmarks/_Benchmark_my/_RTLLM/adder_pipe_64bit/chisel-version/t8/src/main/scala/dut.scala:63:19: type mismatch;[0m
-[0m[[0m[31merror[0m] [0m[0m found   : Any[0m
-[0m[[0m[31merror[0m] [0m[0m required: chisel3.Data[0m
-[0m[[0m[31merror[0m] [0m[0m    stage4_reg := sum3[0m
-[0m[[0m[31merror[0m] [0m[0m                  ^[0m
-[0m[[0m[31merror[0m] [0m[0m/home/kai/ChiselProject/Benchmarks/_Benchmark_my/_RTLLM/adder_pipe_64bit/chisel-version/t8/src/main/scala/dut.scala:64:20: type mismatch;[0m
-[0m[[0m[31merror[0m] [0m[0m found   : Any[0m
-[0m[[0m[31merror[0m] [0m[0m required: chisel3.Data[0m
-[0m[[0m[31merror[0m] [0m[0m    final_carry := carry3[0m
-[0m[[0m[31merror[0m] [0m[0m                   ^[0m
-[0m[[0m[31merror[0m] [0m[0m12 errors found[0m
+[0m[[0m[31merror[0m] [0m[0m/home/kai/ChiselProject/Benchmarks/_Benchmark_my/_RTLLM/adder_pipe_64bit/chisel-version/src/main/scala/t2.scala:24:9: constructor cannot be instantiated to expected type;[0m
+[0m[[0m[31merror[0m] [0m[0m found   : (T1, T2)[0m
+[0m[[0m[31merror[0m] [0m[0m required: chisel3.UInt[0m
+[0m[[0m[31merror[0m] [0m[0m    val (sum0, carry0) = addA_parts(0) +& addB_parts(0)[0m
+[0m[[0m[31merror[0m] [0m[0m        ^[0m
+[0m[[0m[31merror[0m] [0m[0m/home/kai/ChiselProject/Benchmarks/_Benchmark_my/_RTLLM/adder_pipe_64bit/chisel-version/src/main/scala/t2.scala:33:11: constructor cannot be instantiated to expected type;[0m
+[0m[[0m[31merror[0m] [0m[0m found   : (T1, T2)[0m
+[0m[[0m[31merror[0m] [0m[0m required: chisel3.UInt[0m
+[0m[[0m[31merror[0m] [0m[0m      val (sum, carry) = addA_parts(stage) +& addB_parts(stage) + carryRegs(stage - 1)[0m
+[0m[[0m[31merror[0m] [0m[0m          ^[0m
+[0m[[0m[31merror[0m] [0m[0mtwo errors found[0m

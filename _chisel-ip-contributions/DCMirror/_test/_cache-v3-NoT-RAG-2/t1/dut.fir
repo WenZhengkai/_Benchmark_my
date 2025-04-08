@@ -1,0 +1,53 @@
+circuit dut :
+  module dut :
+    input clock : Clock
+    input reset : UInt<1>
+    output io : { flip dst : UInt<5>, flip c : { flip ready : UInt<1>, valid : UInt<1>, bits : UInt<8>}, p : { flip ready : UInt<1>, valid : UInt<1>, bits : UInt<8>}[5]}
+
+    reg pData : UInt<8>, clock with :
+      reset => (UInt<1>("h0"), pData) @[dut.scala 12:18]
+    reg pValid : UInt<5>, clock with :
+      reset => (reset, UInt<5>("h0")) @[dut.scala 13:23]
+    wire _pReady_WIRE : UInt<1>[5] @[dut.scala 14:23]
+    _pReady_WIRE[0] <= io.p[0].ready @[dut.scala 14:23]
+    _pReady_WIRE[1] <= io.p[1].ready @[dut.scala 14:23]
+    _pReady_WIRE[2] <= io.p[2].ready @[dut.scala 14:23]
+    _pReady_WIRE[3] <= io.p[3].ready @[dut.scala 14:23]
+    _pReady_WIRE[4] <= io.p[4].ready @[dut.scala 14:23]
+    node pReady_lo = cat(_pReady_WIRE[1], _pReady_WIRE[0]) @[dut.scala 14:43]
+    node pReady_hi_hi = cat(_pReady_WIRE[4], _pReady_WIRE[3]) @[dut.scala 14:43]
+    node pReady_hi = cat(pReady_hi_hi, _pReady_WIRE[2]) @[dut.scala 14:43]
+    node pReady = cat(pReady_hi, pReady_lo) @[dut.scala 14:43]
+    wire nxtAccept : UInt<1> @[dut.scala 15:23]
+    when nxtAccept : @[dut.scala 18:19]
+      pData <= io.c.bits @[dut.scala 19:11]
+    when nxtAccept : @[dut.scala 23:19]
+      node _pValid_T = mux(io.c.valid, io.dst, UInt<1>("h0")) @[dut.scala 24:18]
+      pValid <= _pValid_T @[dut.scala 24:12]
+    else :
+      node _pValid_T_1 = not(pReady) @[dut.scala 26:24]
+      node _pValid_T_2 = and(pValid, _pValid_T_1) @[dut.scala 26:22]
+      pValid <= _pValid_T_2 @[dut.scala 26:12]
+    node _nxtAccept_T = eq(pValid, UInt<1>("h0")) @[dut.scala 30:24]
+    node _nxtAccept_T_1 = not(pReady) @[dut.scala 30:47]
+    node _nxtAccept_T_2 = and(pValid, _nxtAccept_T_1) @[dut.scala 30:45]
+    node _nxtAccept_T_3 = eq(_nxtAccept_T_2, UInt<1>("h0")) @[dut.scala 30:56]
+    node _nxtAccept_T_4 = or(_nxtAccept_T, _nxtAccept_T_3) @[dut.scala 30:33]
+    nxtAccept <= _nxtAccept_T_4 @[dut.scala 30:13]
+    node _io_p_0_valid_T = bits(pValid, 0, 0) @[dut.scala 34:28]
+    io.p[0].valid <= _io_p_0_valid_T @[dut.scala 34:19]
+    io.p[0].bits <= pData @[dut.scala 35:18]
+    node _io_p_1_valid_T = bits(pValid, 1, 1) @[dut.scala 34:28]
+    io.p[1].valid <= _io_p_1_valid_T @[dut.scala 34:19]
+    io.p[1].bits <= pData @[dut.scala 35:18]
+    node _io_p_2_valid_T = bits(pValid, 2, 2) @[dut.scala 34:28]
+    io.p[2].valid <= _io_p_2_valid_T @[dut.scala 34:19]
+    io.p[2].bits <= pData @[dut.scala 35:18]
+    node _io_p_3_valid_T = bits(pValid, 3, 3) @[dut.scala 34:28]
+    io.p[3].valid <= _io_p_3_valid_T @[dut.scala 34:19]
+    io.p[3].bits <= pData @[dut.scala 35:18]
+    node _io_p_4_valid_T = bits(pValid, 4, 4) @[dut.scala 34:28]
+    io.p[4].valid <= _io_p_4_valid_T @[dut.scala 34:19]
+    io.p[4].bits <= pData @[dut.scala 35:18]
+    io.c.ready <= nxtAccept @[dut.scala 39:14]
+

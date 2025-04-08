@@ -1,31 +1,30 @@
-
-
 import chisel3._
 import chisel3.util._
 
-class dut(val numChannels: Int) extends Module {
+class dut(numChannels: Int) extends Module {
   val io = IO(new Bundle {
-    val in = Flipped(Vec(numChannels, Decoupled(UInt(8.W))))
-    val out = Decoupled(UInt(8.W))
+    val in = Vec(numChannels, Flipped(Decoupled(UInt(8.W)))) // Input channels
+    val out = Decoupled(UInt(8.W))                          // Output channel
   })
 
-  // Task 1: Implement Output Validity Logic
-  // Set `out.valid` to true if at least one of the input channels is valid
-  io.out.valid := io.in.map(_.valid).reduce(_ || _)
+  // Task 1: Output Validity Signal Generation
+  io.out.valid := io.in.map(_.valid).reduce(_ || _) // OR reduction of all input valid signals
 
-  // Task 2: Implement Priority Selection using PriorityMux
-  // Select the channel index of the first valid input channel
-  val validIndices = io.in.zipWithIndex.map { case (channel, idx) => (channel.valid, idx.U) }
-  val selectedChannelIndex = PriorityMux(validIndices)
+  // Task 2: Priority Channel Selection Logic
+  // Create pairs of (valid, index), and map to PriorityMux
+  val selectedChannel = PriorityMux(io.in.zipWithIndex.map { case (in, idx) =>
+    (in.valid, idx.U)
+  })
 
-  // Task 3: Implement Data Routing
-  // Route the data from the selected input channel to the output
-  io.out.bits := io.in(selectedChannelIndex).bits
+  // Task 3: Output Data Routing Implementation
+  // Route selected channel's data to the output bits
+  io.out.bits := io.in(selectedChannel).bits
 
-  // Task 4: Implement Input Readiness Logic
-  // Set each input channel's `ready` signal based on selected index and output readiness
-  io.in.zipWithIndex.foreach { case (channel, idx) =>
-    channel.ready := io.out.ready && (selectedChannelIndex === idx.U)
+  // Task 4: Input Ready Signal Generation
+  // Generate per-channel ready signals based on selection
+  io.in.zipWithIndex.foreach { case (in, idx) =>
+    in.ready := (selectedChannel === idx.U) && io.out.ready
   }
 }
 
+// Testbench for dut for simulation

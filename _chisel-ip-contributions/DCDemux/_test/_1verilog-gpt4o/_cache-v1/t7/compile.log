@@ -1,0 +1,76 @@
+Command: vcs -cpp /usr/bin/g++-4.4 -cc /usr/bin/gcc-4.4 -sverilog +v2k -timescale=1ns/1ns \
+-debug_all -l compile.log +plusarg_save +libext+.v+.V+.sv+.svh -sverilog +memcbk \
+-P /home/kai/synopsys_tools/Verdi_2018/verdi/Verdi_O-2018.09-SP2/share/PLI/VCS/LINUX64/novas.tab \
+/home/kai/synopsys_tools/Verdi_2018/verdi/Verdi_O-2018.09-SP2/share/PLI/VCS/LINUX64/pli.a \
+-kdb -lca dut.v testbench.sv
+*** Using c compiler /usr/bin/gcc-4.4 instead of cc ...
+                         Chronologic VCS (TM)
+       Version O-2018.09-SP2_Full64 -- Tue Mar  4 17:40:33 2025
+               Copyright (c) 1991-2018 by Synopsys Inc.
+                         ALL RIGHTS RESERVED
+
+This program is proprietary and confidential information of Synopsys Inc.
+and may be used and disclosed only as authorized in a license agreement
+controlling such use and disclosure.
+
+
+Warning-[LCA_FEATURES_ENABLED] Usage warning
+  LCA features enabled by '-lca' argument on the command line.  For more 
+  information regarding list of LCA features please refer to Chapter "LCA 
+  features" in the VCS/VCS-MX Release Notes
+
+
+Warning-[DEBUG_DEP] Option will be deprecated
+  The option '-debug_all' will be deprecated in a future release.  Please use 
+  '-debug_acc+all -debug_region+cell+encrypt' instead.
+
+Parsing design file 'dut.v'
+Parsing design file 'testbench.sv'
+Top Level Modules:
+       testbench
+TimeScale is 1 ns / 1 ps
+
+Error-[IBLHS-NONREG] Illegal behavioral left hand side
+dut.v, 39
+  Non reg type is not valid on the left hand side of this assignment
+  The offending expression is : io_c_ready
+  Source info: assign io_c_ready = 0;
+
+
+Error-[IBLHS-NT] Illegal behavioral left hand side
+dut.v, 46
+  Net type cannot be used on the left side of this assignment.
+  The offending expression is : io_c_ready
+  Source info: io_c_ready = io_p_0_ready;
+
+
+Error-[IBLHS-NT] Illegal behavioral left hand side
+dut.v, 51
+  Net type cannot be used on the left side of this assignment.
+  The offending expression is : io_c_ready
+  Source info: io_c_ready = io_p_1_ready;
+
+
+Error-[IBLHS-NT] Illegal behavioral left hand side
+dut.v, 56
+  Net type cannot be used on the left side of this assignment.
+  The offending expression is : io_c_ready
+  Source info: io_c_ready = io_p_2_ready;
+
+
+Error-[IBLHS-NT] Illegal behavioral left hand side
+dut.v, 61
+  Net type cannot be used on the left side of this assignment.
+  The offending expression is : io_c_ready
+  Source info: io_c_ready = io_p_3_ready;
+
+
+Error-[IBLHS-NT] Illegal behavioral left hand side
+dut.v, 66
+  Net type cannot be used on the left side of this assignment.
+  The offending expression is : io_c_ready
+  Source info: io_c_ready = io_p_4_ready;
+
+2 warnings
+6 errors
+CPU time: .151 seconds to compile

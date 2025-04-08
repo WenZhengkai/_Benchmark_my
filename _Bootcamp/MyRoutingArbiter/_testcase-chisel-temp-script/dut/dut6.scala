@@ -3,27 +3,32 @@ import chisel3.util._
 
 class dut(numChannels: Int) extends Module {
   val io = IO(new Bundle {
-    val in = Vec(numChannels, Flipped(Decoupled(UInt(8.W))))
+    val in = Flipped(Vec(numChannels, Decoupled(UInt(8.W))))
     val out = Decoupled(UInt(8.W))
   })
 
-  // Task 1: Implement Output Validity Logic
-  // Objective: Set the out.valid signal to true if at least one of the input channels is valid.
+  // Task 1: Output Validity Signal Generation
+  // Combine all input valid signals to drive io.out.valid
   io.out.valid := io.in.map(_.valid).reduce(_ || _)
 
-  // Task 2: Implement Priority Selection using PriorityMux
-  // Objective: Select the channel index of the first valid input channel using a PriorityMux.
-  val valid_indices = io.in.zipWithIndex.map { case (channel, index) => index.U -> channel.valid }
-  val selectedIdx = PriorityMux(valid_indices)
-
-  // Task 3: Implement Data Routing
-  // Objective: Route the data from the selected input channel to the output.
-  io.out.bits := Mux1H(io.in.map(_.valid), io.in.map(_.bits))
-
-  // Task 4: Implement Input Readiness Logic
-  // Objective: Set each input channel's ready signal based on the selected channel index and output readiness.
-  for ((channel, idx) <- io.in.zipWithIndex) {
-    channel.ready := io.out.ready && (selectedIdx === idx.U)
+  // Task 2: Priority Channel Selection Logic
+  // Create a PriorityMux to select the channel index with the highest priority (lowest index)
+  val validWithIndex = io.in.zipWithIndex.map { case (channel, index) =>
+    (channel.valid, index.U)
   }
-}
+  val selectedChannel = PriorityMux(validWithIndex)
 
+  // Task 3: Output Data Routing Implementation
+  // Route the data from the selected channel to io.out.bits
+  io.out.bits := io.in(selectedChannel).bits
+
+  // Task 4: Input Ready Signal Generation
+  // Generate ready signals for each input channel
+  io.in.zipWithIndex.foreach { case (channel, index) =>
+    channel.ready := (selectedChannel === index.U) && io.out.ready
+  }
+
+  // Task 5: Integration & Final Wiring
+  // Ensure that all combinational logic paths and timing constraints are valid
+  // The above implementation inherently handles integration as it directly connects valid, bits, and ready signals
+}

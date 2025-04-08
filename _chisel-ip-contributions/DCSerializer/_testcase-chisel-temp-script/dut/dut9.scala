@@ -2,51 +2,41 @@ import chisel3._
 import chisel3.util._
 
 class dut[D <: Data](data: D, width: Int) extends Module {
-  require(width > 0 && width < data.getWidth, "Width must be less than the bit-width of the input data")
+  require(width < data.getWidth, "Width must be less than the bit-width of the input data.")
 
   val io = IO(new Bundle {
-    val dataIn  = Flipped(Decoupled(data))
+    val dataIn = Flipped(Decoupled(data))
     val dataOut = Decoupled(UInt(width.W))
   })
 
-  // Task 1: Cycle Calculation Logic
-  val cycles = if (data.getWidth % width != 0) (data.getWidth / width) + 1 else data.getWidth / width
+  // Task 1: Calculate the number of cycles required to serialize the input data
+  val totalBits = data.getWidth
+  val cycles = (totalBits + width - 1) / width  // Ceiling division
 
-  // Task 2: Cycle Counter Register
-  val cycleCount = RegInit(0.U(log2Ceil(cycles).W))
+  // Task 2: Implement cycle counter logic
+  val cycleCount = RegInit(0.U(log2Ceil(cycles + 1).W)) // To address all cycles + 1 for reset condition
 
-  // Task 3: Data Selection and Storage
-  val dataSelect = Wire(Vec(cycles, UInt(width.W)))
-  for (i <- 0 until cycles) {
-    val start = i * width
-    val end = start + width - 1
-    dataSelect(i) := io.dataIn.bits.asUInt()(end.min(data.getWidth - 1), start)
+  when(io.dataIn.fire) {
+    cycleCount := 0.U // Reset cycle count when new transaction starts
+  }.elsewhen(io.dataOut.fire) {
+    cycleCount := cycleCount + 1.U // Increment for each serialized word
   }
-  
-  // Current output word
-  io.dataOut.bits := dataSelect(cycleCount)
 
-  // Task 4: Handshaking Logic for Data Input
+  // Task 3: Split input data into fixed-width words (with padding if needed)
+  // Calculate padded width in case input data is not divisible by width
+  val paddedWidth = cycles * width
+  val paddedData = Cat(0.U((paddedWidth - totalBits).W), io.dataIn.bits.asUInt) // Pad with leading zeros
+  val dataChunks = VecInit.tabulate(cycles)(i => paddedData(i * width + width - 1, i * width))
+
+  // Task 4: Implement handshaking logic
+  // Drive `io.dataOut.bits` with the correct data chunk
+  io.dataOut.bits := dataChunks(cycleCount)
+
+  // Drive `io.dataIn.ready`
+  // Accept new data only when all cycles are complete and ready to transmit more
   io.dataIn.ready := (cycleCount === (cycles - 1).U) && io.dataOut.ready
 
-  // Task 5: Handshaking Logic for Data Output
+  // Drive `io.dataOut.valid`
+  // Valid output whenever the input is valid and we are not waiting for a new transaction
   io.dataOut.valid := io.dataIn.valid
-
-  // Logic to handle cycle count increment and reset
-  when(io.dataOut.fire()) {
-    when(cycleCount === (cycles - 1).U) {
-      cycleCount := 0.U
-    }.otherwise {
-      cycleCount := cycleCount + 1.U
-    }
-  } .otherwise {
-    when(io.dataIn.fire()) {
-      cycleCount := 0.U
-    }
-  }
-  
-  // Optional: Stalling logic for output until data is available
-  io.dataOut.valid := io.dataIn.valid && (cycleCount < cycles.U)
 }
-
-

@@ -1,0 +1,76 @@
+
+## Base Method
+Please act as a professional Chisel designer. Give me the complete Chisel code.
+
+```
+
+```
+Give me the complete Chisel code.
+
+
+## NoT Method s1-Spec Slicer
+Please act as a professional Chisel designer. Slice the `Internal logic` into several coding tasks for Chisel.
+
+```
+# Specification
+
+## Module name
+TimerFSM
+
+## Overview
+The module should implement a timer that:
+
+  (1) is started when a particular pattern (1101) is detected,
+  (2) shifts in 4 more bits to determine the duration to delay,
+  (3) waits for the counters to finish counting, and
+  (4) notifies the user and waits for the user to acknowledge the timer.
+
+In this problem, implement just the finite-state machine that controls the timer. The data path (counters and some comparators) are not included here.
+
+## I/O Ports
+ - input  data
+ - input  done_counting
+ - input  ack
+ - output shift_ena
+ - output counting
+ - output done
+
+ ## Internal logic
+
+- The serial data is available on the data input pin. When the pattern 1101 is received, the state machine must then assert output shift_ena for exactly 4 clock cycles.
+- After that, the state machine asserts its counting output to indicate it is waiting for the counters, and waits until input done_counting is high.
+- At that point, the state machine must assert done to notify the user the timer has timed out, and waits until input ack is 1 before being reset to look for the next occurrence of the start sequence (1101).
+- The state machine should have a active high synchronous reset, setting the state to where it begins searching for the input sequence 1101.
+
+```
+Slice the `Internal logic` into several coding tasks for Chisel.
+### Task n: 
+**Objective:**
+**Step:**
+
+
+## NOT Method s2-Modern HDL Gen
+
+Please act as a professional Chisel designer. Give me the complete Chisel code.
+
+
+```
+
+```
+
+Give me the complete Chisel code.
+
+
+## NOT Method s2-Modern HDL Gen
+
+Please act as a professional Chisel designer. Give me the complete Chisel code.
+Notice the relation of tasks.
+
+```
+
+```
+
+
+Give me the complete Chisel code.
+
+

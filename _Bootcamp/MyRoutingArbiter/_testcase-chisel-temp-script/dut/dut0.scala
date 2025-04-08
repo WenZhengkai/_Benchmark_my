@@ -3,28 +3,34 @@ import chisel3.util._
 
 class dut(numChannels: Int) extends Module {
   val io = IO(new Bundle {
-    val in  = Flipped(Vec(numChannels, Decoupled(UInt(8.W))))
-    val out = Decoupled(UInt(8.W))
+    val in  = Flipped(Vec(numChannels, Decoupled(UInt(8.W)))) // Input channels
+    val out = Decoupled(UInt(8.W)) // Output channel
   })
 
-  // Task 1: Implement Output Validity Logic
-  // Check if any input channel is valid
+  // Task 1: Output Validity Signal Generation
+  // Combine all `valid` signals from the input channels using OR reduction
   io.out.valid := io.in.map(_.valid).reduce(_ || _)
-  
-  // Task 2: Implement Priority Selection using PriorityMux
-  // Create a PriorityMux to find the index of the first valid channel
-  val validSignals = io.in.map(_.valid)
-  val channelIndices = VecInit((0 until numChannels).map(_.U))
-  val selectedChannel = PriorityMux(validSignals, channelIndices)
 
-  // Task 3: Implement Data Routing
-  // Route data from the selected input channel to the output
-  io.out.bits := io.in(selectedChannel).bits
+  // Task 2: Priority Channel Selection Logic
+  // Use PriorityMux to select the index of the highest-priority valid channel
+  // Create (valid, index) pairs and map to (Bool, UInt) tuples
+  val validIndices = io.in.zipWithIndex.map { case (ch, idx) => ch.valid -> idx.U }
+  val selectedChannel = PriorityMux(validIndices)
 
-  // Task 4: Implement Input Readiness Logic
-  // Set each input channel's ready signal
-  for (i <- 0 until numChannels) {
-    io.in(i).ready := io.out.ready && (selectedChannel === i.U)
+  // Task 3: Output Data Routing Implementation
+  // Route the .bits of the selected channel to io.out.bits
+  io.out.bits := Mux1H(io.in.zipWithIndex.map {
+    case (channel, idx) => (selectedChannel === idx.U) -> channel.bits
+  })
+
+  // Task 4: Input Ready Signal Generation
+  // Generate per-channel ready signals
+  io.in.zipWithIndex.foreach { case (channel, idx) =>
+    channel.ready := (selectedChannel === idx.U) && io.out.ready
   }
+
+  // Task 5: Integration & Final Wiring
+  // Ensure correct signal integration and parameterization
+  // Already achieved by combining the steps above
 }
 

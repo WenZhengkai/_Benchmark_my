@@ -16,44 +16,28 @@ class dut[D <: Data](data: D, maxCredit: Int) extends Module {
     val curCredit = Output(UInt(log2Ceil(maxCredit).W))
   })
 
-  // Credit register to keep track of dequeue credit signals
-  val icredit = RegInit(false.B)
+  // Task 1: Credit Register (icredit)
+  val icredit = RegNext(io.deq.credit, init = false.B)
 
-  // Credit counter, initialized to maxCredit
+  // Task 2: Credit Counter (curCredit)
   val curCredit = RegInit(maxCredit.U(log2Ceil(maxCredit).W))
-
-  // Registers to hold output data and valid status
-  val dataOut = Reg(data.cloneType)
-  val validOut = RegInit(false.B)
-
-  // Enqueue readiness logic
-  io.enq.ready := (curCredit > 0.U)
-
-  // Data register logic: capture incoming data when enqueue fires and credit available
-  when(io.enq.fire()) {
-    dataOut := io.enq.bits
-  }
-
-  // Validity condition for dequeued data
-  validOut := io.enq.fire() || (validOut && !io.deq.credit)
-
-  // Update the output interface
-  io.deq.valid := validOut
-  io.deq.bits := dataOut
-
-  // Credit management logic for icredit and curCredit
-  icredit := io.deq.credit
-  when(io.deq.credit && !io.enq.fire()) {
-    // Increment credit if credit signal is received but no enqueue operation
+  when(icredit && !io.enq.fire) {
     curCredit := curCredit + 1.U
-  }.elsewhen(!io.deq.credit && io.enq.fire()) {
-    // Decrement credit if enqueue operation occurs without crediting
+  }.elsewhen(!icredit && io.enq.fire) {
     curCredit := curCredit - 1.U
   }
-
-  // Keep curCredit updated
   io.curCredit := curCredit
-}
 
-// To instantiate this module, you need to do something like:
-// val creditSender = Module(new DCCreditSender(UInt(8.W), 16))
+  // Task 3: Ready Signal (io.enq.ready)
+  io.enq.ready := curCredit > 0.U
+
+  // Task 4: Data Register (dataOut)
+  val dataOut = RegEnable(io.enq.bits, enable = io.enq.fire)
+
+  // Task 5: Valid Register (validOut)
+  val validOut = RegNext(io.enq.fire, init = false.B)
+
+  // Connect data and control to the output interface (deq)
+  io.deq.bits := dataOut
+  io.deq.valid := validOut
+}

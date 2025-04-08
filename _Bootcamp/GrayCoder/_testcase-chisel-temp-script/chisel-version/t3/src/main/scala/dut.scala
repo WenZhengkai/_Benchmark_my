@@ -2,35 +2,33 @@ import chisel3._
 import chisel3.util._
 
 class dut(bitwidth: Int) extends Module {
+  // Validate that the bitwidth is greater than 0
+  require(bitwidth > 0, "Bitwidth must be positive")
+
+  // Define the IO interface
   val io = IO(new Bundle {
-    val in     = Input(UInt(bitwidth.W))  // Input data (binary or Gray code)
-    val encode = Input(Bool())           // Mode selection: true for encoding, false for decoding
-    val out    = Output(UInt(bitwidth.W)) // Output data (Gray code or binary)
+    val in = Input(UInt(bitwidth.W))  // Input data
+    val encode = Input(Bool())        // Operation mode: true for encoding, false for decoding
+    val out = Output(UInt(bitwidth.W)) // Output data
   })
 
-  // Internal logic for Gray code encoding
-  def binaryToGray(binary: UInt): UInt = {
-    binary ^ (binary >> 1.U)
-  }
+  // Edge case for 1-bit width
+  if (bitwidth == 1) {
+    io.out := io.in  // No transformation required for single-bit Gray code
+  } else {
+    // Gray Code Encoding: Binary to Gray conversion
+    val encoded = io.in ^ (io.in >> 1.U)
 
-  // Internal logic for Gray code decoding
-  // Decoding involves iterative XOR of the Gray code shifted by increasing powers of 2
-  def grayToBinary(gray: UInt): UInt = {
-    val binary = Wire(UInt(bitwidth.W))
-    binary := gray // Initialize with the gray input
-
-    // Iteratively compute the binary value
-    for (i <- 1 until bitwidth) {
-      binary := binary ^ (gray >> i.U)
+    // Gray Code Decoding: Gray to Binary conversion
+    val numSteps = log2Ceil(bitwidth) // Number of iterations based on bitwidth
+    var current = io.in               // Initialize intermediate variable for decoding
+    for (i <- 0 until numSteps) {
+      val shift = (1 << i).U          // Compute the shift amount (powers of two)
+      current = current ^ (current >> shift)
     }
 
-    binary
+    // Select the output based on the `encode` signal
+    io.out := Mux(io.encode, encoded, current)
   }
-
-  // Mode selection: Encoding or Decoding based on `encode` input
-  io.out := Mux(io.encode,
-    binaryToGray(io.in),  // Perform Binary to Gray code encoding
-    grayToBinary(io.in)   // Perform Gray code to Binary decoding
-  )
 }
 

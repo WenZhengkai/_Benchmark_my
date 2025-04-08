@@ -24,7 +24,7 @@ fi
 
 # 检查dut目录下的10个文件是否存在
 for i in {0..9}; do
-  dut_file="$dut_dir/dut$i.scala"
+  dut_file="$dut_dir/dut$i.v"
   if [ ! -f "$dut_file" ]; then
     echo "dut文件不存在：$dut_file，请执行s2-dutfile.sh"
     exit 1
@@ -40,13 +40,15 @@ import pandas as pd
 df = pd.read_excel("$excel_file", header=None)
 
 # 从第二行第五列开始读取
-row_index = 1  # 索引从0开始，第二行对应的索引为1
+# row_index = 1  # 索引从0开始，第二行对应的索引为1
+row_index = len(df) - 1  # 最新一行的索引为总行数减1
+print("最新一行引索row_index:",row_index)
 col_start_index = 4  # 第五列索引为4
 
 # 循环写入到dut文件中
 for i in range(10):
     content = df.iloc[row_index, col_start_index + i]
-    with open(f"$dut_dir/dut{i}.scala", "w") as dut_file:
+    with open(f"$dut_dir/dut{i}.v", "w") as dut_file:
         dut_file.write(str(content))
 
 EOF

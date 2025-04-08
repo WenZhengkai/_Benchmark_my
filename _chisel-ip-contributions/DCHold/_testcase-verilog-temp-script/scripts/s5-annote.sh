@@ -3,9 +3,9 @@
 # 定义当前路径为main_dir
 main_dir=$(pwd)
 
-# 寻找10个scala文件并处理
+# 寻找10个v文件并处理
 for i in {0..9}; do
-    file="$main_dir/dut/dut$i.scala"
+    file="$main_dir/dut/dut$i.v"
     
     # 判断文件是否存在
     if [ ! -f "$file" ]; then
@@ -25,12 +25,12 @@ for i in {0..9}; do
         if (inCodeBlock) print
     }
     END {
-        if (inCodeBlock) print "警告：'"dut$i.scala"'格式异常"
+        if (inCodeBlock) print "警告：'"dut$i.v"'格式异常"
     }
-    ' "$file" > "$main_dir/dut/temp_dut$i.scala"
+    ' "$file" > "$main_dir/dut/temp_dut$i.v"
 
     # 使用重命名临时文件覆盖原始文件
-    mv "$main_dir/dut/temp_dut$i.scala" "$file"
+    mv "$main_dir/dut/temp_dut$i.v" "$file"
 done
 
 echo "s5.sh:代码内容筛选完毕,请注意修改类名dut以及删除无效对象"

@@ -24,7 +24,7 @@ fi
 
 # 检查dut目录下的10个文件是否存在
 for i in {0..9}; do
-  dut_file="$dut_dir/dut$i.scala"
+  dut_file="$dut_dir/dut$i.v"
   if [ ! -f "$dut_file" ]; then
     echo "dut文件不存在：$dut_file，请执行s2-dutfile.sh"
     exit 1
@@ -48,7 +48,7 @@ col_start_index = 4  # 第五列索引为4
 # 循环写入到dut文件中
 for i in range(10):
     content = df.iloc[row_index, col_start_index + i]
-    with open(f"$dut_dir/dut{i}.scala", "w") as dut_file:
+    with open(f"$dut_dir/dut{i}.v", "w") as dut_file:
         dut_file.write(str(content))
 
 EOF

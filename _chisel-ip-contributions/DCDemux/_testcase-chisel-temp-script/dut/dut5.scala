@@ -3,28 +3,30 @@ import chisel3.util._
 
 class dut[T <: Data](data: T, n: Int) extends Module {
   val io = IO(new Bundle {
-    val sel = Input(UInt(log2Ceil(n).W))
-    val c = Flipped(DecoupledIO(data))
-    val p = Vec(n, DecoupledIO(data))
+    val sel = Input(UInt(log2Ceil(n).W))   // Selector signal
+    val c = Flipped(DecoupledIO(data))    // Input channel
+    val p = Vec(n, DecoupledIO(data))     // Output channels
   })
 
-  // Task 2: Initialize Ready Signal
+  // Task 1: Initialize input ready signal
   io.c.ready := false.B
 
-  // Task 3: Iterate Over Output Channels
+  // Task 2: Connect input data to all output channels
   for (i <- 0 until n) {
-    // Task 4: Assign Data to Output Channels
-    io.p(i).bits := io.c.bits
+    io.p(i).bits := io.c.bits // Route input data to all outputs
+  }
 
-    // Task 5: Implement Selection Logic
+  // Task 3: Conditionally set valids and update ready signal
+  for (i <- 0 until n) {
     when(i.U === io.sel) {
-      io.p(i).valid := io.c.valid
-      io.c.ready := io.p(i).ready
-    }.otherwise {
-      // Task 6: Inactivate Non-Selected Channels
-      io.p(i).valid := false.B
+      // Selected output channel
+      io.p(i).valid := io.c.valid   // Propagate input valid signal to the selected output
+      io.c.ready := io.p(i).ready  // Input ready depends on the chosen output's ready signal
+    } .otherwise {
+      // Non-selected output channels
+      io.p(i).valid := false.B     // Disable unselected outputs
     }
   }
 }
 
-// Testbench or other requirements could be added here as needed.
+

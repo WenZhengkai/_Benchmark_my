@@ -3,41 +3,50 @@ import chisel3.util._
 
 class dut[D <: Data](data: D, width: Int) extends Module {
   val io = IO(new Bundle {
-    val dataIn  = Flipped(Decoupled(UInt(width.W)))
+    val dataIn = Flipped(Decoupled(UInt(width.W)))
     val dataOut = Decoupled(data.cloneType)
   })
 
-  // Calculate the number of cycles needed to deserialize the data
-  val cycles = (data.getWidth + width - 1) / width
+  // Calculate the number of cycles required for deserialization
+  val totalWidth = data.getWidth // Total bit width of the data type `D`
+  val cycles = (totalWidth + width - 1) / width // Ceiling division to calculate cycles
 
-  // Registers for tracking the deserialization process
-  val cycleCount = RegInit(0.U(log2Ceil(cycles).W))
-  val dataSelect = Reg(Vec(cycles, UInt(width.W)))
-  val dataValid = RegInit(false.B)
+  // Register Initialization
+  val cycleCount = RegInit(0.U(log2Ceil(cycles).W)) // Counter to track deserialization progress
+  val dataSelect = Reg(Vec(cycles, UInt(width.W))) // Vector register for intermediate data storage
+  val dataValid = RegInit(false.B) // Signal for indicating data validity
 
-  // Deserialization Process
-  when(io.dataIn.fire()) {
-    // Store the incoming serialized data
+  // Default values for output signals
+  io.dataOut.valid := dataValid
+  io.dataOut.bits := DontCare
+  io.dataIn.ready := false.B
+
+  // Data Input Handling
+  when(io.dataIn.fire) {
+    // Store incoming serialized data into dataSelect
     dataSelect(cycleCount) := io.dataIn.bits
-    // Increment the cycle count
-    cycleCount := cycleCount + 1.U
-
-    // Check if this was the last cycle needed
+    // Increment cycleCount or reset and set dataValid if done
     when(cycleCount === (cycles - 1).U) {
+      cycleCount := 0.U
       dataValid := true.B
-      cycleCount := 0.U // Reset for next sequence
+    }.otherwise {
+      cycleCount := cycleCount + 1.U
     }
   }
 
-  // Construct the output data from the deserialized segments
-  io.dataOut.bits := dataSelect.asTypeOf(data)
-
-  // Flow Control
-  io.dataIn.ready := !dataValid || io.dataOut.fire() // Ready for new input if not valid
-  io.dataOut.valid := dataValid
-
-  when(io.dataOut.fire()) {
-    dataValid := false.B // Clear valid after successful transmission
+  // Output Data Construction
+  when(dataValid) {
+    // Concatenate dataSelect for deserialized data and cast to original type
+    io.dataOut.bits := dataSelect.asTypeOf(data)
   }
+
+  // Output Transmission Handling
+  when(io.dataOut.fire) {
+    // Clear dataValid flag after data has been transmitted
+    dataValid := false.B
+  }
+
+  // Flow Control Logic
+  io.dataIn.ready := !dataValid || io.dataOut.ready
 }
 

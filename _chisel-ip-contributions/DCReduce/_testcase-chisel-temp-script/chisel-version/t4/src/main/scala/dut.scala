@@ -2,39 +2,44 @@ import chisel3._
 import chisel3.util._
 import chisel.lib.dclib._
 
-// Define the DCReduce module
 class dut[D <: Data](data: D, n: Int, op: (D, D) => D) extends Module {
-  require(n >= 2, "The module requires at least two inputs.")
+  require(n >= 2, "dut must have at least two inputs")
 
+  // I/O Definitions
   val io = IO(new Bundle {
     val a = Vec(n, Flipped(Decoupled(data.cloneType)))
     val z = Decoupled(data.cloneType)
   })
 
-  // Task 1: Initialization of Internal Structures
-  // Create a vector `aInt` using the `DCInput` helper function for each input in `io.a`.
-  val aInt = io.a.map(DCInput(_))
-  
-  // Define an intermediate wire `zInt` to carry the reduction result
+  // Task 1: Initialize Internal Interfaces
+  // Create registered input interfaces using DCInput
+  val aInt = VecInit(io.a.map(a => DCInput(a)))
+
+  // Create intermediate wire for internal computation
   val zInt = Wire(Decoupled(data.cloneType))
-  
-  // Task 2: Signal Generation for Validity Checking
-  // Compute `all_valid` signal ensuring that every input is valid
+
+  // Task 2: Generate Validation Signal
+  // Compute the `all_valid` signal by AND-ing all input valid signals
   val all_valid = aInt.map(_.valid).reduce(_ && _)
 
-  // Task 3: Implement Reduction Operation
-  // Perform a fold operation to apply the binary operator `op`
+  // Task 3: Implement Reduction Logic
+  // Use the provided binary operator to perform a reduction on the input data
   zInt.bits := aInt.map(_.bits).reduce(op)
-  
-  // Task 4: Output Control Logic
-  // Set zInt.valid based on all_valid and zInt.ready
-  zInt.valid := all_valid && io.z.ready
 
-  // Manage the ready signals of inputs in aInt
-  aInt.foreach(_.ready := zInt.valid)
+  // Task 4: Control Flow Logic
+  // Manage handshaking between inputs and output
+  when(all_valid && zInt.ready) {
+    zInt.valid := true.B
+    aInt.foreach(_.ready := true.B)
+  }.otherwise {
+    zInt.valid := false.B
+    aInt.foreach(_.ready := false.B)
+  }
 
-  // Task 5: Interface the Output with DCOutput
-  // Connect the intermediate output `zInt` to the final module output `io.z`
-  io.z <> DCOutput(zInt)
+  // Task 5: Output Registration
+  // Wrap internal output wire with DCOutput for registered output
+  val zDcout = DCOutput(zInt)
+
+  // Connect the registered output to the module's output port
+  io.z <> zDcout
 }
-

@@ -1,0 +1,109 @@
+Command: vcs -cpp /usr/bin/g++-4.4 -cc /usr/bin/gcc-4.4 -sverilog +v2k -timescale=1ns/1ns \
+-debug_all -l compile.log +plusarg_save +libext+.v+.V+.sv+.svh -sverilog +memcbk \
+-P /home/kai/synopsys_tools/Verdi_2018/verdi/Verdi_O-2018.09-SP2/share/PLI/VCS/LINUX64/novas.tab \
+/home/kai/synopsys_tools/Verdi_2018/verdi/Verdi_O-2018.09-SP2/share/PLI/VCS/LINUX64/pli.a \
+-kdb -lca dut.v testbench.sv
+*** Using c compiler /usr/bin/gcc-4.4 instead of cc ...
+                         Chronologic VCS (TM)
+       Version O-2018.09-SP2_Full64 -- Tue Mar  4 17:40:33 2025
+               Copyright (c) 1991-2018 by Synopsys Inc.
+                         ALL RIGHTS RESERVED
+
+This program is proprietary and confidential information of Synopsys Inc.
+and may be used and disclosed only as authorized in a license agreement
+controlling such use and disclosure.
+
+
+Warning-[LCA_FEATURES_ENABLED] Usage warning
+  LCA features enabled by '-lca' argument on the command line.  For more 
+  information regarding list of LCA features please refer to Chapter "LCA 
+  features" in the VCS/VCS-MX Release Notes
+
+
+Warning-[DEBUG_DEP] Option will be deprecated
+  The option '-debug_all' will be deprecated in a future release.  Please use 
+  '-debug_acc+all -debug_region+cell+encrypt' instead.
+
+Parsing design file 'dut.v'
+Parsing design file 'testbench.sv'
+Top Level Modules:
+       testbench
+TimeScale is 1 ns / 1 ps
+
+Error-[IBLHS-NT] Illegal behavioral left hand side
+dut.v, 35
+  Net type cannot be used on the left side of this assignment.
+  The offending expression is : io_p_0_valid
+  Source info: io_p_0_valid = 1'b0;
+
+
+Error-[IBLHS-NT] Illegal behavioral left hand side
+dut.v, 36
+  Net type cannot be used on the left side of this assignment.
+  The offending expression is : io_p_1_valid
+  Source info: io_p_1_valid = 1'b0;
+
+
+Error-[IBLHS-NT] Illegal behavioral left hand side
+dut.v, 37
+  Net type cannot be used on the left side of this assignment.
+  The offending expression is : io_p_2_valid
+  Source info: io_p_2_valid = 1'b0;
+
+
+Error-[IBLHS-NT] Illegal behavioral left hand side
+dut.v, 38
+  Net type cannot be used on the left side of this assignment.
+  The offending expression is : io_p_3_valid
+  Source info: io_p_3_valid = 1'b0;
+
+
+Error-[IBLHS-NT] Illegal behavioral left hand side
+dut.v, 39
+  Net type cannot be used on the left side of this assignment.
+  The offending expression is : io_p_4_valid
+  Source info: io_p_4_valid = 1'b0;
+
+
+Error-[IBLHS-NT] Illegal behavioral left hand side
+dut.v, 44
+  Net type cannot be used on the left side of this assignment.
+  The offending expression is : io_p_0_valid
+  Source info: io_p_0_valid = io_c_valid;
+
+
+Error-[IBLHS-NT] Illegal behavioral left hand side
+dut.v, 48
+  Net type cannot be used on the left side of this assignment.
+  The offending expression is : io_p_1_valid
+  Source info: io_p_1_valid = io_c_valid;
+
+
+Error-[IBLHS-NT] Illegal behavioral left hand side
+dut.v, 52
+  Net type cannot be used on the left side of this assignment.
+  The offending expression is : io_p_2_valid
+  Source info: io_p_2_valid = io_c_valid;
+
+
+Error-[IBLHS-NT] Illegal behavioral left hand side
+dut.v, 56
+  Net type cannot be used on the left side of this assignment.
+  The offending expression is : io_p_3_valid
+  Source info: io_p_3_valid = io_c_valid;
+
+
+Error-[IBLHS-NT] Illegal behavioral left hand side
+dut.v, 60
+  Net type cannot be used on the left side of this assignment.
+  The offending expression is : io_p_4_valid
+  Source info: io_p_4_valid = io_c_valid;
+
+
+Note-[MAX_ERROR_COUNT] Maximum error count reached
+  Current number of errors has reached the default maximum error count (10).
+  Please use +error+<count> to increase the limit.
+
+2 warnings
+10 errors
+CPU time: .173 seconds to compile

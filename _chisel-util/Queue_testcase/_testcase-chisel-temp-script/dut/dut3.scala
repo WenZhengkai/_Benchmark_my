@@ -1,68 +1,67 @@
 import chisel3._
 import chisel3.util._
 
-class dut[T <: Data](gen: T, val entries: Int, val hasFlush: Boolean = false) extends Module {
-  require(entries > 0, "Queue must have a positive number of entries.")
+class dut[T <: Data](gen: T, entries: Int, hasFlush: Boolean = false) extends Module {
+  require(entries > 0, "Queue must have a positive number of entries")
 
-  // Define IOs
-  class QueueIO extends Bundle {
-    val enq = Input(Flipped(Decoupled(gen)))
-    val deq = Output(Decoupled(gen))
-    val count = Output(UInt(log2Ceil(entries + 1).W))
-    val flush = if (hasFlush) Some(Input(Bool())) else None
-  }
-  val io = IO(new QueueIO)
+  val io = IO(new Bundle {
+    val enq = Flipped(Decoupled(gen)) // Input: enqueue interface
+    val deq = Decoupled(gen)          // Output: dequeue interface
+    val count = Output(UInt(log2Ceil(entries + 1).W)) // Output: number of elements in queue
+    val flush = if (hasFlush) Some(Input(Bool())) else None // Optional flush signal
+  })
 
-  // Task 1: Implement Memory for Storage
-  val ram = Mem(entries, gen)
+  // Task 1: Memory Storage
+  val ram = Mem(entries, gen) // Create a memory block for storing elements
 
-  // Task 2: Implement Pointer Management
-  val enqPtr = RegInit(0.U(log2Ceil(entries).W))
-  val deqPtr = RegInit(0.U(log2Ceil(entries).W))
+  // Task 2: Pointer Management
+  val enq_ptr = RegInit(0.U(log2Ceil(entries).W)) // Enqueue pointer
+  val deq_ptr = RegInit(0.U(log2Ceil(entries).W)) // Dequeue pointer
+  val maybe_full = RegInit(false.B) // Tracks whether the queue is maybe full
+  val ptr_match = enq_ptr === deq_ptr // True if enqueue and dequeue pointers are equal
 
-  // Task 3: Implement Full/Empty Logic
-  val maybeFull = RegInit(false.B)
-  val ptrMatch = enqPtr === deqPtr
-  val isFull = ptrMatch && maybeFull
-  val isEmpty = ptrMatch && !maybeFull
+  // Task 3: Full/Empty Logic
+  val full = ptr_match && maybe_full // Queue is full if pointers match and maybe_full is true
+  val empty = ptr_match && !maybe_full // Queue is empty if pointers match and maybe_full is false
 
-  // Task 4: Implement Data Enqueue Logic
-  io.enq.ready := !isFull
-  when(io.enq.fire()) {
-    ram(enqPtr) := io.enq.bits
-    enqPtr := enqPtr + 1.U
-    when(enqPtr === (entries - 1).U) {
-      enqPtr := 0.U
-    }
-    when(ptrMatch) {
-      maybeFull := true.B
-    }
+  io.enq.ready := !full // Ready to enqueue when not full
+  io.deq.valid := !empty // Valid to dequeue when not empty
+
+  // Task 4: Enqueue Logic
+  val do_enq = io.enq.valid && io.enq.ready // Enqueue operation occurs on this condition
+  when(do_enq) {
+    ram.write(enq_ptr, io.enq.bits) // Write data to RAM at enqueue pointer
+    enq_ptr := Mux(enq_ptr === (entries - 1).U, 0.U, enq_ptr + 1.U) // Increment pointer, wrap around if necessary
   }
 
-  // Task 5: Implement Data Dequeue Logic
-  io.deq.valid := !isEmpty
-  io.deq.bits := ram(deqPtr)
-  when(io.deq.fire()) {
-    deqPtr := deqPtr + 1.U
-    when(deqPtr === (entries - 1).U) {
-      deqPtr := 0.U
-    }
-    when(isFull) {
-      maybeFull := false.B
-    }
+  // Task 5: Dequeue Logic
+  val do_deq = io.deq.ready && io.deq.valid // Dequeue operation occurs on this condition
+  when(do_deq) {
+    deq_ptr := Mux(deq_ptr === (entries - 1).U, 0.U, deq_ptr + 1.U) // Increment pointer, wrap around if necessary
   }
 
-  // Task 6: Implement Flush Mechanism
+  // Update maybe_full based on enqueue and dequeue operations
+  when(do_enq && !do_deq) {
+    maybe_full := true.B // Enqueue without dequeue
+  }.elsewhen(!do_enq && do_deq) {
+    maybe_full := false.B // Dequeue without enqueue
+  }
+
+  // Task 6: Flush Mechanism (if enabled)
   if (hasFlush) {
-    when(io.flush.get) {
-      enqPtr := 0.U
-      deqPtr := 0.U
-      maybeFull := false.B
+    when(io.flush.get) { // Reset pointers and clear maybe_full if flush signal is asserted
+      enq_ptr := 0.U
+      deq_ptr := 0.U
+      maybe_full := false.B
     }
   }
 
-  // Task 7: Calculate and Output Count
-  io.count := Mux(isFull, entries.U, Mux(ptrMatch, 0.U, 
-    Mux(enqPtr > deqPtr, enqPtr - deqPtr, entries.U + enqPtr - deqPtr)))
+  // Task 7: Count Calculation
+  val diff = Mux(enq_ptr >= deq_ptr, enq_ptr - deq_ptr, (entries.U + enq_ptr) - deq_ptr) // Compute difference
+  io.count := Mux(full, entries.U, diff) // If full, count is max entries, otherwise use computed difference
+
+  // Hook up dequeue output
+  io.deq.bits := ram.read(deq_ptr) // Read data from RAM at dequeue pointer
 }
+
 

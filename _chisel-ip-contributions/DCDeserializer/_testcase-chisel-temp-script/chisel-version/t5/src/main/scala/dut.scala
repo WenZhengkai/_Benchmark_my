@@ -7,35 +7,38 @@ class dut[D <: Data](data: D, width: Int) extends Module {
     val dataOut = Decoupled(data.cloneType)
   })
 
-  // Calculate number of cycles required to deserialize the data
-  val cycles = (data.getWidth + width - 1) / width
+  // Task 1: Calculate number of cycles
+  val totalBits = data.getWidth
+  val cycles = ((totalBits + width - 1) / width).U
 
-  // Register initialization
+  // Task 2: Registers for state and data
   val cycleCount = RegInit(0.U(log2Ceil(cycles).W))
-  val dataSelect = Reg(Vec(cycles, UInt(width.W)))
+  val dataSelect = Reg(Vec(cycles.toInt, UInt(width.W))) // Store intermediate data segments
   val dataValid = RegInit(false.B)
 
-  // Manage input and output readiness
-  io.dataIn.ready := !dataValid // Allow new data if not currently valid
-  io.dataOut.valid := dataValid
-
-  when(io.dataIn.fire()) {
+  // Task 3: Input data handling
+  when(io.dataIn.fire) {
     dataSelect(cycleCount) := io.dataIn.bits
-    cycleCount := cycleCount + 1.U
-
-    // Check if we have processed the entire data
-    when(cycleCount === (cycles - 1).U) {
-      dataValid := true.B
-      cycleCount := 0.U // Reset cycle count for next deserialization
+    // Increment the cycle counter
+    when(cycleCount === (cycles - 1.U)) {
+      cycleCount := 0.U
+      dataValid := true.B // Indicate that data is ready
+    } .otherwise {
+      cycleCount := cycleCount + 1.U
     }
   }
 
-  when(io.dataOut.fire()) {
-    dataValid := false.B // Reset dataValid after dataOut is fired
+  // Task 5: Construct output data
+  io.dataOut.bits := dataSelect.asTypeOf(data) // Concatenate and cast to original data type
+
+  // Task 6: Output valid signal
+  io.dataOut.valid := dataValid
+
+  // Task 4: Reset valid flag after outputting data
+  when(io.dataOut.fire) {
+    dataValid := false.B
   }
 
-  // Construct the output data from collected segments
-  io.dataOut.bits := dataSelect.asTypeOf(data)
+  // Task 7: Input flow control
+  io.dataIn.ready := !dataValid || io.dataOut.ready
 }
-
-

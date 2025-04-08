@@ -1,54 +1,58 @@
-package sender
 import chisel3._
 import chisel3.util._
 
-// Define the CreditIO class as described
+/** CreditIO Bundle definition to represent the dequeue/output interface */
 class CreditIO[D <: Data](data: D) extends Bundle {
-  val valid = Output(Bool())
-  val credit = Input(Bool())
-  val bits = Output(data.cloneType)
+  val valid = Output(Bool())  // Indicates if output data is valid
+  val credit = Input(Bool())  // Indicates a credit return from the receiver
+  val bits = Output(data.cloneType)  // The data payload
 }
 
-// Define the DCCreditSender module with specified parameters
+/** dut Module */
 class dut[D <: Data](data: D, maxCredit: Int) extends Module {
-  require(maxCredit >= 1, "maxCredit must be at least 1")
-  
+  require(maxCredit > 0, "maxCredit must be greater than or equal to 1")
+
+  // Define I/O Ports
   val io = IO(new Bundle {
-    val enq = Flipped(Decoupled(data)) // Enqueue interface for incoming data
-    val deq = new CreditIO(data)       // Dequeue interface for outgoing data
+    // Enqueue interface for input data
+    val enq = Flipped(Decoupled(data))
+    // Dequeue interface for output data (credit-based)
+    val deq = new CreditIO(data)
+    // Current credit status (informational output)
     val curCredit = Output(UInt(log2Ceil(maxCredit).W))
   })
 
-  // Internal credit register
-  val icredit = RegInit(false.B)
+  // Task 1: Credit Register (icredit)
+  // Register to latch the credit signal from io.deq.credit
+  val icredit = RegNext(io.deq.credit, init = false.B)
 
-  // Internal credit counter, initialized to maxCredit
-  val creditCounter = RegInit(maxCredit.U(log2Ceil(maxCredit).W))
+  // Task 2: Credit Counter (curCredit)
+  // Register to track the current number of credits available
+  val curCredit = RegInit(maxCredit.U(log2Ceil(maxCredit).W))
 
-  // Define the ready signal for the enqueue interface
-  io.enq.ready := creditCounter > 0.U
-
-  // Update the internal credit register
-  icredit := io.deq.credit
-
-  // Logic to handle credit increment/decrement
-  when(io.enq.fire() && !icredit) {
-    // Data is successfully enqueued, decrement credit
-    creditCounter := creditCounter - 1.U
-  }.elsewhen(icredit && !io.enq.fire()) {
-    // Credit received without sending data, increment credit
-    creditCounter := creditCounter + 1.U
+  // Increment or decrement credit counter based on conditions
+  when(icredit && !io.enq.fire) {
+    curCredit := curCredit + 1.U // Increment credit
+  }.elsewhen(!icredit && io.enq.fire) {
+    curCredit := curCredit - 1.U // Decrement credit
   }
 
-  // Hold the current credit count for output
-  io.curCredit := creditCounter
+  // Expose the current credit status to the outside
+  io.curCredit := curCredit
 
-  // Temporary registers for holding data and valid status
-  val dataOut = RegEnable(io.enq.bits, io.enq.fire())
-  val validOut = RegNext(io.enq.fire(), false.B)
+  // Task 3: Ready Signal (io.enq.ready)
+  // Indicate if the module is ready to accept input data
+  io.enq.ready := curCredit > 0.U
 
-  // Setup the output interface
-  io.deq.bits := dataOut
+  // Task 4: Data Register (dataOut)
+  // Register to hold the data when enq.fire is asserted
+  val dataOut = RegEnable(io.enq.bits, enable = io.enq.fire)
+
+  // Task 5: Valid Register (validOut)
+  // Register to maintain the valid flag for the output data
+  val validOut = RegNext(io.enq.fire, init = false.B)
+
+  // Connect output interface fields
   io.deq.valid := validOut
+  io.deq.bits := dataOut
 }
-

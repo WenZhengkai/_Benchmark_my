@@ -1,4 +1,43 @@
 
+## Base Method-verilog
+Please act as a professional verilog designer. Give me the complete verilog code.
+
+```
+# Specification Document
+## Module Name
+DCHold
+
+## Overview
+The `DCHold` module creates a ready/valid holding register designed to hold a data word until it is successfully unloaded via the `deq` interface. This module ensures no combinational paths exist through it, and it allows data acceptance at most every other cycle due to its internal state management. It provides a synchronous holding mechanism between the input (enq) and output (deq) interfaces using ready and valid signaling.
+
+## Input/Output Interface
+  input        clock,
+  input        reset,
+  output       io_enq_ready,
+  input        io_enq_valid,
+  input  [7:0] io_enq_bits,
+  input        io_deq_ready,
+  output       io_deq_valid,
+  output [7:0] io_deq_bits
+
+
+## Internal Logic
+1. **Registers**:
+   - `pValid`: A register used to indicate whether there is currently valid data being held in the module.
+   - `pData`: A register used to hold the data of type `D` being stored
+
+2. **Data Storage and Flow Control**:
+   - The module transitions state based on the handshake between `enq.valid`, `enq.ready`, `deq.valid`, and `deq.ready`.
+   - When `enq.valid` is asserted and `pValid` is not, the data is captured in `pData`, and `pValid` is set to indicate the presence of valid data.
+   - The module waits until the `deq.ready` signal is asserted simultaneously with `pValid` to unload and clear the stored data, resetting `pValid`.
+
+3. **Output Assignments**:
+   - `io.deq.valid` is set to the current state of `pValid`, indicating to the consumer whether the data is available.
+   - `io.deq.bits` is driven by `pData`, providing the held data for consumption.
+   - `io.enq.ready` is driven by the negation of `pValid`, indicating readiness to accept new data only when no data is currently being held.
+```
+Give me the complete verilog code.
+
 ## Base Method
 Please act as a professional Chisel designer. Give me the complete Chisel code.
 
@@ -107,7 +146,7 @@ The `DCHold` module creates a ready/valid holding register designed to hold a da
 Give me the complete Chisel code.
 
 
-## NOT Method s2-Modern HDL Gen
+## NOT-TAG Method s2-Modern HDL Gen
 
 Please act as a professional Chisel designer. Give me the complete Chisel code.
 Notice the relation of tasks.

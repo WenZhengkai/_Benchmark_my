@@ -16,33 +16,28 @@ class dut[D <: Data](data: D, maxCredit: Int) extends Module {
     val curCredit = Output(UInt(log2Ceil(maxCredit).W))
   })
 
-  // Internal Registers
-  val icredit = RegInit(false.B)
+  // Task 1: Credit Register (icredit)
+  val icredit = RegNext(io.deq.credit, init = false.B)
+
+  // Task 2: Credit Counter (curCredit)
   val curCredit = RegInit(maxCredit.U(log2Ceil(maxCredit).W))
-  val dataOut = Reg(data.cloneType)
-  val validOut = RegInit(false.B)
-
-  // Logic to update credit and data registers
-  when(io.enq.fire() && curCredit =/= 0.U) {
-    dataOut := io.enq.bits
-    validOut := true.B
-    curCredit := curCredit - 1.U
-  }.otherwise {
-    validOut := false.B
-  }
-
-  when(io.deq.credit && !io.enq.fire()) {
+  when(icredit && !io.enq.fire) {
     curCredit := curCredit + 1.U
+  }.elsewhen(!icredit && io.enq.fire) {
+    curCredit := curCredit - 1.U
   }
 
-  // Output interface logic
+  // Task 3: Drive the Ready Signal (io.enq.ready)
+  io.enq.ready := curCredit > 0.U
+
+  // Task 4: Data Register (dataOut)
+  val dataOut = RegEnable(io.enq.bits, io.enq.fire)
+
+  // Task 5: Valid Register (validOut)
+  val validOut = RegNext(io.enq.fire, init = false.B)
+
+  // Assign outputs for the CreditIO interface
   io.deq.bits := dataOut
   io.deq.valid := validOut
-  io.enq.ready := curCredit =/= 0.U
-
-  // Update internal credit register based on credit signal
-  icredit := io.deq.credit
-  
-  // Assign current credit to output
   io.curCredit := curCredit
 }

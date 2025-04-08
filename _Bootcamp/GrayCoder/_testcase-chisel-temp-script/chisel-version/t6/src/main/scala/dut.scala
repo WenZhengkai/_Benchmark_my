@@ -1,42 +1,42 @@
-
-
 import chisel3._
 import chisel3.util._
 
-/**
- * GrayCoder Module
- * A digital circuit that performs encoding of binary numbers to Gray code,
- * and decoding of Gray code to binary numbers, controlled by a boolean signal.
- *
- * @param bitwidth Specifies the width of input/output data in bits.
- */
 class dut(val bitwidth: Int) extends Module {
-  require(bitwidth > 0, "Bitwidth must be greater than 0")
+  // Parameter validation
+  require(bitwidth > 0, "Bitwidth must be positive")
 
-  // Input/Output interface
+  // Define IO Interface
   val io = IO(new Bundle {
-    val in     = Input(UInt(bitwidth.W))   // Input data to be encoded/decoded
-    val encode = Input(Bool())            // Operation mode: true for encode, false for decode
-    val out    = Output(UInt(bitwidth.W)) // Output data after encoding/decoding
+    val in = Input(UInt(bitwidth.W))   // Input data
+    val encode = Input(Bool())         // Mode: true for encode, false for decode
+    val out = Output(UInt(bitwidth.W)) // Output data
   })
 
-  // Encoding Mode: Binary to Gray code
+  // Task 2: Gray Code Encoding Logic
+  // Binary to Gray code: encoded = in ^ (in >> 1)
   val encoded = io.in ^ (io.in >> 1.U)
 
-  // Decoding Mode: Gray code to Binary
-  val decoded = Wire(UInt(bitwidth.W))
-  val result = RegInit(0.U(bitwidth.W)) // Register to store intermediate decoding results
+  // Task 3: Gray Code Decoding Logic
+  // Iterative XOR structure to decode Gray code to Binary
+  val numSteps = log2Ceil(bitwidth) // Number of steps required for decoding
+  var current: UInt = io.in        // Initialize current value with input
 
-  // Sequential decoding logic using XOR operations
-  when(io.encode === false.B) {
-    result := io.in // Initialize the process with input Gray code
-    for (i <- 1 until bitwidth) {
-      result := result ^ (io.in >> i.U)
-    }
+  (0 until numSteps).foreach { i =>
+    // Powers of two shifts
+    val shift = (1 << i).U
+    current = current ^ (current >> shift) // Update current with shift-and-XOR
   }
+  val decoded = current // Final decoded value
 
-  // Output logic: Select between encoded and decoded values
-  io.out := Mux(io.encode, encoded, result)
+  // Task 4: Operation Mode Selection
+  // Use Mux to choose between encoded and decoded results
+  val output = Mux(io.encode, encoded, decoded)
+
+  // Task 5: Handle edge cases (e.g., single-bit inputs)
+  if (bitwidth == 1) {
+    io.out := io.in // For 1-bit width, input directly equals output
+  } else {
+    io.out := output // Normal behavior
+  }
 }
-
 

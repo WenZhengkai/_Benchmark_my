@@ -1,36 +1,39 @@
 import chisel3._
 import chisel3.util._
+import scala.math.pow
 
 class dut(val bitwidth: Int) extends Module {
-  require(bitwidth > 0, "bitwidth must be greater than 0")
-  
+  // Parameter validation
+  require(bitwidth > 0, "Bitwidth must be positive")
+
+  // Define IO interface
   val io = IO(new Bundle {
-    val in     = Input(UInt(bitwidth.W))  // Input binary or Gray code number
-    val encode = Input(Bool())           // Operation mode: true -> encode, false -> decode
-    val out    = Output(UInt(bitwidth.W)) // Output Gray code or binary number
+    val in = Input(UInt(bitwidth.W))  // Input data
+    val encode = Input(Bool())        // Encoding or decoding mode
+    val out = Output(UInt(bitwidth.W)) // Output data
   })
 
-  // Wire for the output
-  val result = Wire(UInt(bitwidth.W))
+  // Handle special case for 1-bit input
+  if (bitwidth == 1) {
+    // For 1-bit, Gray encoding and decoding result is the same as input
+    io.out := io.in
+  } else {
+    // Normal logic for multi-bit Gray encoding and decoding
 
-  when(io.encode) {
-    // Encoding binary to Gray code
-    result := io.in ^ (io.in >> 1.U) // Each bit is XORed with the bit right-shifted by 1
-  }.otherwise {
-    // Decoding Gray code to Binary
-    val binaryDecoded = Wire(Vec(bitwidth, Bool())) // Intermediate Vec to hold the binary bits
+    // Task 2: Gray code encoding logic
+    val encoded = io.in ^ (io.in >> 1.U) // XOR with shifted version of itself
 
-    // Gray code decoding process:
-    binaryDecoded(bitwidth - 1) := io.in(bitwidth - 1) // MSB remains the same
-    for (i <- (0 until bitwidth - 1).reverse) {
-      binaryDecoded(i) := binaryDecoded(i + 1) ^ io.in(i) // XOR previous decoded bit
+    // Task 3: Gray code decoding logic
+    val numSteps = log2Ceil(bitwidth) // Number of iterations needed
+    var current = io.in               // Intermediate value for iterative decoding
+    for (i <- 0 until numSteps) {
+      val shift = (1 << i).U          // Powers of 2 for bit shifting
+      current = current ^ (current >> shift) // Iterative XOR process
     }
+    val decoded = current             // The fully decoded result after loop
 
-    // Convert Vec[Bool] to UInt for output
-    result := binaryDecoded.asUInt
+    // Task 4: Output selection based on operation mode
+    io.out := Mux(io.encode, encoded, decoded) // Select between encoding and decoding output
   }
-
-  // Connect the result to the output
-  io.out := result
 }
 

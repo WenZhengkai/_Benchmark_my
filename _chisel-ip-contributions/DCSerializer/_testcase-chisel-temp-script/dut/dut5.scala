@@ -2,50 +2,44 @@ import chisel3._
 import chisel3.util._
 
 class dut[D <: Data](data: D, width: Int) extends Module {
+  require(width < data.getWidth, "The output width must be less than the input data width")
 
-  // Ensure width is less than the bit-width of the serialized input data
-  require(width < data.getWidth, "Width of the output words should be less than the bit-width of the input data.")
-
+  // IO Definition
   val io = IO(new Bundle {
-    val dataIn  = Flipped(Decoupled(data))
-    val dataOut = Decoupled(UInt(width.W))
+    val dataIn = Flipped(Decoupled(data))  // Input data (handshakes for readiness)
+    val dataOut = Decoupled(UInt(width.W)) // Serialized output words
   })
 
-  // Task 1: Cycle Calculation Logic
-  val dataWidth = data.getWidth
-  val cycles = if (dataWidth % width != 0) dataWidth / width + 1 else dataWidth / width
+  // Compute the number of cycles needed for serialization
+  val cycles = (data.getWidth + width - 1) / width
 
-  // Task 2: Cycle Counter Register
-  val cycleCount = RegInit(0.U(log2Ceil(cycles).W))
+  // Cycle counter register
+  val cycleCount = RegInit(0.U(log2Ceil(cycles + 1).W))
 
-  // Task 3: Data Selection and Storage
-  val dataSelect = Wire(Vec(cycles, UInt(width.W)))
-  for (i <- 0 until cycles) {
-    val startPos = i * width
-    val endPos = startPos + width - 1
+  // Compute the padded width
+  val paddedWidth = cycles * width
 
-    dataSelect(i) := io.dataIn.bits.asUInt >> startPos
-  }
+  // Pad the input data to paddedWidth and split into chunks of 'width' bits
+  val paddedData = Cat(0.U((paddedWidth - data.getWidth).W), io.dataIn.bits.asUInt)
+  val dataSelect = VecInit.tabulate(cycles)(i => paddedData(i * width + width - 1, i * width))
 
-  io.dataOut.bits := dataSelect(cycleCount)
-
-  // Task 4: Handshaking Logic for Data Input
+  // Handshaking logic
+  // Drive io.dataIn.ready when ready to receive new data
   io.dataIn.ready := (cycleCount === (cycles - 1).U) && io.dataOut.ready
 
-  // Task 5: Handshaking Logic for Data Output
+  // Drive io.dataOut.valid based on input validity and output readiness
   io.dataOut.valid := io.dataIn.valid
 
-  when(io.dataOut.fire()) {
-    when(cycleCount === (cycles - 1).U) {
-      cycleCount := 0.U
-    } .otherwise {
-      cycleCount := cycleCount + 1.U
-    }
+  // Select the word to output based on the current cycle count
+  io.dataOut.bits := dataSelect(cycleCount)
+
+  // Update the cycle counter
+  when(io.dataOut.fire) {
+    cycleCount := Mux(cycleCount === (cycles - 1).U, 0.U, cycleCount + 1.U)
   }
 
-  when(io.dataIn.fire()) {
+  // Reset the cycle counter when a new input transaction starts
+  when(io.dataIn.fire) {
     cycleCount := 0.U
-  }
+  }  
 }
-
-
