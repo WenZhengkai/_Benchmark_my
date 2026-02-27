@@ -3,77 +3,67 @@ import chisel3.util._
 
 class dut extends Module {
   val io = IO(new Bundle {
-    val s = Input(UInt(3.W))      // Sensors input [3:1]
-    val fr3 = Output(Bool())      // Flow rate 3
-    val fr2 = Output(Bool())      // Flow rate 2
-    val fr1 = Output(Bool())      // Flow rate 1
-    val dfr = Output(Bool())      // Supplemental flow rate
+    val s = Input(UInt(3.W))  // 3 sensors, s[3] to s[1]
+    val reset = Input(Bool()) // Active-high synchronous reset
+    val fr3 = Output(Bool())  // Flow rate control 3
+    val fr2 = Output(Bool())  // Flow rate control 2
+    val fr1 = Output(Bool())  // Flow rate control 1
+    val dfr = Output(Bool())  // Supplemental flow valve
   })
 
-  // State registers to track current and previous water levels
-  val prevLevel = RegInit(0.U(2.W))
-  val currLevel = WireDefault(0.U(2.W))
+  // Define states for level tracking
+  val sAboveS3 :: sBetweenS3S2 :: sBetweenS2S1 :: sBelowS1 :: Nil = Enum(4)
+  
+  // State register
+  val state = RegInit(sBelowS1)
+  val prevState = RegNext(state)
+  
+  // Parse the sensor inputs into a state
+  val currentState = Wire(UInt(2.W))
+  currentState := MuxCase(sBelowS1, Array(
+    (io.s === 7.U) -> sAboveS3,        // All sensors on (s[3:1] = 111)
+    (io.s === 6.U) -> sBetweenS3S2,    // s[1] and s[2] on (s[3:1] = 110)
+    (io.s === 4.U) -> sBetweenS3S2,    // s[3] and s[1] on - not physically possible but handle it
+    (io.s === 2.U) -> sBelweenS3S2,    // Only s[2] on - not physically possible but handle it
+    (io.s === 3.U) -> sBetweenS3S2,    // s[1] and s[3] on - not physically possible but handle it
+    (io.s === 1.U) -> sBetweenS2S1     // Only s[1] on (s[3:1] = 001)
+  ))
 
-  // Decode current water level based on sensor inputs
-  when(io.s === "b111".U) {            // All sensors active (Above s[3])
-    currLevel := 3.U
-  }.elsewhen(io.s === "b011".U) {      // s[2] and s[1] active (Between s[3] and s[2])
-    currLevel := 2.U
-  }.elsewhen(io.s === "b001".U) {      // s[1] active (Between s[2] and s[1])
-    currLevel := 1.U
-  }.elsewhen(io.s === "b000".U) {      // No sensors active (Below s[1])
-    currLevel := 0.U
+  // Update state based on sensor readings or reset
+  when (io.reset) {
+    state := sBelowS1
+  } .otherwise {
+    state := currentState
   }
 
-  // Reset signal is synchronous and active-high
-  val reset = RegInit(false.B)
-  when(reset.asBool()) {
-    // Reset state: Assume water level is low for a long time
-    io.fr3 := true.B
-    io.fr2 := true.B
-    io.fr1 := true.B
-    io.dfr := true.B
-    prevLevel := 0.U
-  }.otherwise {
-    // Default flow rate outputs based on the current water level
-    switch(currLevel) {
-      is(3.U) { // Above s[3]: No flow rates asserted
-        io.fr3 := false.B
-        io.fr2 := false.B
-        io.fr1 := false.B
-        io.dfr := false.B
-      }
-      is(2.U) { // Between s[3] and s[2]: fr1 nominal flow rate
-        io.fr3 := false.B
-        io.fr2 := false.B
-        io.fr1 := true.B
-        io.dfr := false.B
-      }
-      is(1.U) { // Between s[2] and s[1]: fr1 and fr2 nominal flow rates
-        io.fr3 := false.B
-        io.fr2 := true.B
-        io.fr1 := true.B
-        io.dfr := false.B
-      }
-      is(0.U) { // Below s[1]: All flow rates asserted
-        io.fr3 := true.B
-        io.fr2 := true.B
-        io.fr1 := true.B
-        io.dfr := false.B
-      }
-    }
-    
-    // Add supplemental flow (dfr) based on the rising water level
-    when(prevLevel < currLevel) {
-      io.dfr := true.B // Open supplemental flow valve
-    }
-    prevLevel := currLevel // Update previous level
-  }
+  // Determine if the water level is rising
+  val isRising = state > prevState
+  
+  // Set output flow rates based on current state
+  io.fr1 := MuxCase(false.B, Array(
+    (state === sBelowS1) -> true.B,
+    (state === sBetweenS2S1) -> true.B,
+    (state === sBetweenS3S2) -> true.B
+  ))
+  
+  io.fr2 := MuxCase(false.B, Array(
+    (state === sBelowS1) -> true.B,
+    (state === sBetweenS2S1) -> true.B
+  ))
+  
+  io.fr3 := state === sBelowS1
+  
+  // Supplemental flow valve should be on when the water level is rising
+  io.dfr := MuxCase(false.B, Array(
+    (io.reset) -> true.B,              // Active during reset
+    (state === sBelowS1) -> true.B,    // Always on when below s[1]
+    (isRising) -> true.B               // On when water level is rising
+  ))
 }
 
-// Generate Verilog output (helper to generate verilog code)
+// This allows the module to be run standalone
 /*
-object dut extends App {
-  (new chisel3.stage.ChiselStage).emitVerilog(new dut())
+object dutDriver extends App {
+  chisel3.Driver.execute(args, () => new dut)
 }
 */

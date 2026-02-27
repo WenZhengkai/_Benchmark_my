@@ -3,61 +3,65 @@ import chisel3.util._
 
 class dut extends Module {
   val io = IO(new Bundle {
-    val r = Input(UInt(3.W)) // 3-bit input vector representing requests
-    val g = Output(UInt(3.W)) // 3-bit output vector representing grants
+    val r = Input(UInt(3.W))
+    val g = Output(UInt(3.W))
   })
 
   // Define the states
-  val sA :: sB :: sC :: sD :: Nil = Enum(4) // State A = 0, B = 1, C = 2, D = 3
-  val state = RegInit(sA) // The current state register, initialized to A
+  object State extends ChiselEnum {
+    val A, B, C, D = Value
+  }
 
-  // Default output values
-  io.g := 0.U // All grants are deasserted by default
-
-  // State Transition Logic
+  // State register
+  val state = RegInit(State.A)
+  
+  // Default output
+  io.g := 0.U
+  
+  // Extract individual request bits
+  val r0 = io.r(0)
+  val r1 = io.r(1)
+  val r2 = io.r(2)
+  
+  // FSM logic
   switch(state) {
-    is(sA) { // State A
-      when(io.r(0)) { // r[0] = 1 (highest priority)
-        state := sB
-      } .elsewhen(io.r(1)) { // r[1] = 1 (next priority)
-        state := sC
-      } .elsewhen(io.r(2)) { // r[2] = 1 (lowest priority)
-        state := sD
+    is(State.A) {
+      when(r0) {
+        state := State.B
+      }.elsewhen(r1) {
+        state := State.C
+      }.elsewhen(r2) {
+        state := State.D
+      }.otherwise {
+        state := State.A
       }
     }
-    is(sB) { // State B (Grant g[0] = 1)
-      when(!io.r(0)) { // If r[0] = 0, return to state A
-        state := sA
+    
+    is(State.B) {
+      io.g := "b001".U  // g0 = 1
+      when(r0) {
+        state := State.B
+      }.otherwise {
+        state := State.A
       }
     }
-    is(sC) { // State C (Grant g[1] = 1)
-      when(!io.r(1)) { // If r[1] = 0, return to state A
-        state := sA
+    
+    is(State.C) {
+      io.g := "b010".U  // g1 = 1
+      when(r1) {
+        state := State.C
+      }.otherwise {
+        state := State.A
       }
     }
-    is(sD) { // State D (Grant g[2] = 1)
-      when(!io.r(2)) { // If r[2] = 0, return to state A
-        state := sA
+    
+    is(State.D) {
+      io.g := "b100".U  // g2 = 1
+      when(r2) {
+        state := State.D
+      }.otherwise {
+        state := State.A
       }
     }
   }
-
-  // Output Logic (Grant Signal)
-  switch(state) {
-    is(sB) { // State B corresponds to granting g[0] = 1
-      io.g := "b001".U
-    }
-    is(sC) { // State C corresponds to granting g[1] = 1
-      io.g := "b010".U
-    }
-    is(sD) { // State D corresponds to granting g[2] = 1
-      io.g := "b100".U
-    }
-  }
 }
-
-/*
-object dut extends App {
-  (new chisel3.stage.ChiselStage).emitVerilog(new dut())
-}
-*/

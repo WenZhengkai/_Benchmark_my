@@ -10,6 +10,7 @@ import chisel3.util._
   *
   * @param data Payload data type
   * @param n    Number of output destinations
+  * 
   */
 class DCMirror[D <: Data](data: D, n: Int) extends Module {
   val io = IO(new Bundle {
@@ -28,8 +29,10 @@ class DCMirror[D <: Data](data: D, n: Int) extends Module {
   when(nxtAccept) {
     pValid := Fill(n, io.c.valid) & io.dst
     pData := io.c.bits
+
   }.otherwise {
     pValid := pValid & ~pReady
+    
   }
   io.c.ready := nxtAccept
 

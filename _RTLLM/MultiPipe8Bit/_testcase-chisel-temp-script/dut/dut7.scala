@@ -1,63 +1,63 @@
+// package multiplier
+
 import chisel3._
 import chisel3.util._
 
 class dut extends Module {
   val io = IO(new Bundle {
-    val mul_en_in  = Input(Bool())         // Input enable signal
-    val mul_a      = Input(UInt(8.W))     // 8-bit multiplicand
-    val mul_b      = Input(UInt(8.W))     // 8-bit multiplier
-    val mul_en_out = Output(Bool())       // Output enable signal
-    val mul_out    = Output(UInt(16.W))   // 16-bit product output
+    // Input ports
+    val mul_en_in = Input(Bool())
+    val mul_a = Input(UInt(8.W))
+    val mul_b = Input(UInt(8.W))
+    
+    // Output ports
+    val mul_en_out = Output(Bool())
+    val mul_out = Output(UInt(16.W))
   })
 
-  // Task 1: Input enable control logic
-  val mul_en_out_reg = RegInit(0.U(5.W)) // 5-bit shift register for enable signal
-  when(io.mul_en_in) {
-    mul_en_out_reg := Cat(mul_en_out_reg(3, 0), io.mul_en_in) // Shift left and insert new enable signal
-  } .otherwise {
-    mul_en_out_reg := Cat(mul_en_out_reg(3, 0), 0.U(1.W)) // Shift left with zero when input enable is inactive
+  // Pipeline registers for the enable signal (5 stages)
+  val mul_en_out_reg = RegInit(VecInit(Seq.fill(5)(false.B)))
+  
+  // Update the pipeline registers for enable signal
+  mul_en_out_reg(0) := io.mul_en_in
+  for (i <- 0 until 4) {
+    mul_en_out_reg(i + 1) := mul_en_out_reg(i)
   }
-  val mul_en_out = mul_en_out_reg(4) // MSB of the shift register
-  io.mul_en_out := mul_en_out        // Output assignment for mul_en_out
-
-  // Task 2: Input registers
-  val mul_a_reg = RegInit(0.U(8.W)) // Register for multiplicand
-  val mul_b_reg = RegInit(0.U(8.W)) // Register for multiplier
+  
+  // Connect output enable to the last stage of the pipeline
+  io.mul_en_out := mul_en_out_reg(4)
+  
+  // Input registers
+  val mul_a_reg = RegInit(0.U(8.W))
+  val mul_b_reg = RegInit(0.U(8.W))
+  
   when(io.mul_en_in) {
-    mul_a_reg := io.mul_a // Latch multiplicand when enable is active
-    mul_b_reg := io.mul_b // Latch multiplier when enable is active
+    mul_a_reg := io.mul_a
+    mul_b_reg := io.mul_b
   }
-
-  // Task 3: Partial product generation
-  val temp = Wire(Vec(8, UInt(16.W))) // Vec to store 8 partial products
+  
+  // Pipeline stage 1: Generate partial products
+  val partial_products = Wire(Vec(8, UInt(16.W)))
   for (i <- 0 until 8) {
-    temp(i) := Mux(mul_b_reg(i), mul_a_reg << i, 0.U) // Generate shifted partial products
+    partial_products(i) := Mux(mul_b_reg(i), (mul_a_reg << i).asUInt, 0.U)
   }
-
-  // Task 4: Partial sum calculation (using pipelined registers)
-  val sum1 = RegInit(0.U(16.W))
-  val sum2 = RegInit(0.U(16.W))
-  val sum3 = RegInit(0.U(16.W))
-  val sum4 = RegInit(0.U(16.W))
-
-  // Stage 1: Add partial products 0 and 1, partial products 2 and 3
-  when(io.mul_en_in) {
-    sum1 := temp(0) + temp(1)
-    sum2 := temp(2) + temp(3)
-  }
-
-  // Stage 2: Add partial products 4 and 5, partial products 6 and 7
-  when(io.mul_en_in) {
-    sum3 := temp(4) + temp(5)
-    sum4 := temp(6) + temp(7)
-  }
-
-  // Task 5: Accumulate sums to get the final product
-  val mul_out_reg = RegInit(0.U(16.W)) // Register for the final product
-  when(io.mul_en_in) {
-    mul_out_reg := (sum1 + sum2) + (sum3 + sum4) // Final accumulation
-  }
-
-  // Task 6: Output assignment
-  io.mul_out := Mux(mul_en_out, mul_out_reg, 0.U) // Assign output based on enable signal
+  
+  // Pipeline stage 2: First level addition
+  val sum1 = RegInit(VecInit(Seq.fill(4)(0.U(16.W))))
+  sum1(0) := partial_products(0) + partial_products(1)
+  sum1(1) := partial_products(2) + partial_products(3)
+  sum1(2) := partial_products(4) + partial_products(5)
+  sum1(3) := partial_products(6) + partial_products(7)
+  
+  // Pipeline stage 3: Second level addition
+  val sum2 = RegInit(VecInit(Seq.fill(2)(0.U(16.W))))
+  sum2(0) := sum1(0) + sum1(1)
+  sum2(1) := sum1(2) + sum1(3)
+  
+  // Pipeline stage 4: Final addition
+  val mul_out_reg = RegInit(0.U(16.W))
+  mul_out_reg := sum2(0) + sum2(1)
+  
+  // Output assignment
+  io.mul_out := Mux(io.mul_en_out, mul_out_reg, 0.U)
 }

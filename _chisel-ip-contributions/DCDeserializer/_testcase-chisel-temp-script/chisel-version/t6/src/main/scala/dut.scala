@@ -1,41 +1,52 @@
 import chisel3._
 import chisel3.util._
 
-class dut[D <: Data](data: D, width: Int) extends Module {
+class Deserializer[D <: Data](data: D, width: Int) extends Module {
   val io = IO(new Bundle {
-    val dataIn = Flipped(Decoupled(UInt(width.W)))     // Input serialized data stream
-    val dataOut = Decoupled(data.cloneType)            // Output reconstructed parallel data
+    val dataIn = Flipped(Decoupled(UInt(width.W)))
+    val dataOut = Decoupled(data.cloneType)
   })
 
-  // Calculate the number of cycles required for deserialization
+  // Calculate the total width of the data type
   val dataWidth = data.getWidth
-  val cycles = (dataWidth + width - 1) / width
-
-  // Registers for tracking deserialization state
+  
+  // Calculate the number of cycles needed to receive the complete data
+  val cycles = (dataWidth + width - 1) / width  // Ceiling division
+  
+  // Create a register to track the current cycle
   val cycleCount = RegInit(0.U(log2Ceil(cycles).W))
-  val dataSelect = Reg(Vec(cycles, UInt(width.W)))     // Temporary storage for incoming data
-  val dataValid = RegInit(false.B)                    // Indicates when deserialization is complete
-
-  // Default I/O behavior
-  io.dataIn.ready := !dataValid || io.dataOut.ready   // Ready when idle or output ready
-  io.dataOut.valid := dataValid                      // Output valid when data is complete
-  io.dataOut.bits := dataSelect.asTypeOf(data)       // Construct output data from the vector
-
-  // Input handling logic
-  when(io.dataIn.fire()) {
-    // Store the incoming segment in the appropriate position
-    dataSelect(cycleCount) := io.dataIn.bits
-    // Update the cycle counter
+  
+  // Register to accumulate the incoming data
+  val dataSelect = RegInit(0.U(dataWidth.W))
+  
+  // Register to indicate when data is valid
+  val dataValid = RegInit(false.B)
+  
+  // Default state for input/output interfaces
+  io.dataIn.ready := !dataValid
+  io.dataOut.valid := dataValid
+  io.dataOut.bits := dataSelect.asTypeOf(data.cloneType)
+  
+  // Processing logic for incoming data
+  when(io.dataIn.fire) {
+    // Store the incoming data segment at the appropriate position in dataSelect
+    val shiftAmount = cycleCount * width.U
+    val mask = ((1.U << width.U) - 1.U) << shiftAmount
+    val shiftedData = io.dataIn.bits << shiftAmount
+    
+    dataSelect := (dataSelect & ~mask) | (shiftedData & mask)
+    
+    // Update cycle count and set valid flag when all segments are received
     when(cycleCount === (cycles - 1).U) {
       cycleCount := 0.U
-      dataValid := true.B                           // Mark data as valid when complete
+      dataValid := true.B
     }.otherwise {
       cycleCount := cycleCount + 1.U
     }
   }
-
-  // Output handling logic
-  when(io.dataOut.fire()) {
-    dataValid := false.B                            // Reset valid flag after data is consumed
+  
+  // Reset dataValid when the output is successfully transmitted
+  when(io.dataOut.fire) {
+    dataValid := false.B
   }
 }

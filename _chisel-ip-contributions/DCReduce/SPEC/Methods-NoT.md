@@ -5,10 +5,10 @@ Please act as a professional verilog designer. Give me the complete verilog code
 # Specification
 
 ## Module Name
-DCReduce
+dut
 
 ## Overview
-The `DCReduce` module is a hardware module that implements a multi-input decoupled operator. It makes use of `DCInput` and `DCOutput` to create a module with registered-output timing. The module takes multiple data inputs, performs a reduction operation on the inputs using a specified binary operator, and outputs the result.
+The `dut` module is a hardware module that implements a multi-input decoupled operator. It makes use of `DCInput` and `DCOutput` to create a module with registered-output timing. The module takes multiple data inputs, performs a reduction operation on the inputs using a specified binary operator, and outputs the result.
 
 ## Library
  `DCInput` and `DCOutput`, they both have their Helper function for functional inference:
@@ -231,15 +231,15 @@ Please act as a professional Chisel designer. Give me the complete Chisel code.
 # Specification
 
 ## Module Name
-DCReduce
+dut
 
 ## Overview
-The `DCReduce` module is a Chisel-based hardware module that implements a multi-input decoupled operator. It makes use of `DCInput` and `DCOutput` to create a module with registered-output timing. The module takes multiple data inputs, performs a reduction operation on the inputs using a specified binary operator, and outputs the result.
+The `dut` module is a Chisel-based hardware module that implements a multi-input decoupled operator. It makes use of `DCInput` and `DCOutput` to create a module with registered-output timing. The module takes multiple data inputs, performs a reduction operation on the inputs using a specified binary operator, and outputs the result.
 
 ## Library
 - `chisel3._` `chisel3.util._` `chisel.lib.dclib._`
 - `chisel.lib.dclib._`: `DCInput` and `DCOutput`, they both have their Helper function for functional inference:
-``` scala
+
 object DCInput {
   def apply[D <: Data](x: DecoupledIO[D]): DecoupledIO[D] = {
     val tout = Module(new DCInput(x.bits.cloneType))
@@ -257,7 +257,7 @@ object DCOutput {
 }
 // using example
 val zDcout = DCOutput(zInt)
-```
+
 
 ## Parameters
 - `[D <: Data]data: D`: The data type of the inputs and outputs, which defines the type of data the operator will work on.
@@ -297,10 +297,10 @@ Please act as a professional Chisel designer. Slice the `Internal logic` into se
 # Specification
 
 ## Module Name
-DCReduce
+dut
 
 ## Overview
-The `DCReduce` module is a Chisel-based hardware module that implements a multi-input decoupled operator. It makes use of `DCInput` and `DCOutput` to create a module with registered-output timing. The module takes multiple data inputs, performs a reduction operation on the inputs using a specified binary operator, and outputs the result.
+The `dut` module is a Chisel-based hardware module that implements a multi-input decoupled operator. It makes use of `DCInput` and `DCOutput` to create a module with registered-output timing. The module takes multiple data inputs, performs a reduction operation on the inputs using a specified binary operator, and outputs the result.
 
 ## Library
 - `chisel3._` `chisel3.util._` `chisel.lib.dclib._`
@@ -378,10 +378,10 @@ Notice the relation of tasks.
 # Specification
 
 ## Module Name
-DCReduce
+dut
 
 ## Overview
-The `DCReduce` module is a Chisel-based hardware module that implements a multi-input decoupled operator. It makes use of `DCInput` and `DCOutput` to create a module with registered-output timing. The module takes multiple data inputs, performs a reduction operation on the inputs using a specified binary operator, and outputs the result.
+The `dut` module is a Chisel-based hardware module that implements a multi-input decoupled operator. It makes use of `DCInput` and `DCOutput` to create a module with registered-output timing. The module takes multiple data inputs, performs a reduction operation on the inputs using a specified binary operator, and outputs the result.
 
 ## Library
 - `chisel3._` `chisel3.util._` `chisel.lib.dclib._`
@@ -463,10 +463,10 @@ Notice the relation of tasks.
 # Specification
 
 ## Module Name
-DCReduce
+dut
 
 ## Overview
-The `DCReduce` module is a Chisel-based hardware module that implements a multi-input decoupled operator. It makes use of `DCInput` and `DCOutput` to create a module with registered-output timing. The module takes multiple data inputs, performs a reduction operation on the inputs using a specified binary operator, and outputs the result.
+The `dut` module is a Chisel-based hardware module that implements a multi-input decoupled operator. It makes use of `DCInput` and `DCOutput` to create a module with registered-output timing. The module takes multiple data inputs, performs a reduction operation on the inputs using a specified binary operator, and outputs the result.
 
 ## Library
 - `chisel3._` `chisel3.util._` `chisel.lib.dclib._`
@@ -623,7 +623,7 @@ Next, the Logic Computation involves computing an all_valid signal that checks i
 ## Think process
 Thinking...
 > 
-> Okay, I need to break down the Internal Logic section of the DCReduce module into several coding tasks. Let me start by understanding what each part of the Internal Logic does.
+> Okay, I need to break down the Internal Logic section of the dut module into several coding tasks. Let me start by understanding what each part of the Internal Logic does.
 > 
 > First, the Initialization part mentions generating a vector of internal decoupled inputs aInt using DCInput for each io.a. So that's probably creating a Vec of DCInput modules connected to each input in the a vector. Then there's zInt, which is a wire of Decoupled type.
 > 

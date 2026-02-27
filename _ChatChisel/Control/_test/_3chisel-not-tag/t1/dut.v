@@ -1,0 +1,107 @@
+module dut(
+  input        clock,
+  input        reset,
+  input  [6:0] io_opcode,
+  input  [6:0] io_funct7,
+  input  [2:0] io_funct3,
+  output [3:0] io_aluop,
+  output       io_immsrc,
+  output       io_isbranch,
+  output       io_memread,
+  output       io_memwrite,
+  output       io_regwrite,
+  output [1:0] io_memtoreg,
+  output       io_pcsel,
+  output       io_rdsel,
+  output       io_isjump,
+  output       io_isupper,
+  output       io_islui
+);
+  wire  _T_1 = 3'h0 == io_funct3; // @[dut.scala 87:25]
+  wire  _io_aluop_T = io_funct7 == 7'h20; // @[dut.scala 89:37]
+  wire [3:0] _io_aluop_T_1 = io_funct7 == 7'h20 ? 4'h1 : 4'h0; // @[dut.scala 89:26]
+  wire  _T_2 = 3'h4 == io_funct3; // @[dut.scala 87:25]
+  wire  _T_3 = 3'h6 == io_funct3; // @[dut.scala 87:25]
+  wire  _T_4 = 3'h7 == io_funct3; // @[dut.scala 87:25]
+  wire  _T_5 = 3'h1 == io_funct3; // @[dut.scala 87:25]
+  wire  _T_6 = 3'h5 == io_funct3; // @[dut.scala 87:25]
+  wire [3:0] _io_aluop_T_3 = _io_aluop_T ? 4'h7 : 4'h6; // @[dut.scala 95:38]
+  wire [3:0] _GEN_0 = 3'h3 == io_funct3 ? 4'h9 : 4'h0; // @[dut.scala 24:16 87:25 97:32]
+  wire [3:0] _GEN_1 = 3'h2 == io_funct3 ? 4'h8 : _GEN_0; // @[dut.scala 87:25 96:32]
+  wire [3:0] _GEN_2 = 3'h5 == io_funct3 ? _io_aluop_T_3 : _GEN_1; // @[dut.scala 87:25 95:32]
+  wire [3:0] _GEN_3 = 3'h1 == io_funct3 ? 4'h5 : _GEN_2; // @[dut.scala 87:25 94:32]
+  wire [3:0] _GEN_4 = 3'h7 == io_funct3 ? 4'h4 : _GEN_3; // @[dut.scala 87:25 93:32]
+  wire [3:0] _GEN_5 = 3'h6 == io_funct3 ? 4'h3 : _GEN_4; // @[dut.scala 87:25 92:32]
+  wire [3:0] _GEN_6 = 3'h4 == io_funct3 ? 4'h2 : _GEN_5; // @[dut.scala 87:25 91:32]
+  wire [3:0] _GEN_7 = 3'h0 == io_funct3 ? _io_aluop_T_1 : _GEN_6; // @[dut.scala 87:25 89:20]
+  wire [3:0] _GEN_10 = _T_1 ? 4'h0 : _GEN_1; // @[dut.scala 107:25 113:31]
+  wire [3:0] _GEN_11 = _T_6 ? _io_aluop_T_3 : _GEN_10; // @[dut.scala 107:25 112:31]
+  wire [3:0] _GEN_12 = _T_5 ? 4'h5 : _GEN_11; // @[dut.scala 107:25 111:31]
+  wire [3:0] _GEN_13 = _T_4 ? 4'h4 : _GEN_12; // @[dut.scala 107:25 110:31]
+  wire [3:0] _GEN_14 = _T_3 ? 4'h3 : _GEN_13; // @[dut.scala 107:25 109:31]
+  wire [3:0] _GEN_15 = _T_2 ? 4'h2 : _GEN_14; // @[dut.scala 107:25 108:31]
+  wire [3:0] _io_aluop_T_7 = io_funct3 == 3'h3 ? 4'h9 : 4'h8; // @[dut.scala 138:22]
+  wire  _GEN_17 = 7'h37 == io_opcode | 7'h17 == io_opcode; // @[dut.scala 158:18 80:21]
+  wire  _GEN_19 = 7'h37 == io_opcode ? 1'h0 : 7'h17 == io_opcode; // @[dut.scala 32:16 80:21]
+  wire  _GEN_21 = 7'h67 == io_opcode | _GEN_17; // @[dut.scala 152:19 80:21]
+  wire  _GEN_22 = 7'h67 == io_opcode ? 1'h0 : _GEN_17; // @[dut.scala 34:16 80:21]
+  wire  _GEN_23 = 7'h67 == io_opcode ? 1'h0 : 7'h37 == io_opcode; // @[dut.scala 35:16 80:21]
+  wire  _GEN_24 = 7'h67 == io_opcode ? 1'h0 : _GEN_19; // @[dut.scala 32:16 80:21]
+  wire  _GEN_25 = 7'h6f == io_opcode | 7'h67 == io_opcode; // @[dut.scala 143:17 80:21]
+  wire  _GEN_26 = 7'h6f == io_opcode | _GEN_21; // @[dut.scala 144:19 80:21]
+  wire  _GEN_27 = 7'h6f == io_opcode ? 1'h0 : 7'h67 == io_opcode; // @[dut.scala 31:16 80:21]
+  wire  _GEN_28 = 7'h6f == io_opcode ? 1'h0 : _GEN_22; // @[dut.scala 34:16 80:21]
+  wire  _GEN_29 = 7'h6f == io_opcode ? 1'h0 : _GEN_23; // @[dut.scala 35:16 80:21]
+  wire  _GEN_30 = 7'h6f == io_opcode ? 1'h0 : _GEN_24; // @[dut.scala 32:16 80:21]
+  wire [3:0] _GEN_32 = 7'h63 == io_opcode ? _io_aluop_T_7 : 4'h0; // @[dut.scala 138:16 24:16 80:21]
+  wire  _GEN_33 = 7'h63 == io_opcode ? 1'h0 : _GEN_25; // @[dut.scala 33:16 80:21]
+  wire  _GEN_34 = 7'h63 == io_opcode ? 1'h0 : _GEN_26; // @[dut.scala 29:16 80:21]
+  wire  _GEN_35 = 7'h63 == io_opcode ? 1'h0 : _GEN_27; // @[dut.scala 31:16 80:21]
+  wire  _GEN_36 = 7'h63 == io_opcode ? 1'h0 : _GEN_28; // @[dut.scala 34:16 80:21]
+  wire  _GEN_37 = 7'h63 == io_opcode ? 1'h0 : _GEN_29; // @[dut.scala 35:16 80:21]
+  wire  _GEN_38 = 7'h63 == io_opcode ? 1'h0 : _GEN_30; // @[dut.scala 32:16 80:21]
+  wire [3:0] _GEN_39 = 7'h23 == io_opcode ? 4'h0 : _GEN_32; // @[dut.scala 130:16 80:21]
+  wire  _GEN_40 = 7'h23 == io_opcode | _GEN_34; // @[dut.scala 131:17 80:21]
+  wire  _GEN_42 = 7'h23 == io_opcode ? 1'h0 : 7'h63 == io_opcode; // @[dut.scala 26:16 80:21]
+  wire  _GEN_43 = 7'h23 == io_opcode ? 1'h0 : _GEN_33; // @[dut.scala 33:16 80:21]
+  wire  _GEN_44 = 7'h23 == io_opcode ? 1'h0 : _GEN_34; // @[dut.scala 29:16 80:21]
+  wire  _GEN_45 = 7'h23 == io_opcode ? 1'h0 : _GEN_35; // @[dut.scala 31:16 80:21]
+  wire  _GEN_46 = 7'h23 == io_opcode ? 1'h0 : _GEN_36; // @[dut.scala 34:16 80:21]
+  wire  _GEN_47 = 7'h23 == io_opcode ? 1'h0 : _GEN_37; // @[dut.scala 35:16 80:21]
+  wire  _GEN_48 = 7'h23 == io_opcode ? 1'h0 : _GEN_38; // @[dut.scala 32:16 80:21]
+  wire [3:0] _GEN_49 = 7'h3 == io_opcode ? 4'h0 : _GEN_39; // @[dut.scala 121:16 80:21]
+  wire  _GEN_50 = 7'h3 == io_opcode | _GEN_40; // @[dut.scala 122:17 80:21]
+  wire  _GEN_52 = 7'h3 == io_opcode | _GEN_44; // @[dut.scala 124:19 80:21]
+  wire [1:0] _GEN_53 = 7'h3 == io_opcode ? 2'h1 : 2'h0; // @[dut.scala 125:19 30:16 80:21]
+  wire  _GEN_54 = 7'h3 == io_opcode ? 1'h0 : 7'h23 == io_opcode; // @[dut.scala 28:16 80:21]
+  wire  _GEN_55 = 7'h3 == io_opcode ? 1'h0 : _GEN_42; // @[dut.scala 26:16 80:21]
+  wire  _GEN_56 = 7'h3 == io_opcode ? 1'h0 : _GEN_43; // @[dut.scala 33:16 80:21]
+  wire  _GEN_57 = 7'h3 == io_opcode ? 1'h0 : _GEN_45; // @[dut.scala 31:16 80:21]
+  wire  _GEN_58 = 7'h3 == io_opcode ? 1'h0 : _GEN_46; // @[dut.scala 34:16 80:21]
+  wire  _GEN_59 = 7'h3 == io_opcode ? 1'h0 : _GEN_47; // @[dut.scala 35:16 80:21]
+  wire  _GEN_60 = 7'h3 == io_opcode ? 1'h0 : _GEN_48; // @[dut.scala 32:16 80:21]
+  wire  _GEN_61 = 7'h13 == io_opcode | _GEN_50; // @[dut.scala 103:17 80:21]
+  wire  _GEN_62 = 7'h13 == io_opcode | _GEN_52; // @[dut.scala 104:19 80:21]
+  wire [1:0] _GEN_63 = 7'h13 == io_opcode ? 2'h2 : _GEN_53; // @[dut.scala 105:19 80:21]
+  wire [3:0] _GEN_64 = 7'h13 == io_opcode ? _GEN_15 : _GEN_49; // @[dut.scala 80:21]
+  wire  _GEN_65 = 7'h13 == io_opcode ? 1'h0 : 7'h3 == io_opcode; // @[dut.scala 27:16 80:21]
+  wire  _GEN_66 = 7'h13 == io_opcode ? 1'h0 : _GEN_54; // @[dut.scala 28:16 80:21]
+  wire  _GEN_67 = 7'h13 == io_opcode ? 1'h0 : _GEN_55; // @[dut.scala 26:16 80:21]
+  wire  _GEN_68 = 7'h13 == io_opcode ? 1'h0 : _GEN_56; // @[dut.scala 33:16 80:21]
+  wire  _GEN_69 = 7'h13 == io_opcode ? 1'h0 : _GEN_57; // @[dut.scala 31:16 80:21]
+  wire  _GEN_70 = 7'h13 == io_opcode ? 1'h0 : _GEN_58; // @[dut.scala 34:16 80:21]
+  wire  _GEN_71 = 7'h13 == io_opcode ? 1'h0 : _GEN_59; // @[dut.scala 35:16 80:21]
+  wire  _GEN_72 = 7'h13 == io_opcode ? 1'h0 : _GEN_60; // @[dut.scala 32:16 80:21]
+  assign io_aluop = 7'h33 == io_opcode ? _GEN_7 : _GEN_64; // @[dut.scala 80:21]
+  assign io_immsrc = 7'h33 == io_opcode ? 1'h0 : _GEN_61; // @[dut.scala 80:21 83:17]
+  assign io_isbranch = 7'h33 == io_opcode ? 1'h0 : _GEN_67; // @[dut.scala 26:16 80:21]
+  assign io_memread = 7'h33 == io_opcode ? 1'h0 : _GEN_65; // @[dut.scala 27:16 80:21]
+  assign io_memwrite = 7'h33 == io_opcode ? 1'h0 : _GEN_66; // @[dut.scala 28:16 80:21]
+  assign io_regwrite = 7'h33 == io_opcode | _GEN_62; // @[dut.scala 80:21 84:19]
+  assign io_memtoreg = 7'h33 == io_opcode ? 2'h2 : _GEN_63; // @[dut.scala 80:21 85:19]
+  assign io_pcsel = 7'h33 == io_opcode ? 1'h0 : _GEN_69; // @[dut.scala 31:16 80:21]
+  assign io_rdsel = 7'h33 == io_opcode ? 1'h0 : _GEN_72; // @[dut.scala 32:16 80:21]
+  assign io_isjump = 7'h33 == io_opcode ? 1'h0 : _GEN_68; // @[dut.scala 33:16 80:21]
+  assign io_isupper = 7'h33 == io_opcode ? 1'h0 : _GEN_70; // @[dut.scala 34:16 80:21]
+  assign io_islui = 7'h33 == io_opcode ? 1'h0 : _GEN_71; // @[dut.scala 35:16 80:21]
+endmodule

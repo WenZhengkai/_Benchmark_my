@@ -5,9 +5,11 @@ main_dir=$(pwd)
 
 # 定义gpt_dir
 gpt_dir="/home/kai/ChiselProject/OpenAITemp/gpt-testcase"
+#gpt_dir="/home/kai/ChiselProject/OpenAITemp/ds-temp"
 
 # 定义Excel文件路径
 excel_file="$gpt_dir/gpt_record-script.xlsx"
+#excel_file="$gpt_dir/gpt_record.xlsx"
 
 # 检查Excel文件是否存在
 if [ ! -f "$excel_file" ]; then

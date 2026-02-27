@@ -1,66 +1,72 @@
-module dut(
+module dut (
     input clk,
     input resetn,
     input [2:0] r,
     output reg [2:0] g
 );
 
-    // State encoding
-    typedef enum logic [1:0] {
+    // Define states
+    typedef enum reg [1:0] {
         STATE_A = 2'b00,
         STATE_B = 2'b01,
         STATE_C = 2'b10,
         STATE_D = 2'b11
     } state_t;
 
+    // State variables
     state_t current_state, next_state;
 
-    // Sequential part: State transition
+    // Synchronous reset and state transition
     always @(posedge clk or negedge resetn) begin
-        if (!resetn) begin
+        if (!resetn)
             current_state <= STATE_A;
-        end else begin
+        else
             current_state <= next_state;
-        end
     end
 
-    // Combinational part: Next state logic and output logic
+    // Next state logic
     always @(*) begin
-        // Default values for the next state and output
-        next_state = current_state;
-        g = 3'b000;
-        
         case (current_state)
             STATE_A: begin
-                if (r[0]) begin
+                if (r[0] == 1)
                     next_state = STATE_B;
-                end else if (r[1]) begin
+                else if (r[1] == 1)
                     next_state = STATE_C;
-                end else if (r[2]) begin
+                else if (r[2] == 1)
                     next_state = STATE_D;
-                end
+                else
+                    next_state = STATE_A;
             end
             STATE_B: begin
-                g = 3'b001; // Grant to device 0
-                if (!r[0]) begin
+                if (r[0] == 1)
+                    next_state = STATE_B;
+                else
                     next_state = STATE_A;
-                end
             end
             STATE_C: begin
-                g = 3'b010; // Grant to device 1
-                if (!r[1]) begin
+                if (r[1] == 1)
+                    next_state = STATE_C;
+                else
                     next_state = STATE_A;
-                end
             end
             STATE_D: begin
-                g = 3'b100; // Grant to device 2
-                if (!r[2]) begin
+                if (r[2] == 1)
+                    next_state = STATE_D;
+                else
                     next_state = STATE_A;
-                end
             end
-            default: begin
-                next_state = STATE_A; // Default to State A on undefined state
-            end
+            default: next_state = STATE_A;
+        endcase
+    end
+
+    // Output logic
+    always @(*) begin
+        case (current_state)
+            STATE_A: g = 3'b000;
+            STATE_B: g = 3'b001;
+            STATE_C: g = 3'b010;
+            STATE_D: g = 3'b100;
+            default: g = 3'b000;
         endcase
     end
 

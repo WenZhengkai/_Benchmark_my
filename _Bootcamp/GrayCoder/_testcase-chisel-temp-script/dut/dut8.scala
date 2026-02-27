@@ -1,38 +1,35 @@
-
-
 import chisel3._
 import chisel3.util._
+import scala.math.pow
 
-class dut(val bitwidth: Int) extends Module {
-  // Ensure the bitwidth is positive
-  require(bitwidth > 0, "Bitwidth must be positive")
-
-  // Define IO interface
+class dut(bitwidth: Int) extends Module {
   val io = IO(new Bundle {
-    val in = Input(UInt(bitwidth.W))     // Input data
-    val encode = Input(Bool())          // Mode select: true for encoding, false for decoding
-    val out = Output(UInt(bitwidth.W))  // Output data
+    val in = Input(UInt(bitwidth.W))
+    val encode = Input(Bool())
+    val out = Output(UInt(bitwidth.W))
   })
 
-  // Handle one-bit edge case explicitly
-  if (bitwidth == 1) {
-    // For 1-bit, Gray code is the same as the binary representation
-    io.out := io.in
-  } else {
-    // Gray code encode logic: binary to Gray conversion
-    val encoded = io.in ^ (io.in >> 1.U)
-
-    // Gray code decode logic: iterative XOR structure
-    val numSteps = log2Ceil(bitwidth)  // Number of XOR iterations needed
-    var current = io.in                // Initialize current value for decoding
-    for (i <- 0 until numSteps) {
-      val shift = (1 << i).U           // Calculate the shift value as powers of 2
-      current = current ^ (current >> shift)
+  // Logic for encoding and decoding
+  when(io.encode) {
+    // Binary to Gray code encoding: output = input XOR (input >> 1)
+    io.out := io.in ^ (io.in >> 1.U)
+  }.otherwise {
+    // Gray code to Binary decoding
+    // This uses an iterative approach where we perform XOR operations
+    // with shifted versions of intermediate results
+    
+    // Initialize the first intermediate value with the input
+    val iterations = log2Ceil(bitwidth)
+    val decodeSteps = Wire(Vec(iterations + 1, UInt(bitwidth.W)))
+    decodeSteps(0) := io.in
+    
+    // Perform the iterative XOR operations
+    for (i <- 0 until iterations) {
+      val shiftAmount = pow(2, i).toInt
+      decodeSteps(i + 1) := decodeSteps(i) ^ (decodeSteps(i) >> shiftAmount.U)
     }
-    val decoded = current              // Final decoded value after all iterations
-
-    // Output assignment based on mode selection
-    io.out := Mux(io.encode, encoded, decoded) // Output encoding or decoding based on `encode` signal
+    
+    // The final result is the last intermediate value
+    io.out := decodeSteps(iterations)
   }
 }
-

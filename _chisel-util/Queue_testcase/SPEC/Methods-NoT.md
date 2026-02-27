@@ -5,10 +5,10 @@ Please act as a professional verilog designer. Give me the complete verilog code
 # Specification
 
 ### Module Name
-`Queue_my`
+`dut`
 
 ### Overview
-The `Queue_my` module is a hardware component that models a first-in-first-out (FIFO) queue. This queue is parameterized by the type of data it stores, the number of entries it can hold, and whether it includes a flush feature to clear all stored data. The module provides synchronous enqueue and dequeue operations and can signal when it is full or empty.
+The `dut` module is a hardware component that models a first-in-first-out (FIFO) queue. This queue is parameterized by the type of data it stores, the number of entries it can hold, and whether it includes a flush feature to clear all stored data. The module provides synchronous enqueue and dequeue operations and can signal when it is full or empty.
 
 
 ### Input/Output Interface
@@ -55,10 +55,10 @@ Please act as a professional Chisel designer. Give me the complete Chisel code.
 # Specification
 
 ### Module Name
-`Queue_my`
+`dut`
 
 ### Overview
-The `Queue_my` module is a hardware component implemented in Chisel that models a first-in-first-out (FIFO) queue. This queue is parameterized by the type of data it stores, the number of entries it can hold, and whether it includes a flush feature to clear all stored data. The module provides synchronous enqueue and dequeue operations and can signal when it is full or empty.
+The `dut` module is a hardware component implemented in Chisel that models a first-in-first-out (FIFO) queue. This queue is parameterized by the type of data it stores, the number of entries it can hold, and whether it includes a flush feature to clear all stored data. The module provides synchronous enqueue and dequeue operations and can signal when it is full or empty.
 
 ### Parameters
 - `gen: T`: The data type of the elements stored in the queue. This is a generic parameter constrained to subtypes of `Data`.
@@ -66,7 +66,7 @@ The `Queue_my` module is a hardware component implemented in Chisel that models 
 - `hasFlush: Boolean`: An optional parameter that specifies whether the queue supports the flush operation. Defaults to `false`.
 
 ### Input/Output Interface
-The `Queue_my` module reuse the QueueIO:
+The `dut` module reuse the QueueIO:
 
   val io = IO(new QueueIO(gen, entries, hasFlush))
 
@@ -104,10 +104,10 @@ Please act as a professional Chisel designer. Slice the `Internal logic` into se
 # Specification
 
 ### Module Name
-`Queue_my`
+`dut`
 
 ### Overview
-The `Queue_my` module is a hardware component implemented in Chisel that models a first-in-first-out (FIFO) queue. This queue is parameterized by the type of data it stores, the number of entries it can hold, and whether it includes a flush feature to clear all stored data. The module provides synchronous enqueue and dequeue operations and can signal when it is full or empty.
+The `dut` module is a hardware component implemented in Chisel that models a first-in-first-out (FIFO) queue. This queue is parameterized by the type of data it stores, the number of entries it can hold, and whether it includes a flush feature to clear all stored data. The module provides synchronous enqueue and dequeue operations and can signal when it is full or empty.
 
 ### Parameters
 - `gen: T`: The data type of the elements stored in the queue. This is a generic parameter constrained to subtypes of `Data`.
@@ -115,7 +115,7 @@ The `Queue_my` module is a hardware component implemented in Chisel that models 
 - `hasFlush: Boolean`: An optional parameter that specifies whether the queue supports the flush operation. Defaults to `false`.
 
 ### Input/Output Interface
-The `Queue_my` module has a structured interface defined as follows:
+The `dut` module has a structured interface defined as follows:
 
 - **Inputs:**
   - `io.enq.bits: T`: The input data to be enqueued into the queue.
@@ -182,10 +182,10 @@ Notice the relation of tasks.
 # Specification
 
 ### Module Name
-`Queue_my`
+`dut`
 
 ### Overview
-The `Queue_my` module is a hardware component implemented in Chisel that models a first-in-first-out (FIFO) queue. This queue is parameterized by the type of data it stores, the number of entries it can hold, and whether it includes a flush feature to clear all stored data. The module provides synchronous enqueue and dequeue operations and can signal when it is full or empty.
+The `dut` module is a hardware component implemented in Chisel that models a first-in-first-out (FIFO) queue. This queue is parameterized by the type of data it stores, the number of entries it can hold, and whether it includes a flush feature to clear all stored data. The module provides synchronous enqueue and dequeue operations and can signal when it is full or empty.
 
 ### Parameters
 - `gen: T`: The data type of the elements stored in the queue. This is a generic parameter constrained to subtypes of `Data`.
@@ -193,7 +193,7 @@ The `Queue_my` module is a hardware component implemented in Chisel that models 
 - `hasFlush: Boolean`: An optional parameter that specifies whether the queue supports the flush operation. Defaults to `false`.
 
 ### Input/Output Interface
-The `Queue_my` module has a structured interface defined as follows:
+The `dut` module has a structured interface defined as follows:
 
 - **Inputs:**
   - `io.enq.bits: T`: The input data to be enqueued into the queue.
@@ -271,10 +271,10 @@ Notice the relation of tasks.
 # Specification
 
 ### Module Name
-`Queue_my`
+`dut`
 
 ### Overview
-The `Queue_my` module is a hardware component implemented in Chisel that models a first-in-first-out (FIFO) queue. This queue is parameterized by the type of data it stores, the number of entries it can hold, and whether it includes a flush feature to clear all stored data. The module provides synchronous enqueue and dequeue operations and can signal when it is full or empty.
+The `dut` module is a hardware component implemented in Chisel that models a first-in-first-out (FIFO) queue. This queue is parameterized by the type of data it stores, the number of entries it can hold, and whether it includes a flush feature to clear all stored data. The module provides synchronous enqueue and dequeue operations and can signal when it is full or empty.
 
 ### Parameters
 - `gen: T`: The data type of the elements stored in the queue. This is a generic parameter constrained to subtypes of `Data`.
@@ -282,7 +282,7 @@ The `Queue_my` module is a hardware component implemented in Chisel that models 
 - `hasFlush: Boolean`: An optional parameter that specifies whether the queue supports the flush operation. Defaults to `false`.
 
 ### Input/Output Interface
-The `Queue_my` module has a structured interface defined as follows:
+The `dut` module has a structured interface defined as follows:
 
 - **Inputs:**
   - `io.enq.bits: T`: The input data to be enqueued into the queue.
@@ -408,7 +408,7 @@ Flush is optional, so that task would check if hasFlush is true.
 ## Think Process
 Thinking...
 > 
-> Okay, I need to break down the internal logic of the Queue_my module into several coding tasks. Let me start by understanding each part of the Internal Logic section.
+> Okay, I need to break down the internal logic of the dut module into several coding tasks. Let me start by understanding each part of the Internal Logic section.
 > 
 > First, there's the memory storage using Mem. That's a separate component, so maybe that's the first task. Then pointer management with enq_ptr and deq_ptr. Full/Empty logic depends on ptr_match and maybe_full. Then the enqueue/dequeue operations, which involve writing to ram and updating pointers. Flush mechanism is another part, conditional on hasFlush. Finally, the count calculation for io.count.
 > 

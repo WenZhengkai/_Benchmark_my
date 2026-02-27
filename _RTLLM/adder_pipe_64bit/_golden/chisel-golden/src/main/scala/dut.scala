@@ -17,6 +17,7 @@ class dut extends Module {
 
     // Create a 4-stage enable shift register (`en_pipeline`) to track pipeline validity
     val en_pipeline = RegInit(VecInit(Seq.fill(4)(false.B)))
+
     when(io.i_en) {
         en_pipeline(0) := true.B
     }
@@ -25,6 +26,7 @@ class dut extends Module {
     for (i <- 1 to 3) {
         en_pipeline(i) := en_pipeline(i-1)
     }
+
     //>>> Task 1 end
 
     //<<< Task 2
@@ -43,6 +45,7 @@ class dut extends Module {
         io.sum := sum(15,0)
         io.cout := sum(16)
     }
+
     //>>> Task 2 end
 
     //<<< Task 3
@@ -87,6 +90,7 @@ class dut extends Module {
     result_reg := Cat(final_carry, stage4_sum, stage3_sum, stage2_sum, stage1_sum) // Concatenate final outputs
 
     io.result := result_reg // Connect the register to the result output port
+    
     //>>> Task 4 end
 
     //<<< Task 5

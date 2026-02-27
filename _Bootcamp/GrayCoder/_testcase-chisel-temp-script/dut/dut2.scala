@@ -1,39 +1,39 @@
+// package graycode
+
 import chisel3._
 import chisel3.util._
 import scala.math.pow
 
-class dut(val bitwidth: Int) extends Module {
-  // Parameter validation
-  require(bitwidth > 0, "Bitwidth must be positive")
-
-  // Define IO interface
+class dut(bitwidth: Int) extends Module {
   val io = IO(new Bundle {
-    val in = Input(UInt(bitwidth.W))  // Input data
-    val encode = Input(Bool())        // Encoding or decoding mode
-    val out = Output(UInt(bitwidth.W)) // Output data
+    val in = Input(UInt(bitwidth.W))
+    val encode = Input(Bool())
+    val out = Output(UInt(bitwidth.W))
   })
 
-  // Handle special case for 1-bit input
-  if (bitwidth == 1) {
-    // For 1-bit, Gray encoding and decoding result is the same as input
-    io.out := io.in
-  } else {
-    // Normal logic for multi-bit Gray encoding and decoding
-
-    // Task 2: Gray code encoding logic
-    val encoded = io.in ^ (io.in >> 1.U) // XOR with shifted version of itself
-
-    // Task 3: Gray code decoding logic
-    val numSteps = log2Ceil(bitwidth) // Number of iterations needed
-    var current = io.in               // Intermediate value for iterative decoding
-    for (i <- 0 until numSteps) {
-      val shift = (1 << i).U          // Powers of 2 for bit shifting
-      current = current ^ (current >> shift) // Iterative XOR process
+  // When encode is true, convert binary to Gray code
+  // When encode is false, convert Gray code to binary
+  when(io.encode) {
+    // Binary to Gray code conversion: out = in ^ (in >> 1)
+    io.out := io.in ^ (io.in >> 1.U)
+  }.otherwise {
+    // Gray code to binary conversion
+    // This is more complex and requires iterative XOR operations
+    
+    // Initialize with the input value
+    val decodingSteps = log2Ceil(bitwidth)
+    val intermediateValues = Wire(Vec(decodingSteps + 1, UInt(bitwidth.W)))
+    
+    // First intermediate value is the input
+    intermediateValues(0) := io.in
+    
+    // Perform iterative XOR operations for decoding
+    for (i <- 0 until decodingSteps) {
+      val shiftAmount = pow(2, i).toInt
+      intermediateValues(i + 1) := intermediateValues(i) ^ (intermediateValues(i) >> shiftAmount.U)
     }
-    val decoded = current             // The fully decoded result after loop
-
-    // Task 4: Output selection based on operation mode
-    io.out := Mux(io.encode, encoded, decoded) // Select between encoding and decoding output
+    
+    // Final output is the last computed intermediate value
+    io.out := intermediateValues(decodingSteps)
   }
 }
-

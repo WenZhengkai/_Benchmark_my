@@ -5,11 +5,11 @@ Please act as a professional verilog designer. Give me the complete verilog code
 # Specification
 ## Module Name
 
-DCCreditSender
+dut
 
 ## Overview
 
-The `DCCreditSender` module is a credit-based flow control sender. This module is intended to manage the flow control in digital communication systems, environment-insensitive to variable latency delays. It accepts input data through an enqueue interface and sends output data through a dequeue interface with the use of credit-based flow control. The credit mechanism helps ensure that the data exchange between different modules remains synchronized and prevents data overflow or underflow conditions.
+The `dut` module is a credit-based flow control sender. This module is intended to manage the flow control in digital communication systems, environment-insensitive to variable latency delays. It accepts input data through an enqueue interface and sends output data through a dequeue interface with the use of credit-based flow control. The credit mechanism helps ensure that the data exchange between different modules remains synchronized and prevents data overflow or underflow conditions.
 
 
 ## Input/Output Interface
@@ -45,11 +45,11 @@ Please act as a professional Chisel designer. Give me the complete Chisel code.
 # Specification
 ## Module Name
 
-DCCreditSender
+dut
 
 ## Overview
 
-The `DCCreditSender` module is a Chisel implementation of a credit-based flow control sender. This module is intended to manage the flow control in digital communication systems, environment-insensitive to variable latency delays. It accepts input data through an enqueue interface and sends output data through a dequeue interface with the use of credit-based flow control. The credit mechanism helps ensure that the data exchange between different modules remains synchronized and prevents data overflow or underflow conditions.
+The `dut` module is a Chisel implementation of a credit-based flow control sender. This module is intended to manage the flow control in digital communication systems, environment-insensitive to variable latency delays. It accepts input data through an enqueue interface and sends output data through a dequeue interface with the use of credit-based flow control. The credit mechanism helps ensure that the data exchange between different modules remains synchronized and prevents data overflow or underflow conditions.
 
 ## Parameters
 
@@ -60,10 +60,10 @@ The `DCCreditSender` module is a Chisel implementation of a credit-based flow co
 
 ### Inputs
 
-- `enq` (Flipped Decoupled[Data]): This interface accepts data to be sent through the `DCCreditSender`.
+- `enq` (Flipped Decoupled[Data]): This interface accepts data to be sent through the `dut`.
 ### Outputs
 
-- `deq` (CreditIO[Data]): This is the dequeue/output interface provided by the `DCCreditSender`. It consists of:
+- `deq` (CreditIO[Data]): This is the dequeue/output interface provided by the `dut`. It consists of:
   - `valid: Bool`: A flag indicating that the output data is valid and ready to be read by the receiving system.
   - `credit: Bool`
   - `bits: Data`: The data payload sent from the module.
@@ -97,11 +97,11 @@ Please act as a professional Chisel designer. Slice the `Internal logic` into se
 # Specification
 ## Module Name
 
-DCCreditSender
+dut
 
 ## Overview
 
-The `DCCreditSender` module is a Chisel implementation of a credit-based flow control sender. This module is intended to manage the flow control in digital communication systems, environment-insensitive to variable latency delays. It accepts input data through an enqueue interface and sends output data through a dequeue interface with the use of credit-based flow control. The credit mechanism helps ensure that the data exchange between different modules remains synchronized and prevents data overflow or underflow conditions.
+The `dut` module is a Chisel implementation of a credit-based flow control sender. This module is intended to manage the flow control in digital communication systems, environment-insensitive to variable latency delays. It accepts input data through an enqueue interface and sends output data through a dequeue interface with the use of credit-based flow control. The credit mechanism helps ensure that the data exchange between different modules remains synchronized and prevents data overflow or underflow conditions.
 
 ## Parameters
 
@@ -112,10 +112,10 @@ The `DCCreditSender` module is a Chisel implementation of a credit-based flow co
 
 ### Inputs
 
-- `enq` (Flipped Decoupled[Data]): This interface accepts data to be sent through the `DCCreditSender`.
+- `enq` (Flipped Decoupled[Data]): This interface accepts data to be sent through the `dut`.
 ### Outputs
 
-- `deq` (CreditIO[Data]): This is the dequeue/output interface provided by the `DCCreditSender`. It consists of:
+- `deq` (CreditIO[Data]): This is the dequeue/output interface provided by the `dut`. It consists of:
   - `valid: Bool`: A flag indicating that the output data is valid and ready to be read by the receiving system.
   - `credit: Bool`
   - `bits: Data`: The data payload sent from the module.
@@ -168,11 +168,11 @@ Notice the relation of tasks.
 # Specification
 ## Module Name
 
-DCCreditSender
+dut
 
 ## Overview
 
-The `DCCreditSender` module is a Chisel implementation of a credit-based flow control sender. This module is intended to manage the flow control in digital communication systems, environment-insensitive to variable latency delays. It accepts input data through an enqueue interface and sends output data through a dequeue interface with the use of credit-based flow control. The credit mechanism helps ensure that the data exchange between different modules remains synchronized and prevents data overflow or underflow conditions.
+The `dut` module is a Chisel implementation of a credit-based flow control sender. This module is intended to manage the flow control in digital communication systems, environment-insensitive to variable latency delays. It accepts input data through an enqueue interface and sends output data through a dequeue interface with the use of credit-based flow control. The credit mechanism helps ensure that the data exchange between different modules remains synchronized and prevents data overflow or underflow conditions.
 
 ## Parameters
 
@@ -183,10 +183,10 @@ The `DCCreditSender` module is a Chisel implementation of a credit-based flow co
 
 ### Inputs
 
-- `enq` (Flipped Decoupled[Data]): This interface accepts data to be sent through the `DCCreditSender`.
+- `enq` (Flipped Decoupled[Data]): This interface accepts data to be sent through the `dut`.
 ### Outputs
 
-- `deq` (CreditIO[Data]): This is the dequeue/output interface provided by the `DCCreditSender`. It consists of:
+- `deq` (CreditIO[Data]): This is the dequeue/output interface provided by the `dut`. It consists of:
   - `valid: Bool`: A flag indicating that the output data is valid and ready to be read by the receiving system.
   - `credit: Bool`
   - `bits: Data`: The data payload sent from the module.
@@ -247,11 +247,11 @@ Notice the relation of tasks.
 # Specification
 ## Module Name
 
-DCCreditSender
+dut
 
 ## Overview
 
-The `DCCreditSender` module is a Chisel implementation of a credit-based flow control sender. This module is intended to manage the flow control in digital communication systems, environment-insensitive to variable latency delays. It accepts input data through an enqueue interface and sends output data through a dequeue interface with the use of credit-based flow control. The credit mechanism helps ensure that the data exchange between different modules remains synchronized and prevents data overflow or underflow conditions.
+The `dut` module is a Chisel implementation of a credit-based flow control sender. This module is intended to manage the flow control in digital communication systems, environment-insensitive to variable latency delays. It accepts input data through an enqueue interface and sends output data through a dequeue interface with the use of credit-based flow control. The credit mechanism helps ensure that the data exchange between different modules remains synchronized and prevents data overflow or underflow conditions.
 
 ## Parameters
 
@@ -262,10 +262,10 @@ The `DCCreditSender` module is a Chisel implementation of a credit-based flow co
 
 ### Inputs
 
-- `enq` (Flipped Decoupled[Data]): This interface accepts data to be sent through the `DCCreditSender`.
+- `enq` (Flipped Decoupled[Data]): This interface accepts data to be sent through the `dut`.
 ### Outputs
 
-- `deq` (CreditIO[Data]): This is the dequeue/output interface provided by the `DCCreditSender`. It consists of:
+- `deq` (CreditIO[Data]): This is the dequeue/output interface provided by the `dut`. It consists of:
   - `valid: Bool`: A flag indicating that the output data is valid and ready to be read by the receiving system.
   - `credit: Bool`
   - `bits: Data`: The data payload sent from the module.
@@ -325,7 +325,7 @@ Give me the complete Chisel code.
 ## Think Process
 Thinking...
 > 
-> Okay, let's see. I need to break down the Internal Logic section of the DCCreditSender module into several coding tasks. The user wants each task to be a step in implementing the module using Chisel. 
+> Okay, let's see. I need to break down the Internal Logic section of the dut module into several coding tasks. The user wants each task to be a step in implementing the module using Chisel. 
 > 
 > First, I'll read through the Internal Logic description carefully. The components mentioned are the Credit Register (icredit), Credit Counter (curCredit), Ready Signal (io.enq.ready), and Data & Valid Registers (dataOut and validOut). 
 > 

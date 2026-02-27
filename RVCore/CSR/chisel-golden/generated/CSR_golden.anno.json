@@ -1,0 +1,34 @@
+[
+  {
+    "class":"firrtl.EmitCircuitAnnotation",
+    "emitter":"firrtl.VerilogEmitter"
+  },
+  {
+    "class":"firrtl.transforms.BlackBoxTargetDirAnno",
+    "targetDir":"generated"
+  },
+  {
+    "class":"firrtl.transforms.CombinationalPath",
+    "sink":"~CSR_golden|CSR_golden>io_out_bits",
+    "sources":[
+      "~CSR_golden|CSR_golden>io_cfIn_inst",
+      "~CSR_golden|CSR_golden>io_in_bits_srcb"
+    ]
+  },
+  {
+    "class":"firrtl.transforms.CombinationalPath",
+    "sink":"~CSR_golden|CSR_golden>io_jmp",
+    "sources":[
+      "~CSR_golden|CSR_golden>io_in_valid",
+      "~CSR_golden|CSR_golden>io_in_bits_fuOpType",
+      "~CSR_golden|CSR_golden>io_cfIn_inst"
+    ]
+  },
+  {
+    "class":"firrtl.transforms.CombinationalPath",
+    "sink":"~CSR_golden|CSR_golden>io_out_valid",
+    "sources":[
+      "~CSR_golden|CSR_golden>io_in_valid"
+    ]
+  }
+]

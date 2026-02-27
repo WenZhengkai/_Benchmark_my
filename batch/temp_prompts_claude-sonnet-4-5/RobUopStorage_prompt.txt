@@ -1,0 +1,82 @@
+Please act as a professional Chisel designer. Give me the complete Chisel code.
+
+```
+# Function Definition Document
+
+## Module Name
+**RobUopStorage** - Reorder Buffer Micro-operation Storage
+
+## Overview
+The `RobUopStorage` module implements an efficient storage mechanism for micro-operations (uops) in a Reorder Buffer (ROB). It uses a synchronous read/write masked SRAM to store compact versions of uops and includes bypass logic to handle read-after-write hazards. The module converts full `RobUop` bundles into compact representations (`RobCompactUop`) to optimize storage space, and provides read data with automatic bypassing when reading recently written entries.
+
+## Parameters
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `numRobRows` | Int | Number of rows in the ROB storage (depth of the memory) |
+| `coreWidth` | Int | Number of uops that can be processed per cycle (superscalar width) |
+| `compactUopWidth` | Int | Bit width of the compact uop representation |
+
+## Input/Output Interface
+
+### Inputs
+| Signal | Type | Width | Description |
+|--------|------|-------|-------------|
+| `enq_uops` | Vec[RobUop] | coreWidth | Vector of full uops to be enqueued into the ROB |
+| `enq_valids` | Vec[Bool] | coreWidth | Valid bits indicating which enqueue uops are valid |
+| `rob_tail` | UInt | log2Ceil(numRobRows) | Current tail pointer of the ROB (write address) |
+| `next_rob_head` | UInt | log2Ceil(numRobRows) | Next head pointer of the ROB (read address for next cycle) |
+
+### Outputs
+| Signal | Type | Width | Description |
+|--------|------|-------|-------------|
+| `rob_compact_uop_rdata` | Vec[RobCompactUop] | coreWidth | Vector of compact uops read from the ROB with bypass logic applied |
+
+## Internal Logic
+
+### Data Structures
+1. **RobUop Bundle**: Full micro-operation containing:
+   - `valid`: Validity bit
+   - `pc`: 32-bit program counter
+   - `opcode`: 7-bit instruction opcode
+   - `dst`: 5-bit destination register ID
+
+2. **RobCompactUop Bundle**: Compact micro-operation containing:
+   - `valid`: Validity bit
+   - `opcode`: 7-bit instruction opcode
+   - `dst`: 5-bit destination register ID
+
+### Functional Description
+
+1. **Head Pointer Management**:
+   - Maintains a registered `rob_head` pointer initialized to 0
+   - Updates `rob_head` with `next_rob_head` each cycle
+
+2. **Uop Compression**:
+   - The `uop_to_compact()` function extracts essential fields (valid, opcode, dst) from full `RobUop` to create `RobCompactUop`
+   - Reduces storage requirements by omitting fields like PC that may not be needed for all operations
+
+3. **Memory Storage**:
+   - Uses a synchronous read/write memory (`SyncReadMem`) with `numRobRows` entries
+   - Each entry stores a vector of `coreWidth` compact uops
+   - Writes occur at `rob_tail` address with per-element masking via `enq_valids`
+   - Reads occur at `next_rob_head` address
+
+4. **Bypass Logic** (Read-After-Write Hazard Mitigation):
+   - **1-cycle bypass**: If `rob_head` equals the previous cycle's `rob_tail`, and the corresponding uop was valid, bypass the 1-cycle delayed write data
+   - **2-cycle bypass**: If `rob_head` equals the 2-cycles-ago `rob_tail`, and the corresponding uop was valid, bypass the 2-cycle delayed write data
+   - **Normal read**: Otherwise, use the data read from memory
+   - This handles the latency of synchronous memory reads and ensures correct data is available when reading immediately after writing
+
+5. **Output Generation**:
+   - For each of the `coreWidth` output positions, applies bypass multiplexing logic
+   - Converts the final selected UInt back to `RobCompactUop` type
+   - Outputs the bypassed/read data on `rob_compact_uop_rdata`
+
+### Timing Behavior
+- Memory write occurs synchronously on the clock edge when valid signals are asserted
+- Memory read is synchronous with 1-cycle latency
+- Bypass paths use registered versions of write data (1 and 2 cycles delayed) to compensate for memory read latency
+- Head pointer updates occur every cycle based on `next_rob_head` input
+
+```
+Give me the complete Chisel code.

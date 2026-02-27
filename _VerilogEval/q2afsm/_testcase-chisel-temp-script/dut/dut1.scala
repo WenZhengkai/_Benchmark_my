@@ -1,72 +1,76 @@
+// package arbiter
+
 import chisel3._
 import chisel3.util._
 
 class dut extends Module {
   val io = IO(new Bundle {
-    val r = Input(UInt(3.W)) // 3-bit request signals (r[2], r[1], r[0])
-    val g = Output(UInt(3.W)) // 3-bit grant signals (g[2], g[1], g[0])
+    val r = Input(UInt(3.W))
+    val g = Output(UInt(3.W))
   })
 
-  // Define FSM states
-  val sA :: sB :: sC :: sD :: Nil = Enum(4)
+  // Define the states
+  object State extends ChiselEnum {
+    val A, B, C, D = Value
+  }
+  import State._
 
-  // State register to hold the current state
-  val state = RegInit(sA) // Start in state A
+  // State register
+  val state = RegInit(A)
+  
+  // Default output value
+  io.g := 0.U
+  
+  // Extract individual request bits for readability
+  val r0 = io.r(0)
+  val r1 = io.r(1)
+  val r2 = io.r(2)
 
-  // Default output for grant signals
-  val g0 = WireDefault(false.B)
-  val g1 = WireDefault(false.B)
-  val g2 = WireDefault(false.B)
-
-  // FSM state transition logic
+  // FSM implementation
   switch(state) {
-    is(sA) {
-      // State A: No grants -> Go to next state based on requests
-      when(io.r(0) === 1.U) {
-        state := sB
-      }.elsewhen(io.r(1) === 1.U) {
-        state := sC
-      }.elsewhen(io.r(2) === 1.U) {
-        state := sD
+    is(A) {
+      when(r0 === 1.U) {
+        state := B
+      }.elsewhen(r0 === 0.U && r1 === 1.U) {
+        state := C
+      }.elsewhen(r0 === 0.U && r1 === 0.U && r2 === 1.U) {
+        state := D
       }.otherwise {
-        state := sA
+        state := A
       }
     }
-    is(sB) {
-      // State B: Device 0 granted (g0 = 1)
-      g0 := true.B
-      when(io.r(0) === 1.U) {
-        state := sB
+    
+    is(B) {
+      // Set grant for device 0
+      io.g := "b001".U
+      
+      when(r0 === 0.U) {
+        state := A
       }.otherwise {
-        state := sA
+        state := B
       }
     }
-    is(sC) {
-      // State C: Device 1 granted (g1 = 1)
-      g1 := true.B
-      when(io.r(1) === 1.U) {
-        state := sC
+    
+    is(C) {
+      // Set grant for device 1
+      io.g := "b010".U
+      
+      when(r1 === 0.U) {
+        state := A
       }.otherwise {
-        state := sA
+        state := C
       }
     }
-    is(sD) {
-      // State D: Device 2 granted (g2 = 1)
-      g2 := true.B
-      when(io.r(2) === 1.U) {
-        state := sD
+    
+    is(D) {
+      // Set grant for device 2
+      io.g := "b100".U
+      
+      when(r2 === 0.U) {
+        state := A
       }.otherwise {
-        state := sA
+        state := D
       }
     }
   }
-
-  // Pack grant signals into a single 3-bit output
-  io.g := Cat(g2, g1, g0)
 }
-
-/*
-object dutDriver extends App {
-  chisel3.Driver.execute(args, () => new dut)
-}
-*/

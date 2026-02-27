@@ -1,39 +1,37 @@
+// package gray_encoder_decoder
+
 import chisel3._
 import chisel3.util._
-import scala.math._
+import scala.math.pow
 
 class dut(bitwidth: Int) extends Module {
-  require(bitwidth > 0, "Bitwidth must be positive") // Ensure bitwidth is valid
-
   val io = IO(new Bundle {
-    val in = Input(UInt(bitwidth.W))   // Input signal
-    val encode = Input(Bool())         // Encode/Decode control signal
-    val out = Output(UInt(bitwidth.W)) // Output signal
+    val in = Input(UInt(bitwidth.W))
+    val encode = Input(Bool())
+    val out = Output(UInt(bitwidth.W))
   })
 
-  if (bitwidth == 1) {
-    // Handle 1-bit special case: Gray code is the same as binary for single bit
-    io.out := io.in
-  } else {
-    // Task 2: Gray Code Encoding Logic
-    val encoded = Wire(UInt(bitwidth.W)) // Wire for encoded value
-    encoded := io.in ^ (io.in >> 1.U)    // Binary to Gray code conversion
+  // Gray code encoding logic (binary to Gray)
+  // Formula: gray = binary ^ (binary >> 1)
+  val grayEncoded = io.in ^ (io.in >> 1.U)
 
-    // Task 3: Gray Code Decoding Logic
-    val numSteps = log2Ceil(bitwidth)    // Number of required XOR iterations
-    val decoded = Wire(UInt(bitwidth.W)) // Wire for decoded (binary) value
-    var current = io.in                  // Start with the input
-
-    // Iterative XOR shift and accumulation to decode Gray code
-    for (i <- 0 until numSteps) {
-      val shift = (1 << i).U // Calculate power-of-two shift
-      current = current ^ (current >> shift)
-    }
-    decoded := current // Final decoded result
-
-    // Task 4: Operation Mode Selection
-    io.out := Mux(io.encode, encoded, decoded) // Select mode based on encode signal
+  // Gray code decoding logic (Gray to binary)
+  // This is implemented iteratively
+  val numIters = log2Ceil(bitwidth)
+  val decodeIters = Wire(Vec(numIters + 1, UInt(bitwidth.W)))
+  
+  // Initialize with input Gray code
+  decodeIters(0) := io.in
+  
+  // Iterative decoding process
+  for (i <- 0 until numIters) {
+    val shiftAmount = pow(2, i).toInt
+    decodeIters(i + 1) := decodeIters(i) ^ (decodeIters(i) >> shiftAmount.U)
   }
-}
+  
+  // Final decoded binary value
+  val binaryDecoded = decodeIters(numIters)
 
-// Test the design using Chisel tester (if desired)
+  // Select output based on encode flag
+  io.out := Mux(io.encode, grayEncoded, binaryDecoded)
+}

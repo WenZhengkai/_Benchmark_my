@@ -1,77 +1,98 @@
+// package fifo
+
 import chisel3._
 import chisel3.util._
 
-class dut[T <: Data](
-    gen: T,
-    entries: Int,
-    hasFlush: Boolean = false
-) extends Module {
-  require(entries > 0, "Queue entries must be greater than 0!")
+class QueueIO[T <: Data](val gen: T, val entries: Int, val hasFlush: Boolean = false) extends Bundle {
+  /** I/O to enqueue data (client is producer, and Queue object is consumer), 
+    * is decoupled and will be ready for as long as the queue is not full
+    */
+  val enq = Flipped(Decoupled(gen))
+  
+  /** I/O to dequeue data (client is consumer and Queue object is producer),
+    * is decoupled and will be valid for as long as the queue is not empty
+    */
+  val deq = Decoupled(gen)
+  
+  /** The current number of elements in the queue */
+  val count = Output(UInt(log2Ceil(entries + 1).W))
+  
+  /** Signal to flush the queue */
+  val flush = if (hasFlush) Some(Input(Bool())) else None
+}
 
-  val io = IO(new Bundle {
-    val enq = Flipped(Decoupled(gen)) // Enqueue interface
-    val deq = Decoupled(gen)         // Dequeue interface
-    val count = Output(UInt(log2Ceil(entries + 1).W)) // Number of elements in the queue
-    val flush = if (hasFlush) Some(Input(Bool())) else None // Optional flush signal
-  })
+class dut[T <: Data](val gen: T, val entries: Int, val hasFlush: Boolean = false) extends Module {
+  val io = IO(new QueueIO(gen, entries, hasFlush))
 
-  // Task 1: Memory Storage (RAM)
+  // Ensure entries is positive
+  require(entries > 0, "Queue entries must be greater than zero")
+
+  // Calculate the number of pointer bits needed
+  val pointerBits = log2Ceil(entries)
+  
+  // Create RAM for queue data storage
   val ram = Mem(entries, gen)
-
-  // Task 2: Pointer Management
-  val enq_ptr = RegInit(0.U(log2Ceil(entries).W))
-  val deq_ptr = RegInit(0.U(log2Ceil(entries).W))
+  
+  // Initialize pointers and tracking state
+  val enq_ptr = RegInit(0.U(pointerBits.W))
+  val deq_ptr = RegInit(0.U(pointerBits.W))
   val maybe_full = RegInit(false.B)
+  
+  // Determine if pointers have same value (could be empty or full)
   val ptr_match = enq_ptr === deq_ptr
-
-  // Task 3: Full/Empty Logic
-  val full = ptr_match && maybe_full
+  
+  // Queue state flags
   val empty = ptr_match && !maybe_full
-  io.enq.ready := !full
-  io.deq.valid := !empty
-
-  // Task 4: Enqueue Logic
-  val do_enq = io.enq.valid && io.enq.ready
-  when(do_enq) {
-    ram.write(enq_ptr, io.enq.bits) // Write to RAM
-    enq_ptr := Mux(enq_ptr === (entries - 1).U, 0.U, enq_ptr + 1.U) // Wrap-around increment
-  }
-
-  // Update maybe_full when enqueuing
-  when(do_enq && !io.deq.fire) {
-    maybe_full := true.B
-  }
-
-  // Task 5: Dequeue Logic
+  val full = ptr_match && maybe_full
+  
+  // Flow control signals
+  val do_enq = io.enq.ready && io.enq.valid
   val do_deq = io.deq.ready && io.deq.valid
-  when(do_deq) {
-    deq_ptr := Mux(deq_ptr === (entries - 1).U, 0.U, deq_ptr + 1.U) // Wrap-around increment
+  
+  // Handle enqueue operations
+  when (do_enq) {
+    ram(enq_ptr) := io.enq.bits
+    enq_ptr := Mux(enq_ptr === (entries-1).U, 0.U, enq_ptr + 1.U)
   }
-
-  // Update maybe_full when dequeuing
-  when(do_deq && !io.enq.fire) {
-    maybe_full := false.B
+  
+  // Handle dequeue operations
+  when (do_deq) {
+    deq_ptr := Mux(deq_ptr === (entries-1).U, 0.U, deq_ptr + 1.U)
   }
-
-  // Output read data from `deq_ptr`
-  io.deq.bits := ram.read(deq_ptr)
-
-  // Task 6: Flush Mechanism (Conditional)
+  
+  // Update maybe_full state
+  when (do_enq =/= do_deq) {
+    maybe_full := do_enq
+  }
+  
+  // Handle flush operation if enabled
   if (hasFlush) {
-    when(io.flush.get) {
+    when (io.flush.get) {
       enq_ptr := 0.U
       deq_ptr := 0.U
       maybe_full := false.B
     }
   }
-
-  // Task 7: Count Calculation
-  val diff = Mux(
-    enq_ptr >= deq_ptr,
-    enq_ptr - deq_ptr,
-    (entries.U + enq_ptr) - deq_ptr
-  )
-  io.count := Mux(full, entries.U, diff)
+  
+  // Connect I/O ports
+  io.enq.ready := !full
+  io.deq.valid := !empty
+  io.deq.bits := ram(deq_ptr)
+  
+  // Calculate and output the current count
+  if (isPow2(entries)) {
+    // Special case for power-of-2 entries
+    val ptr_diff = enq_ptr - deq_ptr
+    io.count := Mux(full, entries.U, 
+                    Mux(ptr_match, 0.U, 
+                        Mux(enq_ptr > deq_ptr, ptr_diff, 
+                            entries.U + ptr_diff)))
+  } else {
+    // General case for non-power-of-2 entries
+    val deq_ptr_wrap = deq_ptr +& entries.U
+    val enq_ptr_wrap = enq_ptr +& entries.U
+    val ptr_diff = Mux(enq_ptr >= deq_ptr, enq_ptr - deq_ptr, 
+                        Mux(full, entries.U, enq_ptr_wrap - deq_ptr))
+    io.count := ptr_diff
+  }
 }
-
-// Testbench for dut (Optional, for simulation)

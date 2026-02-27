@@ -1,73 +1,78 @@
 import chisel3._
 import chisel3.util._
 
-/**
- * dut Module
- *
- * This module monitors the water level via three sensors (s[1] to s[3]) and controls the flow rate
- * using three nominal flow rate signals (fr1, fr2, fr3) and a supplemental flow valve control signal (dfr).
- */
-class dut extends Module {
+class WaterReservoirController extends Module {
   val io = IO(new Bundle {
-    val s = Input(UInt(3.W))       // Sensor inputs s[1], s[2], and s[3]
-    val reset = Input(Bool())      // Active-high synchronous reset
-    val fr1 = Output(Bool())       // Flow rate control fr1
-    val fr2 = Output(Bool())       // Flow rate control fr2
-    val fr3 = Output(Bool())       // Flow rate control fr3
-    val dfr = Output(Bool())       // Supplemental flow control
+    val s = Input(UInt(3.W))
+    val reset = Input(Bool())
+    val fr3 = Output(Bool())
+    val fr2 = Output(Bool())
+    val fr1 = Output(Bool())
+    val dfr = Output(Bool())
   })
 
-  // Default output values
-  io.fr1 := false.B
-  io.fr2 := false.B
-  io.fr3 := false.B
-  io.dfr := false.B
-
-  // Register to store the previous sensor state
-  val prevLevel = RegInit(0.U(3.W))
+  // Define states
+  val sAboveS3 :: sBetweenS3S2 :: sBetweenS2S1 :: sBelowS1 :: Nil = Enum(4)
+  
+  // State register
+  val state = RegInit(sBelowS1)
+  
+  // Previous state register (for detecting direction of water level change)
+  val prevState = RegInit(sBelowS1)
+  
+  // Logic to determine current sensor state
+  val currentSensorState = Wire(UInt(2.W))
+  
+  when(io.s === "b111".U) {
+    currentSensorState := sAboveS3
+  }.elsewhen(io.s === "b011".U) {
+    currentSensorState := sBetweenS3S2
+  }.elsewhen(io.s === "b001".U) {
+    currentSensorState := sBetweenS2S1
+  }.otherwise {
+    currentSensorState := sBelowS1
+  }
+  
+  // State transition logic
   when(io.reset) {
-    // Reset all state variables and outputs when reset is asserted
-    prevLevel := 0.U
-    io.fr1 := true.B
-    io.fr2 := true.B
-    io.fr3 := true.B
-    io.dfr := true.B
-  } .otherwise {
-    // Update the previous level register each cycle
-    prevLevel := io.s
-
-    // Control logic
-    when(io.s === "b111".U) { // Above s[3]: all sensors are asserted
-      // No flow due to sufficient water level
-      io.fr1 := false.B
-      io.fr2 := false.B
-      io.fr3 := false.B
-      io.dfr := false.B
-    } .elsewhen(io.s === "b011".U) { // Between s[3] and s[2]: s[1] and s[2] are asserted
-      // Nominal flow rate fr1
-      io.fr1 := true.B
-      io.fr2 := false.B
-      io.fr3 := false.B
-      io.dfr := (prevLevel === "b001".U || prevLevel === "b000".U) // Supplemental flow if previously lower
-    } .elsewhen(io.s === "b001".U) { // Between s[2] and s[1]: only s[1] is asserted
-      // Nominal flow rates fr1 and fr2
-      io.fr1 := true.B
-      io.fr2 := true.B
-      io.fr3 := false.B
-      io.dfr := (prevLevel === "b000".U) // Supplemental flow if previously lower
-    } .elsewhen(io.s === "b000".U) { // Below s[1]: no sensors are asserted
-      // Maximum flow rate: all nominal and supplemental flows
-      io.fr1 := true.B
-      io.fr2 := true.B
-      io.fr3 := true.B
-      io.dfr := true.B
+    state := sBelowS1
+    prevState := sBelowS1
+  }.otherwise {
+    when(state =/= currentSensorState) {
+      prevState := state
+      state := currentSensorState
     }
   }
+  
+  // Output logic
+  io.fr1 := (state === sBetweenS3S2) || (state === sBetweenS2S1) || (state === sBelowS1)
+  io.fr2 := (state === sBetweenS2S1) || (state === sBelowS1)
+  io.fr3 := (state === sBelowS1)
+  
+  // Supplemental flow valve logic
+  // Opens when water level is rising (current state is higher than previous state)
+  io.dfr := (state > prevState) || (state === sBelowS1)
 }
 
-// Generate Verilog for the module
-/*
-object dutMain extends App {
-  (new chisel3.stage.ChiselStage).emitVerilog(new dut)
+// Module instantiation for the top-level
+class dut extends Module {
+  val io = IO(new Bundle {
+    val s = Input(UInt(3.W))
+    val fr3 = Output(Bool())
+    val fr2 = Output(Bool())
+    val fr1 = Output(Bool())
+    val dfr = Output(Bool())
+  })
+  
+  val controller = Module(new WaterReservoirController())
+  
+  // Connect inputs
+  controller.io.s := io.s
+  controller.io.reset := reset
+  
+  // Connect outputs
+  io.fr1 := controller.io.fr1
+  io.fr2 := controller.io.fr2
+  io.fr3 := controller.io.fr3
+  io.dfr := controller.io.dfr
 }
-*/

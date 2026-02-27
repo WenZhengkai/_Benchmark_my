@@ -3,51 +3,50 @@ import chisel3.util._
 
 class dut extends Module {
   val io = IO(new Bundle {
-    val dataIn = Input(UInt(4.W))  // 4-bit input data
-    val RW = Input(Bool())        // Read/Write control: 1 for read, 0 for write
-    val EN = Input(Bool())        // Enable signal
-    val EMPTY = Output(Bool())    // Flag indicating buffer is empty
-    val FULL = Output(Bool())     // Flag indicating buffer is full
-    val dataOut = Output(UInt(4.W)) // 4-bit output data
+    val dataIn = Input(UInt(4.W))
+    val RW = Input(Bool())
+    val EN = Input(Bool())
+    val EMPTY = Output(Bool())
+    val FULL = Output(Bool())
+    val dataOut = Output(UInt(4.W))
   })
 
-  // 2D memory array of 4 elements, each 4 bits wide
-  val stack_mem = Mem(4, UInt(4.W))
+  // Internal registers for the LIFO buffer
+  val stack_mem = RegInit(VecInit(Seq.fill(4)(0.U(4.W))))
+  val SP = RegInit(4.U(3.W)) // Stack Pointer initialized to 4 (empty)
+  val dataOut_reg = RegInit(0.U(4.W))
+  
+  // Status signals
+  val empty = SP === 4.U
+  val full = SP === 0.U
+  
+  io.EMPTY := empty
+  io.FULL := full
+  io.dataOut := dataOut_reg
 
-  // Stack pointer (SP), initialized to 4 (empty buffer)
-  val SP = RegInit(4.U(3.W)) // 3 bits are enough to store 0-4
-
-  // Default output for dataOut
-  io.dataOut := 0.U
-
-  // EMPTY and FULL flag logic
-  io.EMPTY := (SP === 4.U)  // Stack pointer at 4 indicates empty
-  io.FULL := (SP === 0.U)   // Stack pointer at 0 indicates full
-
-  // Register reset behavior
   when(reset.asBool) {
-    // On reset, clear all memory and reset SP
-    for (i <- 0 until 4) {
-      stack_mem.write(i.U, 0.U)
-    }
     SP := 4.U
-  } .elsewhen(io.EN) {    // Enable signal must be high
-    when(!io.RW && !io.FULL) {   // Write operation
-      // Push data onto the stack at SP - 1 and decrement SP
-      stack_mem.write(SP - 1.U, io.dataIn)
+    for (i <- 0 until 4) {
+      stack_mem(i) := 0.U
+    }
+    dataOut_reg := 0.U
+  }.elsewhen(io.EN) {
+    when(!io.RW && !full) {
+      // Write operation (push)
+      stack_mem(SP - 1.U) := io.dataIn
       SP := SP - 1.U
-    } .elsewhen(io.RW && !io.EMPTY) {  // Read operation
-      // Pop data from the stack at SP and increment SP
-      io.dataOut := stack_mem.read(SP)
-      stack_mem.write(SP, 0.U)  // Optional: clear memory after reading
+    }.elsewhen(io.RW && !empty) {
+      // Read operation (pop)
+      dataOut_reg := stack_mem(SP)
+      stack_mem(SP) := 0.U
       SP := SP + 1.U
     }
   }
 }
 
-// Generate the Verilog code of the dut module
+// Object to generate Verilog
 /*
-object dutMain extends App {
-  (new chisel3.stage.ChiselStage).emitVerilog(new dut)
+object dutGenerator extends App {
+  chisel3.emitVerilog(new dut(), args)
 }
 */

@@ -1,0 +1,23 @@
+Please act as a professional chisel designer.
+# Overview
+Implement a module of a 64-bit ripple carry adder, which includes several registers to enable the pipeline stages. The output result is available on the result port, and the o_en = 1 indicates the availability of the result.
+
+## Module name 
+    adder_pipe_64bit               
+## Input ports
+    i_en: Enable signal for addition operation
+    adda: 64-bit input operand A
+    addb: 64-bit input operand B
+   
+## Output ports
+    result: 65-bit output representing the sum of adda and addb.
+    o_en: Output enable signal.   
+
+## Implementation:
+The module includes several registers to enable the pipeline stages and synchronize the input enable signal (i_en). These registers are controlled by the clock and reset signals.
+This is a ripple carry adder that divides a 64 bit addition into 4 parts, each with 16 bits. By sequentially performing calculations on four parts through a four stage pipeline, the partial sum and carry signals of each stage are obtained.
+The sum values for each pipeline stage are calculated by adding the corresponding input operands and carry signals.
+The output enable signal (o_en) is updated based on the pipeline stages and synchronized with the clock and reset signals.
+
+Give me the complete chisel code.
+

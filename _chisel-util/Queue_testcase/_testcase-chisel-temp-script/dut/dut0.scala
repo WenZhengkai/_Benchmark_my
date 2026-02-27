@@ -1,90 +1,132 @@
+// package fifo
+
 import chisel3._
 import chisel3.util._
 
-class dut[T <: Data](
-  gen: T,
-  entries: Int,
-  hasFlush: Boolean = false
-) extends Module {
-  require(entries > 0, "Queue entries must be greater than 0")
+/** A hardware queue with standard enqueue and dequeue interfaces
+ * @param gen the type of elements stored in the queue
+ * @param entries the maximum number of entries in the queue
+ * @param hasFlush indicates whether to include the flush feature
+ */
+class dut[T <: Data](gen: T, entries: Int, hasFlush: Boolean = false) extends Module {
+  val io = IO(new QueueIO(gen, entries, hasFlush))
 
-  val io = IO(new Bundle {
-    // Inputs for enqueue
-    val enq = Flipped(Decoupled(gen))
-    // Outputs for dequeue
-    val deq = Decoupled(gen)
-    // Number of elements in the queue
-    val count = Output(UInt(log2Ceil(entries + 1).W))
-    // Optional flush input
-    val flush = if (hasFlush) Some(Input(Bool())) else None
-  })
-
-  // ---------------------------
-  // Task 1: Memory Storage (ram)
-  // ---------------------------
+  // Create a synchronous memory for data storage
   val ram = Mem(entries, gen)
-
-  // ---------------------------
-  // Task 2: Pointer Management
-  // ---------------------------
-  val enq_ptr = RegInit(0.U(log2Ceil(entries).W))
-  val deq_ptr = RegInit(0.U(log2Ceil(entries).W))
+  
+  // Use counters to track enqueue and dequeue positions
+  val enq_ptr = Counter(entries)
+  val deq_ptr = Counter(entries)
+  
+  // Track if pointers are in the same position
+  val ptr_match = enq_ptr.value === deq_ptr.value
+  
+  // Additional state to differentiate between full and empty when pointers match
   val maybe_full = RegInit(false.B)
-
-  val ptr_match = enq_ptr === deq_ptr
-
-  // ---------------------------
-  // Task 3: Full/Empty Logic
-  // ---------------------------
-  val full = ptr_match && maybe_full
+  
+  // Queue full/empty signals
   val empty = ptr_match && !maybe_full
+  val full = ptr_match && maybe_full
 
-  io.enq.ready := !full
+  // Connect status signals to outputs
+  io.count := Mux(
+    ptr_match,
+    Mux(maybe_full, entries.U, 0.U),
+    Mux(
+      enq_ptr.value > deq_ptr.value,
+      enq_ptr.value - deq_ptr.value,
+      entries.U + enq_ptr.value - deq_ptr.value
+    )
+  )
+  
+  io.empty := empty
+  io.full := full
+  
+  // Ready/valid signals for interface
   io.deq.valid := !empty
-
-  // ---------------------------
-  // Task 4: Enqueue Logic
-  // ---------------------------
-  val do_enq = io.enq.valid && io.enq.ready
-
-  when(do_enq) {
-    ram(enq_ptr) := io.enq.bits
-    enq_ptr := Mux(enq_ptr === (entries - 1).U, 0.U, enq_ptr + 1.U)
-  }
-
-  // Update maybe_full
-  when(do_enq && !io.deq.valid) {
-    maybe_full := true.B
-  } .elsewhen(!do_enq && io.deq.valid) {
-    maybe_full := false.B
-  }
-
-  // ---------------------------
-  // Task 5: Dequeue Logic
-  // ---------------------------
-  val do_deq = io.deq.ready && io.deq.valid
-
-  when(do_deq) {
-    deq_ptr := Mux(deq_ptr === (entries - 1).U, 0.U, deq_ptr + 1.U)
-  }
-
-  // Provide output
-  io.deq.bits := ram(deq_ptr)
-
-  // ---------------------------
-  // Task 6: Flush Mechanism (Conditional)
-  // ---------------------------
+  io.enq.ready := !full
+  
+  // Read data from memory for dequeue operation
+  io.deq.bits := ram(deq_ptr.value)
+  
+  // Control signals for enqueue and dequeue operations
+  val do_enq = io.enq.fire
+  val do_deq = io.deq.fire
+  
+  // Default for flush signal (will be overridden if hasFlush is true)
+  val do_flush = WireDefault(false.B)
+  
+  // Implement flush functionality if enabled
   if (hasFlush) {
-    when(io.flush.get) {
-      enq_ptr := 0.U
-      deq_ptr := 0.U
+    do_flush := io.flush
+    when (io.flush) {
+      enq_ptr.reset()
+      deq_ptr.reset()
       maybe_full := false.B
     }
   }
+  
+  // Handle enqueue operation
+  when (do_enq) {
+    ram(enq_ptr.value) := io.enq.bits
+    enq_ptr.inc()
+  }
+  
+  // Handle dequeue operation
+  when (do_deq) {
+    deq_ptr.inc()
+  }
+  
+  // Update full tracking state
+  when (do_enq =/= do_deq) {
+    maybe_full := do_enq
+  }
+  
+  // Assertions for verification
+  if (isPow2(entries)) {
+    // For power of 2 sizes, we can directly compute count
+    io.count := Mux(
+      ptr_match,
+      Mux(maybe_full, entries.U, 0.U),
+      Mux(
+        enq_ptr.value > deq_ptr.value,
+        enq_ptr.value - deq_ptr.value,
+        entries.U + enq_ptr.value - deq_ptr.value
+      )
+    )
+  } else {
+    // For non-power of 2 sizes, we need to handle wrapping differently
+    io.count := Mux(
+      ptr_match,
+      Mux(maybe_full, entries.U, 0.U),
+      Mux(
+        enq_ptr.value > deq_ptr.value,
+        enq_ptr.value - deq_ptr.value,
+        entries.U + enq_ptr.value - deq_ptr.value
+      )
+    )
+  }
+  
+  // Debug assertions (when compiled with assertions enabled)
+  assert(!(io.enq.fire && io.full), "Enqueue fire when full")
+  assert(!(io.deq.fire && io.empty), "Dequeue fire when empty")
+  
+  if (hasFlush) {
+    assert(!(io.enq.fire && io.flush), "Enqueue fire when flush")
+    assert(!(io.deq.fire && io.flush), "Dequeue fire when flush")
+  }
+}
 
-  // ---------------------------
-  // Task 7: Count Calculation
-  // ---------------------------
-  val diff = Mux(enq_ptr >= deq_ptr, enq_ptr - deq_ptr, (entries.U + enq_ptr) - deq_ptr)
-  io.count := Mux(full, entries.U, diff)
+/** IO interface for the Queue
+ * @param gen the type of elements stored in the queue
+ * @param entries the maximum number of entries in the queue
+ * @param hasFlush indicates whether to include the flush feature
+ */
+class QueueIO[T <: Data](gen: T, entries: Int, hasFlush: Boolean) extends Bundle {
+  val enq = Flipped(DecoupledIO(gen))
+  val deq = DecoupledIO(gen)
+  val count = Output(UInt(log2Ceil(entries + 1).W))
+  val empty = Output(Bool())
+  val full = Output(Bool())
+  val flush = if (hasFlush) Some(Input(Bool())) else None
 }

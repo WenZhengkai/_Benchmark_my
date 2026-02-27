@@ -1,0 +1,130 @@
+Command: vcs -cpp /usr/bin/g++-4.4 -cc /usr/bin/gcc-4.4 -sverilog +v2k -timescale=1ns/1ns \
+-debug_all -l compile.log +plusarg_save +libext+.v+.V+.sv+.svh -sverilog +memcbk \
+-P /home/kai/synopsys_tools/Verdi_2018/verdi/Verdi_O-2018.09-SP2/share/PLI/VCS/LINUX64/novas.tab \
+/home/kai/synopsys_tools/Verdi_2018/verdi/Verdi_O-2018.09-SP2/share/PLI/VCS/LINUX64/pli.a \
+-kdb -lca dut.v testbench.sv
+*** Using c compiler /usr/bin/gcc-4.4 instead of cc ...
+                         Chronologic VCS (TM)
+       Version O-2018.09-SP2_Full64 -- Thu Aug 14 11:36:08 2025
+               Copyright (c) 1991-2018 by Synopsys Inc.
+                         ALL RIGHTS RESERVED
+
+This program is proprietary and confidential information of Synopsys Inc.
+and may be used and disclosed only as authorized in a license agreement
+controlling such use and disclosure.
+
+
+Warning-[LCA_FEATURES_ENABLED] Usage warning
+  LCA features enabled by '-lca' argument on the command line.  For more 
+  information regarding list of LCA features please refer to Chapter "LCA 
+  features" in the VCS/VCS-MX Release Notes
+
+
+Warning-[DEBUG_DEP] Option will be deprecated
+  The option '-debug_all' will be deprecated in a future release.  Please use 
+  '-debug_acc+all -debug_region+cell+encrypt' instead.
+
+Parsing design file 'dut.v'
+Parsing design file 'testbench.sv'
+Top Level Modules:
+       tb_alt_exc_dpram
+
+Warning-[AOUP] Attempt to override undefined parameter
+testbench.sv, 36
+  Attempting to override undefined parameter "operation_mode", will ignore it.
+
+
+Warning-[AOUP] Attempt to override undefined parameter
+testbench.sv, 36
+  Attempting to override undefined parameter "output_mode", will ignore it.
+
+TimeScale is 1 ns / 1 ps
+
+Warning-[PCWM-W] Port connection width mismatch
+testbench.sv, 36
+"dut uut( .portadatain (data_in_a),  .portadataout (data_out_a),  .portaaddr (addr_a),  .portawe (we_a),  .portaena (ena_a),  .portaclk (clk_a),  .portbdatain (data_in_b),  .portbdataout (data_out_b),  .portbaddr (addr_b),  .portbwe (we_b),  .portbena (ena_b),  .portbclk (clk_b));"
+  The following 32-bit expression is connected to 8-bit port "portadatain" of 
+  module "dut", instance "uut".
+  Expression: data_in_a
+  	use +lint=PCWM for more details
+
+
+Warning-[PCWM-W] Port connection width mismatch
+testbench.sv, 36
+"dut uut( .portadatain (data_in_a),  .portadataout (data_out_a),  .portaaddr (addr_a),  .portawe (we_a),  .portaena (ena_a),  .portaclk (clk_a),  .portbdatain (data_in_b),  .portbdataout (data_out_b),  .portbaddr (addr_b),  .portbwe (we_b),  .portbena (ena_b),  .portbclk (clk_b));"
+  The following 32-bit expression is connected to 8-bit port "portadataout" of
+  module "dut", instance "uut".
+  Expression: data_out_a
+  	use +lint=PCWM for more details
+
+
+Warning-[PCWM-W] Port connection width mismatch
+testbench.sv, 36
+"dut uut( .portadatain (data_in_a),  .portadataout (data_out_a),  .portaaddr (addr_a),  .portawe (we_a),  .portaena (ena_a),  .portaclk (clk_a),  .portbdatain (data_in_b),  .portbdataout (data_out_b),  .portbaddr (addr_b),  .portbwe (we_b),  .portbena (ena_b),  .portbclk (clk_b));"
+  The following 14-bit expression is connected to 4-bit port "portaaddr" of 
+  module "dut", instance "uut".
+  Expression: addr_a
+  	use +lint=PCWM for more details
+
+
+Warning-[PCWM-W] Port connection width mismatch
+testbench.sv, 36
+"dut uut( .portadatain (data_in_a),  .portadataout (data_out_a),  .portaaddr (addr_a),  .portawe (we_a),  .portaena (ena_a),  .portaclk (clk_a),  .portbdatain (data_in_b),  .portbdataout (data_out_b),  .portbaddr (addr_b),  .portbwe (we_b),  .portbena (ena_b),  .portbclk (clk_b));"
+  The following 32-bit expression is connected to 8-bit port "portbdatain" of 
+  module "dut", instance "uut".
+  Expression: data_in_b
+  	use +lint=PCWM for more details
+
+
+Warning-[PCWM-W] Port connection width mismatch
+testbench.sv, 36
+"dut uut( .portadatain (data_in_a),  .portadataout (data_out_a),  .portaaddr (addr_a),  .portawe (we_a),  .portaena (ena_a),  .portaclk (clk_a),  .portbdatain (data_in_b),  .portbdataout (data_out_b),  .portbaddr (addr_b),  .portbwe (we_b),  .portbena (ena_b),  .portbclk (clk_b));"
+  The following 32-bit expression is connected to 8-bit port "portbdataout" of
+  module "dut", instance "uut".
+  Expression: data_out_b
+  	use +lint=PCWM for more details
+
+
+Warning-[PCWM-W] Port connection width mismatch
+testbench.sv, 36
+"dut uut( .portadatain (data_in_a),  .portadataout (data_out_a),  .portaaddr (addr_a),  .portawe (we_a),  .portaena (ena_a),  .portaclk (clk_a),  .portbdatain (data_in_b),  .portbdataout (data_out_b),  .portbaddr (addr_b),  .portbwe (we_b),  .portbena (ena_b),  .portbclk (clk_b));"
+  The following 14-bit expression is connected to 4-bit port "portbaddr" of 
+  module "dut", instance "uut".
+  Expression: addr_b
+  	use +lint=PCWM for more details
+
+
+Error-[ICPSD] Illegal combination of drivers
+dut.v, 17
+  Illegal combination of structural and procedural drivers.
+  Variable "portadataout" is driven by an invalid combination of structural 
+  and procedural drivers. Variables driven by a structural driver cannot have 
+  any other drivers.
+  This variable is declared at "dut.v", 17: reg [(WIDTH - 1):0] portadataout;
+  The first driver is at "dut.v", 68: assign portadataout = 
+  portadataout_reg_out;
+  The second driver is at "dut.v", 86: portadataout = 
+  'bxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx;
+
+
+Error-[ICPSD] Illegal combination of drivers
+dut.v, 18
+  Illegal combination of structural and procedural drivers.
+  Variable "portbdataout" is driven by an invalid combination of structural 
+  and procedural drivers. Variables driven by a structural driver cannot have 
+  any other drivers.
+  This variable is declared at "dut.v", 18: reg [(WIDTH - 1):0] portbdataout;
+  The first driver is at "dut.v", 69: assign portbdataout = 
+  portbdataout_reg_out;
+  The second driver is at "dut.v", 85: portbdataout = 
+  'bxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx;
+
+10 warnings
+2 errors
+
+Warning-[KDB-ELAB-W] Verdi KDB elaboration with warning
+  Verdi KDB elaboration finished with 0 error(s) and 2 warning(s).
+  Please look at this Verdi elaboration log file for details. 
+  /home/kai/ChiselProject/Benchmarks/_Benchmark_my/_BackTest/Dpram/_test/_cache/t5/simv.daidir/elabcomLog/compiler.log
+
+CPU time: .165 seconds to compile

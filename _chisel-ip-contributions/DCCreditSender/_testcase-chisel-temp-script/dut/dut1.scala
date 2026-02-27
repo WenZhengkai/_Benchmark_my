@@ -1,43 +1,51 @@
+// package flow
+
 import chisel3._
 import chisel3.util._
 
+// CreditIO bundle definition
 class CreditIO[D <: Data](data: D) extends Bundle {
   val valid = Output(Bool())
   val credit = Input(Bool())
   val bits = Output(data.cloneType)
 }
 
+// Credit-based flow control sender module
 class dut[D <: Data](data: D, maxCredit: Int) extends Module {
-  require(maxCredit >= 1, "maxCredit must be greater than or equal to 1")
-
+  require(maxCredit >= 1, "maxCredit must be at least 1")
+  
   val io = IO(new Bundle {
-    val enq = Flipped(Decoupled(data))
-    val deq = new CreditIO(data)
-    val curCredit = Output(UInt(log2Ceil(maxCredit).W))
+    val enq = Flipped(Decoupled(data.cloneType))
+    val deq = new CreditIO(data.cloneType)
+    val curCredit = Output(UInt(log2Ceil(maxCredit + 1).W))
   })
-
-  // Task 1: Credit Register (icredit)
-  val icredit = RegNext(io.deq.credit, init = false.B)
-
-  // Task 2: Credit Counter (curCredit)
-  val curCredit = RegInit(maxCredit.U(log2Ceil(maxCredit).W))
+  
+  // Register to latch the dequeue credit signal
+  val icredit = RegNext(io.deq.credit, false.B)
+  
+  // Credit counter
+  val curCredit = RegInit(UInt(log2Ceil(maxCredit + 1).W), maxCredit.U)
+  
+  // Credit counter logic
   when(icredit && !io.enq.fire) {
-    curCredit := curCredit + 1.U
+    // Increment credit when receiving credit and not sending data
+    curCredit := Mux(curCredit === maxCredit.U, curCredit, curCredit + 1.U)
   }.elsewhen(!icredit && io.enq.fire) {
+    // Decrement credit when sending data and not receiving credit
     curCredit := curCredit - 1.U
   }
-  io.curCredit := curCredit
-
-  // Task 3: Ready Signal (io.enq.ready)
+  
+  // Set ready signal when we have credits available
   io.enq.ready := curCredit > 0.U
-
-  // Task 4: Data Register (dataOut)
-  val dataOut = RegEnable(io.enq.bits, enable = io.enq.fire)
-
-  // Task 5: Valid Register (validOut)
-  val validOut = RegNext(io.enq.fire, init = false.B)
-
-  // Connect data and control to the output interface (deq)
+  
+  // Data register for dequeue interface
+  val dataOut = RegEnable(io.enq.bits, io.enq.fire)
+  
+  // Valid register for dequeue interface
+  val validOut = RegNext(io.enq.fire, false.B)
+  
+  // Connect to output ports
   io.deq.bits := dataOut
   io.deq.valid := validOut
+  io.curCredit := curCredit
 }

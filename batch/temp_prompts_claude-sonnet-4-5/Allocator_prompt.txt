@@ -1,0 +1,56 @@
+Please act as a professional Chisel designer. Give me the complete Chisel code.
+
+```
+# Specification
+
+## Module Name
+**Allocator**
+
+## Overview
+The Allocator module implements a cache way selection mechanism for write operations. It determines which cache way should be written to based on cache hit information and a pseudo-random allocation policy. When a cache hit occurs, it selects the hitting way using priority encoding. When no hit occurs (cache miss), it uses a hash-based pseudo-random algorithm to select a way for allocation.
+
+## Parameters
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| nWays | Int | Number of cache ways (associativity). Must be a positive integer. |
+| tagSz | Int | Size of the tag field in bits. |
+
+## Input/Output Interface
+
+### Inputs
+| Signal Name | Type | Width | Description |
+|-------------|------|-------|-------------|
+| s1_req_rmeta | Vec(Vec(MetaData)) | nWays × nWays × tagSz | 2D vector containing metadata (tags) read from all cache ways. Each way contains nWays metadata entries. |
+| s1_req_tag | UInt | tagSz | The tag of the current request being processed in stage 1. |
+| s1_hits | Vec(Bool) | nWays | Vector of hit signals, one per way. Each bit indicates whether the corresponding way had a cache hit. |
+
+### Outputs
+| Signal Name | Type | Width | Description |
+|-------------|------|-------|-------------|
+| s1_meta_write_way | UInt | log2Ceil(nWays) | The selected cache way index for metadata write operation. |
+
+### Internal Bundle
+**MetaData Bundle:**
+- `tag`: UInt of width `tagSize` - Stores the tag value for cache line identification.
+
+## Internal Logic
+
+1. **Way Allocation Logic (`alloc_way`):**
+   - **For single-way caches (nWays = 1):** Always returns 0 since there's only one way.
+   - **For multi-way caches (nWays > 1):** Implements a pseudo-random way selection using XOR-based hashing:
+     - Concatenates all tags from the 2D `s1_req_rmeta` structure by flattening the nested vectors
+     - Appends the current request tag (`s1_req_tag`) to create a combined bit vector `r_metas`
+     - Divides `r_metas` into chunks of size `l` bits (where `l = log2Ceil(nWays)`)
+     - XORs all chunks together to produce a pseudo-random way index
+     - This creates a hash function that distributes allocations across ways based on tag patterns
+
+2. **Write Way Selection:**
+   - **On Cache Hit:** Uses `PriorityEncoder` to select the lowest-indexed way that had a hit (determined by OR-reducing the `s1_hits` vector)
+   - **On Cache Miss:** Uses the pseudo-random `alloc_way` value computed from the tag hash
+   - The final selection is controlled by a multiplexer that checks if any hit occurred using `s1_hits.reduce(_ || _)`
+
+3. **Output Assignment:**
+   - The selected way index is assigned to `s1_meta_write_way`, indicating which cache way should be updated with new metadata.
+
+```
+Give me the complete Chisel code.

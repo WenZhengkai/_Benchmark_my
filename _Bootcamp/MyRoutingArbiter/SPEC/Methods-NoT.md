@@ -5,9 +5,9 @@ Please act as a professional verilog designer. Give me the complete verilog code
 # Specification 2
 
 ## Module Name
-MyRoutingArbiter
+dut
 ## Overview
-The `MyRoutingArbiter` is a hardware design module which performs arbitration amongst multiple input channels to control access to a single output channel. When multiple input channels request access simultaneously, the arbiter selects the one with the highest priority (i.e., the lowest-indexed valid channel) and directs its data to the output.
+The `dut` is a hardware design module which performs arbitration amongst multiple input channels to control access to a single output channel. When multiple input channels request access simultaneously, the arbiter selects the one with the highest priority (i.e., the lowest-indexed valid channel) and directs its data to the output.
 
 
 ## Input/Output Interface
@@ -30,7 +30,7 @@ The `MyRoutingArbiter` is a hardware design module which performs arbitration am
   output [7:0] io_out_bits
 
 ## Internal Logic
-The internal logic of the `MyRoutingArbiter` module involves the following components:
+The internal logic of the `dut` module involves the following components:
 
 - **Output Validity:**  
   The `out.valid` signal is set to true if at least one of the input channels is valid. This is accomplished using a reduce operation with a logical OR (`||`) on the `valid` signals of all input channels.
@@ -52,21 +52,12 @@ Give me the complete verilog code.
 Please act as a professional Chisel designer. Give me the complete Chisel code.
 
 ```
-
-```
-Give me the complete Chisel code.
-
-
-## NoT Method s1-Spec Slicer
-Please act as a professional Chisel designer. Slice the `Internal logic` into several coding tasks
-
-```
 # Specification 2
 
 ## Module Name
-MyRoutingArbiter
+dut
 ## Overview
-The `MyRoutingArbiter` is a hardware design module implemented using Chisel, which performs arbitration amongst multiple input channels to control access to a single output channel. When multiple input channels request access simultaneously, the arbiter selects the one with the highest priority (i.e., the lowest-indexed valid channel) and directs its data to the output.
+The `dut` is a hardware design module implemented using Chisel, which performs arbitration amongst multiple input channels to control access to a single output channel. When multiple input channels request access simultaneously, the arbiter selects the one with the highest priority (i.e., the lowest-indexed valid channel) and directs its data to the output.
 
 ## Parameters
 - `numChannels`: Integer parameter that specifies the number of input channels the arbiter can handle. This parameter is set when instantiating the module.
@@ -79,7 +70,47 @@ The `MyRoutingArbiter` is a hardware design module implemented using Chisel, whi
 ### Outputs
 - `out`: A `Decoupled(UInt(8.W))` representing the output channel that will receive data from one of the input channels.
 ## Internal Logic
-The internal logic of the `MyRoutingArbiter` module involves the following components:
+The internal logic of the `dut` module involves the following components:
+
+- **Output Validity:**  
+  The `out.valid` signal is set to true if at least one of the input channels is valid. This is accomplished using a reduce operation with a logical OR (`||`) on the `valid` signals of all input channels.
+
+- **Priority Selection (PriorityMux):**  
+  A `PriorityMux` is used to select the channel number of the first valid input channel based on a priority order. It creates a mapping of valid signals to their respective indexes and selects the index of the first channel that is valid.
+
+- **Data Routing:**  
+  The `out.bits` signal is set to the `bits` of the input channel denoted by the selected channel index, effectively routing the data from the chosen input channel to the output.
+
+- **Input Readiness:**  
+  Each input channel's `ready` signal is determined by checking if the output is ready (`io.out.ready`) and whether the current channel is the one selected by the `PriorityMux`. This ensures that only the selected input channel, if its data is being forwarded, is marked as ready to accept new data.
+```
+
+Give me the complete Chisel code.
+
+
+## NoT Method s1-Spec Slicer
+Please act as a professional Chisel designer. Slice the `Internal logic` into several coding tasks
+
+```
+# Specification 2
+
+## Module Name
+dut
+## Overview
+The `dut` is a hardware design module implemented using Chisel, which performs arbitration amongst multiple input channels to control access to a single output channel. When multiple input channels request access simultaneously, the arbiter selects the one with the highest priority (i.e., the lowest-indexed valid channel) and directs its data to the output.
+
+## Parameters
+- `numChannels`: Integer parameter that specifies the number of input channels the arbiter can handle. This parameter is set when instantiating the module.
+
+## Input/Output Interface
+
+### Inputs
+- `in`: A `Vec` of `numChannels` elements, where each element is a `Flipped(Decoupled(UInt(8.W)))`. This represents multiple input channels that may send 8-bit wide data into the arbiter. 
+  
+### Outputs
+- `out`: A `Decoupled(UInt(8.W))` representing the output channel that will receive data from one of the input channels.
+## Internal Logic
+The internal logic of the `dut` module involves the following components:
 
 - **Output Validity:**  
   The `out.valid` signal is set to true if at least one of the input channels is valid. This is accomplished using a reduce operation with a logical OR (`||`) on the `valid` signals of all input channels.
@@ -121,9 +152,9 @@ Notice the relation of tasks.
 # Specification 2
 
 ## Module Name
-MyRoutingArbiter
+dut
 ## Overview
-The `MyRoutingArbiter` is a hardware design module implemented using Chisel, which performs arbitration amongst multiple input channels to control access to a single output channel. When multiple input channels request access simultaneously, the arbiter selects the one with the highest priority (i.e., the lowest-indexed valid channel) and directs its data to the output.
+The `dut` is a hardware design module implemented using Chisel, which performs arbitration amongst multiple input channels to control access to a single output channel. When multiple input channels request access simultaneously, the arbiter selects the one with the highest priority (i.e., the lowest-indexed valid channel) and directs its data to the output.
 
 ## Parameters
 - `numChannels`: Integer parameter that specifies the number of input channels the arbiter can handle. This parameter is set when instantiating the module.
@@ -186,7 +217,7 @@ Give me the complete Chisel code.
 
 Thinking...
 > 
-> Okay, let's tackle this problem. The user wants me to slice the Internal Logic of the MyRoutingArbiter module into several coding tasks. I need to break down each part of the internal logic into individual tasks that a Chisel designer would implement step by step.
+> Okay, let's tackle this problem. The user wants me to slice the Internal Logic of the dut module into several coding tasks. I need to break down each part of the internal logic into individual tasks that a Chisel designer would implement step by step.
 > 
 > First, I'll look at the Internal Logic description. There are four main components: Output Validity, Priority Selection using PriorityMux, Data Routing, and Input Readiness. Each of these can be a separate task.
 > 

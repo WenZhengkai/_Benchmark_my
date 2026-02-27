@@ -3,68 +3,85 @@ import chisel3.util._
 
 class dut extends Module {
   val io = IO(new Bundle {
-    val s = Input(UInt(3.W)) // 3 sensors representing the water level
-    val fr3 = Output(Bool()) // Nominal flow rate 3
-    val fr2 = Output(Bool()) // Nominal flow rate 2
-    val fr1 = Output(Bool()) // Nominal flow rate 1
-    val dfr = Output(Bool()) // Supplemental flow rate
+    val s = Input(UInt(3.W))  // 3 sensors, s[3], s[2], s[1]
     val reset = Input(Bool()) // Active-high synchronous reset
+    val fr3 = Output(Bool())  // Flow rate control output
+    val fr2 = Output(Bool())  // Flow rate control output
+    val fr1 = Output(Bool())  // Flow rate control output
+    val dfr = Output(Bool())  // Supplemental flow valve control output
   })
 
-  // State variables to track previous sensor state
-  val prevS = RegInit(0.U(3.W)) // Store the previous sensor states
-
-  // Defaults for output signals
-  io.fr3 := false.B
-  io.fr2 := false.B
-  io.fr1 := false.B
-  io.dfr := false.B
-
-  // Define the active-high reset behavior
-  when(io.reset) {
-    io.fr3 := true.B
-    io.fr2 := true.B
-    io.fr1 := true.B
-    io.dfr := true.B
-  }.otherwise {
-    // Logic for determining flow rates based on the sensor levels
-    when(io.s === "b111".U) { // Above sensor s[3]
-      // Turn off all flow rates (none asserted)
-      io.fr3 := false.B
-      io.fr2 := false.B
-      io.fr1 := false.B
-      io.dfr := false.B
-    }.elsewhen(io.s === "b011".U) { // Between s[3] and s[2]
-      // Assert nominal flow rate fr1
-      io.fr3 := false.B
-      io.fr2 := false.B
-      io.fr1 := true.B
-      // Determine if supplemental flow rate should be asserted
-      io.dfr := prevS < io.s
-    }.elsewhen(io.s === "b001".U) { // Between s[2] and s[1]
-      // Assert nominal flow rates fr1 and fr2
-      io.fr3 := false.B
-      io.fr2 := true.B
-      io.fr1 := true.B
-      // Determine if supplemental flow rate should be asserted
-      io.dfr := prevS < io.s
-    }.elsewhen(io.s === "b000".U) { // Below sensor s[1]
-      // Assert all nominal flow rates fr1, fr2, and fr3
-      io.fr3 := true.B
-      io.fr2 := true.B
-      io.fr1 := true.B
-      // Assert supplemental flow rate
-      io.dfr := true.B
-    }
+  // Define states for water level
+  val sAboveS3 :: sBetweenS3S2 :: sBetweenS2S1 :: sBelowS1 :: Nil = Enum(4)
+  
+  // State register for current water level
+  val currentState = RegInit(sBelowS1)
+  
+  // Register to track the previous state for trend detection
+  val previousState = RegInit(sBelowS1)
+  
+  // Update previous state on every state change
+  when(currentState =/= RegNext(currentState)) {
+    previousState := RegNext(currentState)
   }
 
-  // Update state: Store the current sensors as "previous" for next clock cycle
-  prevS := io.s
+  // Determine current water level based on sensors
+  val newState = Wire(UInt(2.W))
+  when(io.s(2) && io.s(1) && io.s(0)) {
+    newState := sAboveS3
+  }.elsewhen(io.s(1) && io.s(0) && !io.s(2)) {
+    newState := sBetweenS3S2
+  }.elsewhen(io.s(0) && !io.s(1) && !io.s(2)) {
+    newState := sBetweenS2S1
+  }.otherwise {
+    newState := sBelowS1
+  }
+  
+  // Update current state
+  when(io.reset) {
+    currentState := sBelowS1
+    previousState := sBelowS1
+  }.otherwise {
+    currentState := newState
+  }
+  
+  // Determine if the water level was rising (for supplemental flow control)
+  val wasRising = Wire(Bool())
+  wasRising := (previousState < currentState)
+  
+  // Set output flow rates based on current water level and trend
+  // Initialize all outputs to false
+  io.fr1 := false.B
+  io.fr2 := false.B
+  io.fr3 := false.B
+  io.dfr := false.B
+  
+  when(io.reset) {
+    // Reset condition: equivalent to low water level for long time
+    io.fr1 := true.B
+    io.fr2 := true.B
+    io.fr3 := true.B
+    io.dfr := true.B
+  }.otherwise {
+    switch(currentState) {
+      is(sAboveS3) {
+        // No flow rate needed when water level is above s[3]
+      }
+      is(sBetweenS3S2) {
+        io.fr1 := true.B
+        io.dfr := wasRising
+      }
+      is(sBetweenS2S1) {
+        io.fr1 := true.B
+        io.fr2 := true.B
+        io.dfr := wasRising
+      }
+      is(sBelowS1) {
+        io.fr1 := true.B
+        io.fr2 := true.B
+        io.fr3 := true.B
+        io.dfr := wasRising
+      }
+    }
+  }
 }
-
-// Generate Verilog for this module
-/*
-object dutMain extends App {
-  (new chisel3.stage.ChiselStage).emitVerilog(new dut(), Array("--target-dir", "generated"))
-}
-*/

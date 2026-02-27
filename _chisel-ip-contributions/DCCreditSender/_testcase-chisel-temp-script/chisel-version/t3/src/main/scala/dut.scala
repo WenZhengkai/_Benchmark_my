@@ -1,47 +1,58 @@
+// package flow
+
 import chisel3._
 import chisel3.util._
 
-// Define the CreditIO interface
+// CreditIO Bundle definition
 class CreditIO[D <: Data](data: D) extends Bundle {
   val valid = Output(Bool())
   val credit = Input(Bool())
   val bits = Output(data.cloneType)
 }
 
-// Define the dut module
 class dut[D <: Data](data: D, maxCredit: Int) extends Module {
-  require(maxCredit >= 1, "maxCredit must be greater than or equal to 1")
-
+  require(maxCredit >= 1, "Maximum credit must be at least 1")
+  
   val io = IO(new Bundle {
     val enq = Flipped(Decoupled(data))
     val deq = new CreditIO(data)
-    val curCredit = Output(UInt(log2Ceil(maxCredit).W))
+    val curCredit = Output(UInt(log2Ceil(maxCredit + 1).W))
   })
-
-  // Task 1: Credit Register (icredit)
-  val icredit = RegNext(io.deq.credit, init = false.B)
-
-  // Task 2: Credit Counter (curCredit)
-  val curCredit = RegInit(maxCredit.U(log2Ceil(maxCredit).W))
-  when(icredit && !io.enq.fire) {
-    curCredit := curCredit + 1.U
-  }.elsewhen(!icredit && io.enq.fire) {
-    curCredit := curCredit - 1.U
+  
+  // Credit counter with the maximum value of maxCredit
+  val creditCounter = RegInit(maxCredit.U(log2Ceil(maxCredit + 1).W))
+  
+  // Internal latched credit signal
+  val icredit = RegNext(io.deq.credit, false.B)
+  
+  // Data and valid registers for output
+  val validOut = RegInit(false.B)
+  val dataOut = RegEnable(io.enq.bits, io.enq.fire())
+  
+  // Credit counter logic:
+  // - Increment when credit received and not sending data
+  // - Decrement when sending data and not receiving credit
+  // - Maintain when both occur or neither occurs
+  when(icredit && !io.enq.fire()) {
+    creditCounter := creditCounter + 1.U
+  }.elsewhen(!icredit && io.enq.fire()) {
+    creditCounter := creditCounter - 1.U
   }
-
-  // Output current credit count
-  io.curCredit := curCredit
-
-  // Task 3: Ready Signal (io.enq.ready)
-  io.enq.ready := curCredit > 0.U
-
-  // Task 4: Data Register (dataOut)
-  val dataOut = RegEnable(io.enq.bits, enable = io.enq.fire)
-
-  // Task 5: Valid Register (validOut)
-  val validOut = RegNext(io.enq.fire, init = false.B)
-
-  // Drive the output interface
-  io.deq.bits := dataOut
+  
+  // Ensure credit counter doesn't exceed maxCredit
+  when(creditCounter > maxCredit.U) {
+    creditCounter := maxCredit.U
+  }
+  
+  // Ready to accept data if we have credits available
+  io.enq.ready := creditCounter > 0.U
+  
+  // Valid signal for output
+  validOut := Mux(io.enq.fire(), true.B, 
+                  Mux(icredit, false.B, validOut))
+  
+  // Connect output signals
   io.deq.valid := validOut
+  io.deq.bits := dataOut
+  io.curCredit := creditCounter
 }

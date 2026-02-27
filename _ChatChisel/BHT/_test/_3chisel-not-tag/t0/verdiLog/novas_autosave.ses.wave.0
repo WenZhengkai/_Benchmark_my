@@ -1,0 +1,66 @@
+Magic 271485
+Revision Verdi_O-2018.09-SP2
+
+; Window Layout <x> <y> <width> <height> <signalwidth> <valuewidth>
+viewPort 0 27 2560 459 100 65
+
+; File list:
+; openDirFile [-d delimiter] [-s time_offset] [-rf auto_bus_rule_file] path_name file_name
+openDirFile -d / "" "/home/kai/ChiselProject/Benchmarks/_Benchmark_my/_ChatChisel/BHT/_test/_cache/t0/dump.fsdb"
+
+; file time scale:
+; fileTimeScale ### s|ms|us|ns|ps
+
+; signal spacing:
+signalSpacing 5
+
+; windowTimeUnit is used for zoom, cursor & marker
+; waveform viewport range
+zoom 0.000000 505808.000000
+cursor 35000.000000
+marker 0.000000
+
+; user define markers
+; userMarker time_pos marker_name color linestyle
+; visible top row signal index
+top 0
+; marker line index
+markerPos 6
+
+; event list
+; addEvent event_name event_expression
+; curEvent event_name
+
+
+
+COMPLEX_EVENT_BEGIN
+
+
+COMPLEX_EVENT_END
+
+
+
+; toolbar current search type
+; curSTATUS search_type
+curSTATUS ByChange
+
+
+addGroup "G1"
+activeDirFile "" "/home/kai/ChiselProject/Benchmarks/_Benchmark_my/_ChatChisel/BHT/_test/_cache/t0/dump.fsdb"
+addSignal -h 15 /BHT_tb/ref_bht_pred_pc[31:0]
+addGroup "G2"
+addSignal -h 15 /BHT_tb/dut_bht_pred_pc[31:0]
+addGroup "G3"
+addSignal -h 15 /BHT_tb/dut_matched
+addSignal -h 15 -holdScope ref_matched
+addGroup "G4"
+addSignal -h 15 /BHT_tb/dut_valid
+addSignal -h 15 -holdScope ref_valid
+addGroup "G5"
+addSignal -h 15 /BHT_tb/dut_bht_pred_pc[31:0]
+addSignal -h 15 -holdScope ref_bht_pred_pc[31:0]
+addGroup "G6"
+
+; getSignalForm Scope Hierarchy Status
+; active file of getSignalForm
+

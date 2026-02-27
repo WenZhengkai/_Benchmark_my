@@ -3,42 +3,45 @@ import chisel3.util._
 
 class dut[D <: Data](data: D, n: Int) extends Module {
   val io = IO(new Bundle {
-    val dst = Input(UInt(n.W))                          // Bit vector of output destinations
-    val c = Flipped(DecoupledIO(data.cloneType))        // Input DecoupledIO interface
-    val p = Vec(n, DecoupledIO(data.cloneType))         // Output Vec of DecoupledIO interfaces
+    val dst = Input(UInt(n.W))
+    val c = Flipped(new DecoupledIO(data.cloneType))
+    val p = Vec(n, new DecoupledIO(data.cloneType))
   })
-
-  // Task 1: Define Registers and Signals
-  val pData = Reg(data.cloneType)                      // Register to hold the incoming data
-  val pValid = RegInit(0.U(n.W))                       // Valid register for the outputs
-  val pReady = Wire(Vec(n, Bool()))                    // Signal for readiness of all outputs
-  val nxtAccept = Wire(Bool())                         // Signal to determine when the module can accept new data
-
-  // Connect `pReady` to the output ready signals
-  pReady := io.p.map(_.ready)
-
-  // Task 2: Implement Data Register (`pData`)
-  when(nxtAccept) {
-    pData := io.c.bits                                  // Update `pData` when new data is accepted
+  
+  // Data register to store the incoming payload
+  val pData = RegInit(0.U.asTypeOf(data.cloneType))
+  
+  // Register to track which output channels have valid data
+  val pValid = RegInit(0.U(n.W))
+  
+  // Concatenate all ready signals from output channels
+  val pReady = Cat(io.p.map(_.ready).reverse)
+  
+  // Determine when the module is ready to accept new data
+  val nxtAccept = (pValid === 0.U) || ((pValid & ~pReady) === 0.U)
+  
+  // Update the input ready signal
+  io.c.ready := nxtAccept
+  
+  // Logic for updating pValid and pData
+  when (nxtAccept) {
+    // Update data register unconditionally (not controlled by incoming data validity)
+    pData := io.c.bits
+    
+    // Update valid register based on incoming data validity and dst bits
+    when (io.c.valid) {
+      pValid := io.dst
+    } .otherwise {
+      pValid := 0.U
+    }
+  } .otherwise {
+    // Maintain valid bits only for outputs that aren't ready yet
+    pValid := pValid & ~pReady
   }
-
-  // Task 3: Implement Valid Register (`pValid`)
-  when(nxtAccept) {
-    pValid := Mux(io.c.valid, io.dst, 0.U)             // Update `pValid` when accepting new data
-  }.otherwise {
-    // Retain valid bits for outputs that aren't ready
-    pValid := pValid & ~pReady.asUInt                   // Mask out bits that are ready
-  }
-
-  // Task 4: Compute the Next Accept Signal (`nxtAccept`)
-  nxtAccept := (pValid === 0.U) || (pValid & pReady.asUInt) === pValid
-
-  // Task 5: Assign Outputs
+  
+  // Connect output channels
   for (i <- 0 until n) {
-    io.p(i).valid := pValid(i)                          // Connect the `valid` signal
-    io.p(i).bits := pData                               // Assign the payload
+    io.p(i).valid := pValid(i)
+    io.p(i).bits := pData
   }
-
-  // Task 6: Integrate Flow Control
-  io.c.ready := nxtAccept                               // Input is ready when `nxtAccept` is true
 }

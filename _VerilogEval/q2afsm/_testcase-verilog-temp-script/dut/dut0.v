@@ -1,11 +1,11 @@
 module dut (
-    input        clk,
-    input        resetn,
-    input  [2:0] r,    // Request inputs from three devices
-    output reg [2:0] g // Grant outputs for three devices
+    input clk,
+    input resetn,
+    input [2:0] r,
+    output reg [2:0] g
 );
 
-    // State encoding for better readability
+    // Define states
     typedef enum logic [1:0] {
         STATE_A = 2'b00,
         STATE_B = 2'b01,
@@ -13,58 +13,67 @@ module dut (
         STATE_D = 2'b11
     } state_t;
 
+    // State register
     state_t current_state, next_state;
 
-    // State transition logic
-    always @ (posedge clk or negedge resetn) begin
-        if (!resetn) 
+    // Synchronous state transition
+    always @(posedge clk or negedge resetn) begin
+        if (!resetn) begin
             current_state <= STATE_A;
-        else 
+        end else begin
             current_state <= next_state;
+        end
     end
 
     // Next state logic
-    always @ (*) begin
-        // Default grant outputs
-        g = 3'b000;
-
+    always @(*) begin
         case (current_state)
             STATE_A: begin
-                if (r[0]) 
+                if (r[0]) begin
                     next_state = STATE_B;
-                else if (r[1]) 
+                end else if (r[1]) begin
                     next_state = STATE_C;
-                else if (r[2]) 
+                end else if (r[2]) begin
                     next_state = STATE_D;
-                else 
+                end else begin
                     next_state = STATE_A;
+                end
             end
-
             STATE_B: begin
-                g = 3'b001; // g[0] = 1
-                if (r[0]) 
+                if (r[0]) begin
                     next_state = STATE_B;
-                else 
+                end else begin
                     next_state = STATE_A;
+                end
             end
-
             STATE_C: begin
-                g = 3'b010; // g[1] = 1
-                if (r[1]) 
+                if (r[1]) begin
                     next_state = STATE_C;
-                else 
+                end else begin
                     next_state = STATE_A;
+                end
             end
-
             STATE_D: begin
-                g = 3'b100; // g[2] = 1
-                if (r[2]) 
+                if (r[2]) begin
                     next_state = STATE_D;
-                else 
+                end else begin
                     next_state = STATE_A;
+                end
             end
+            default: begin
+                next_state = STATE_A;
+            end
+        endcase
+    end
 
-            default: next_state = STATE_A;
+    // Output logic
+    always @(*) begin
+        g = 3'b000; // Default output
+        case (current_state)
+            STATE_B: g[0] = 1'b1;
+            STATE_C: g[1] = 1'b1;
+            STATE_D: g[2] = 1'b1;
+            default: g = 3'b000;
         endcase
     end
 

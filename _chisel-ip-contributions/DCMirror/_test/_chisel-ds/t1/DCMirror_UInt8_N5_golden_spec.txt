@@ -1,0 +1,85 @@
+# Design Specification for `DCMirror_UInt8_N5_golden` Module
+
+## 1. **Module Name**
+   - `DCMirror_UInt8_N5_golden`
+
+## 2. **Module Functions**
+   The `DCMirror_UInt8_N5_golden` module is designed to distribute an 8-bit data input (`io_c_bits`) to one or more of five parallel output channels (`io_p_0_bits` to `io_p_4_bits`) based on a 5-bit destination mask (`io_dst`). The module ensures data is only sent to channels that are ready to receive it, and it manages the handshake protocol between incoming and outgoing data streams. This module is primarily utilized in systems requiring dynamic data routing to multiple destinations, such as in communication networks or parallel processing architectures.
+
+## 3. **Input and Output Port Descriptions**
+
+### Inputs
+1. **clock**: Clock signal (1-bit input).
+   - Drives the synchronous operations within the module.
+2. **reset**: Reset signal (1-bit input).
+   - Resets the internal state to a known initial condition.
+3. **io_dst**: Destination mask (5-bit input).
+   - Specifies which of the five output channels should receive the data.
+4. **io_c_valid**: Input data valid signal (1-bit input).
+   - Indicates that the data on `io_c_bits` is valid and ready for processing.
+5. **io_c_bits**: Input data bus (8-bit input).
+   - Carries the data to be distributed to the output channels.
+6. **io_p_0_ready**: Channel 0 ready signal (1-bit input).
+   - Indicates that channel 0 is ready to receive data.
+7. **io_p_1_ready**: Channel 1 ready signal (1-bit input).
+   - Indicates that channel 1 is ready to receive data.
+8. **io_p_2_ready**: Channel 2 ready signal (1-bit input).
+   - Indicates that channel 2 is ready to receive data.
+9. **io_p_3_ready**: Channel 3 ready signal (1-bit input).
+   - Indicates that channel 3 is ready to receive data.
+10. **io_p_4_ready**: Channel 4 ready signal (1-bit input).
+    - Indicates that channel 4 is ready to receive data.
+
+### Outputs
+1. **io_c_ready**: Input data ready signal (1-bit output).
+   - Indicates that the module is ready to accept new input data.
+2. **io_p_0_valid**: Channel 0 valid signal (1-bit output).
+   - Indicates that the data on `io_p_0_bits` is valid.
+3. **io_p_0_bits**: Channel 0 data bus (8-bit output).
+   - Carries the data to channel 0.
+4. **io_p_1_valid**: Channel 1 valid signal (1-bit output).
+   - Indicates that the data on `io_p_1_bits` is valid.
+5. **io_p_1_bits**: Channel 1 data bus (8-bit output).
+   - Carries the data to channel 1.
+6. **io_p_2_valid**: Channel 2 valid signal (1-bit output).
+   - Indicates that the data on `io_p_2_bits` is valid.
+7. **io_p_2_bits**: Channel 2 data bus (8-bit output).
+   - Carries the data to channel 2.
+8. **io_p_3_valid**: Channel 3 valid signal (1-bit output).
+   - Indicates that the data on `io_p_3_bits` is valid.
+9. **io_p_3_bits**: Channel 3 data bus (8-bit output).
+   - Carries the data to channel 3.
+10. **io_p_4_valid**: Channel 4 valid signal (1-bit output).
+    - Indicates that the data on `io_p_4_bits` is valid.
+11. **io_p_4_bits**: Channel 4 data bus (8-bit output).
+    - Carries the data to channel 4.
+
+## 4. **Internal Working Principle**
+The module's operation revolves around distributing incoming data to multiple output channels based on a destination mask and channel readiness. The module checks if any of the specified channels in `io_dst` are ready to receive data. If so, it accepts the input data and propagates it to the appropriate channels, maintaining data validity and readiness signals to ensure proper handshaking. The module operates synchronously with the clock signal and can reset to a known state using the reset signal.
+
+## 5. **Implementation Logic Explanation**
+The implementation logic consists of both combinational and sequential elements:
+- **Data Acceptance**: The module uses a combination of the input valid signal (`io_c_valid`) and the destination mask (`io_dst`) to determine if new data should be accepted. This is conditional on the readiness of the specified channels.
+- **Data Distribution**: Once data is accepted, it is stored in an internal register (`pData`). The data is then made available to all channels specified by `io_dst` where the corresponding `io_p_x_ready` signal is high.
+- **Control Logic**: The `pValid` register maintains the validity of data across the output channels. It is updated based on the readiness of each channel and the incoming valid data signal. The module ensures that data is only sent to channels that are both specified in `io_dst` and ready to receive it.
+
+## 6. **Internally Defined Signal Descriptions**
+1. **pData**: Internal data register (8-bit).
+   - Stores the incoming data temporarily for distribution to the output channels.
+2. **pValid**: Internal validity register (5-bit).
+   - Tracks which output channels currently have valid data to send.
+3. **pReady**: Concatenated readiness signal (5-bit).
+   - Represents the readiness of each output channel, constructed from `io_p_0_ready` to `io_p_4_ready`.
+4. **_nxtAccept_T_2**: Intermediate signal (5-bit).
+   - Represents the logical AND of `pValid` and `pReady`, used to determine if all valid channels are ready.
+5. **nxtAccept**: Next accept signal (1-bit).
+   - Determines if the module should accept new data based on `pValid` and `_nxtAccept_T_2`.
+6. **_pValid_T_1**: Intermediate signal (5-bit).
+   - Represents a mask of all ones if `io_c_valid` is high, otherwise all zeros.
+7. **_pValid_T_2**: Intermediate signal (5-bit).
+   - Represents the logical AND of `_pValid_T_1` and `io_dst`, determining which channels should be marked valid.
+8. **_pValid_T_3**: Intermediate signal (5-bit).
+   - Represents the bitwise NOT of `pReady`, used to mask out ready channels.
+9. **_pValid_T_4**: Intermediate signal (5-bit).
+   - Represents the logical AND of `pValid` and `_pValid_T_3`, used to update `pValid` for channels that are not ready.
+

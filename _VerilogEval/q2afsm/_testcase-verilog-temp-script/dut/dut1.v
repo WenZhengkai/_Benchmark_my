@@ -1,81 +1,73 @@
-module dut(
-    input wire clk,
-    input wire resetn,
-    input wire [2:0] r,
+module dut (
+    input clk,
+    input resetn,
+    input [2:0] r,
     output reg [2:0] g
 );
 
-    // State declaration
-    typedef enum logic [1:0] {
-        A = 2'b00,
-        B = 2'b01,
-        C = 2'b10,
-        D = 2'b11
-    } state_t;
+// Define the states
+typedef enum reg [1:0] {
+    STATE_A = 2'b00,
+    STATE_B = 2'b01,
+    STATE_C = 2'b10,
+    STATE_D = 2'b11
+} state_t;
 
-    state_t current_state, next_state;
+// Internal state register
+state_t state, next_state;
 
-    // Combinational logic for state transitions
-    always @(*) begin
-        case (current_state)
-            A: begin
-                if (r[0]) begin
-                    next_state = B;
-                end else if (r[1]) begin
-                    next_state = C;
-                end else if (r[2]) begin
-                    next_state = D;
-                end else begin
-                    next_state = A;
-                end
-            end
+// Synchronous reset and state transition logic
+always @(posedge clk or negedge resetn) begin
+    if (!resetn)
+        state <= STATE_A; // Reset to state A
+    else
+        state <= next_state;
+end
 
-            B: begin
-                if (~r[0]) begin
-                    next_state = A;
-                end else begin
-                    next_state = B;
-                end
-            end
-
-            C: begin
-                if (~r[1]) begin
-                    next_state = A;
-                end else begin
-                    next_state = C;
-                end
-            end
-
-            D: begin
-                if (~r[2]) begin
-                    next_state = A;
-                end else begin
-                    next_state = D;
-                end
-            end
-
-            default: next_state = A;
-        endcase
-    end
-
-    // Sequential logic for state updates
-    always @(posedge clk or negedge resetn) begin
-        if (!resetn) begin
-            current_state <= A;
-        end else begin
-            current_state <= next_state;
+// Next state logic
+always @(*) begin
+    case (state)
+        STATE_A: begin
+            if (r[0])
+                next_state = STATE_B;
+            else if (r[1])
+                next_state = STATE_C;
+            else if (r[2])
+                next_state = STATE_D;
+            else
+                next_state = STATE_A;
         end
-    end
+        STATE_B: begin
+            if (r[0])
+                next_state = STATE_B;
+            else
+                next_state = STATE_A;
+        end
+        STATE_C: begin
+            if (r[1])
+                next_state = STATE_C;
+            else
+                next_state = STATE_A;
+        end
+        STATE_D: begin
+            if (r[2])
+                next_state = STATE_D;
+            else
+                next_state = STATE_A;
+        end
+        default: next_state = STATE_A;
+    endcase
+end
 
-    // Output logic based on current state
-    always @(*) begin
-        g = 3'b000; // Default no grants
-        case (current_state)
-            B: g = 3'b001; // Grant to device 0
-            C: g = 3'b010; // Grant to device 1
-            D: g = 3'b100; // Grant to device 2
-            default: g = 3'b000; // No grant
-        endcase
-    end
+// Output logic
+always @(*) begin
+    case (state)
+        STATE_A: g = 3'b000;
+        STATE_B: g = 3'b001;
+        STATE_C: g = 3'b010;
+        STATE_D: g = 3'b100;
+        default: g = 3'b000;
+    endcase
+end
 
 endmodule

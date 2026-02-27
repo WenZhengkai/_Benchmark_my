@@ -1,107 +1,96 @@
 import chisel3._
 import chisel3.util._
 
-class dut extends Module {
+class WaterReservoirController extends Module {
   val io = IO(new Bundle {
-    val s = Input(UInt(3.W))   // 3-bit water level sensor input
-    val fr3 = Output(Bool())   // Nominal flow rate for level fr3
-    val fr2 = Output(Bool())   // Nominal flow rate for level fr2
-    val fr1 = Output(Bool())   // Nominal flow rate for level fr1
-    val dfr = Output(Bool())   // Supplemental flow rate indicator
+    val s = Input(UInt(3.W))  // 3 sensors, s[3], s[2], s[1]
+    val reset = Input(Bool()) // Active-high synchronous reset
+    val fr3 = Output(Bool())  // Flow rate control valves
+    val fr2 = Output(Bool())
+    val fr1 = Output(Bool())
+    val dfr = Output(Bool())  // Supplemental flow valve
   })
 
-  // States of the water level
-  val level_low = 0.U(2.W)
-  val level_mid_low = 1.U(2.W)
-  val level_mid_high = 2.U(2.W)
-  val level_high = 3.U(2.W)
+  // Define the possible states of the water level
+  val sAbove3      = 0.U(2.W)  // Water level above s[3]
+  val sBetween32   = 1.U(2.W)  // Water level between s[3] and s[2]
+  val sBetween21   = 2.U(2.W)  // Water level between s[2] and s[1]
+  val sBelow1      = 3.U(2.W)  // Water level below s[1]
 
-  // Registers
-  val state = RegInit(level_low) // Current state, reset defaults to low
-  val prev_state = RegInit(level_low) // Tracks the state before the last change
+  // State register for current water level
+  val waterLevel = RegInit(sBelow1)
+  
+  // Register to track previous water level (before the last sensor change)
+  val prevWaterLevel = RegInit(sBelow1)
 
-  // Default output values
-  io.fr3 := false.B
-  io.fr2 := false.B
+  // Default values for outputs
   io.fr1 := false.B
+  io.fr2 := false.B
+  io.fr3 := false.B
   io.dfr := false.B
 
-  // State Logic
-  switch(state) {
-    is(level_high) {
-      // Water level is above the highest sensor (s3)
-      io.fr3 := false.B
-      io.fr2 := false.B
-      io.fr1 := false.B
-      io.dfr := false.B
-      when(io.s === "b111".U) { // All sensors s[3], s[2], and s[1] are triggered
-        state := level_high
-      }.elsewhen(io.s === "b011".U) { // Drop to mid-high level
-        prev_state := state
-        state := level_mid_high
-      }
+  // Convert input sensors to a format we can use for state transitions
+  // Note: In Chisel, we access bits using () not [], and they're 0-indexed
+  val s1 = io.s(0)  // Lowest sensor
+  val s2 = io.s(1)  // Middle sensor
+  val s3 = io.s(2)  // Highest sensor
+
+  // Determine the current water level based on sensor inputs
+  val newWaterLevel = Wire(UInt(2.W))
+  
+  when(s3) {
+    newWaterLevel := sAbove3      // All sensors are on (s1, s2, s3)
+  }.elsewhen(s2) {
+    newWaterLevel := sBetween32   // Only s1 and s2 are on
+  }.elsewhen(s1) {
+    newWaterLevel := sBetween21   // Only s1 is on
+  }.otherwise {
+    newWaterLevel := sBelow1      // No sensors are on
+  }
+
+  // Update state only when the water level changes
+  when(io.reset) {
+    waterLevel := sBelow1
+    prevWaterLevel := sBelow1
+  }.elsewhen(newWaterLevel =/= waterLevel) {
+    prevWaterLevel := waterLevel
+    waterLevel := newWaterLevel
+  }
+
+  // Set flow rate outputs based on current water level
+  switch(waterLevel) {
+    is(sAbove3) {
+      // No flow needed when water level is above s[3]
     }
-    is(level_mid_high) {
-      // Water level is between s[3] and s[2]
-      io.fr3 := false.B
-      io.fr2 := false.B
+    is(sBetween32) {
       io.fr1 := true.B
-      io.dfr := prev_state === level_mid_low // Open supplemental if previous was lower
-      when(io.s === "b011".U) { // Sensors s[2] and s[1] are triggered
-        state := level_mid_high
-      }.elsewhen(io.s === "b001".U) { // Drop to mid-low level
-        prev_state := state
-        state := level_mid_low
-      }.elsewhen(io.s === "b111".U) { // Rise to high level
-        prev_state := state
-        state := level_high
-      }
     }
-    is(level_mid_low) {
-      // Water level is between s[2] and s[1]
-      io.fr3 := false.B
+    is(sBetween21) {
+      io.fr1 := true.B
       io.fr2 := true.B
-      io.fr1 := true.B
-      io.dfr := prev_state === level_low // Open supplemental if previous was lower
-      when(io.s === "b001".U) { // Only sensor s[1] is triggered
-        state := level_mid_low
-      }.elsewhen(io.s === "b011".U) { // Rise to mid-high level
-        prev_state := state
-        state := level_mid_high
-      }.elsewhen(io.s === "b000".U) { // Drop to low level
-        prev_state := state
-        state := level_low
-      }
     }
-    is(level_low) {
-      // Water level is below the lowest sensor (s[1])
+    is(sBelow1) {
+      io.fr1 := true.B
+      io.fr2 := true.B
       io.fr3 := true.B
-      io.fr2 := true.B
-      io.fr1 := true.B
-      io.dfr := true.B // Always high in this state because supplemental flow is needed
-      when(io.s === "b000".U) { // No sensors are triggered
-        state := level_low
-      }.elsewhen(io.s === "b001".U) { // Rise to mid-low level
-        prev_state := state
-        state := level_mid_low
-      }
     }
   }
 
-  // Synchronous reset logic
-  when(reset.asBool()) {
-    state := level_low
-    prev_state := level_low
-    io.fr3 := true.B
-    io.fr2 := true.B
+  // Set supplemental flow valve (dfr) if water level is rising
+  io.dfr := waterLevel < prevWaterLevel
+
+  // Override when reset is asserted (as if water level had been low for a long time)
+  when(io.reset) {
     io.fr1 := true.B
+    io.fr2 := true.B
+    io.fr3 := true.B
     io.dfr := true.B
   }
 }
 
-// Generate the Verilog Code
+// Generate Verilog for the module named "dut"
 /*
-object dut extends App {
-  (new chisel3.stage.ChiselStage).emitVerilog(new dut())
+object dutGenerator extends App {
+  (new chisel3.stage.ChiselStage).emitVerilog(new WaterReservoirController, Array("--target-dir", "generated", "--target", "systemverilog", "--module-name", "dut"))
 }
 */

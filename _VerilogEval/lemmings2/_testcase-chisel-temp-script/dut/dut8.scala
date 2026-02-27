@@ -6,64 +6,60 @@ class dut extends Module {
     val bump_left = Input(Bool())
     val bump_right = Input(Bool())
     val ground = Input(Bool())
-    val reset = Input(Bool())
     val walk_left = Output(Bool())
     val walk_right = Output(Bool())
     val aaah = Output(Bool())
   })
 
-  // Task 1: Define FSM States
-  val WalkLeft :: WalkRight :: Fall :: Nil = Enum(3)
-  val state = RegInit(WalkLeft)
-  val preservedDirection = RegInit(WalkLeft) // Store the walking direction in case of falling
-
-  // Task 2: Define I/O Ports (already handled by the IO bundle above)
-
-  // Task 3: Implement reset functionality
-  when(io.reset) {
-    state := WalkLeft
-    preservedDirection := WalkLeft
+  // Define states
+  object State extends ChiselEnum {
+    val WALK_LEFT, WALK_RIGHT, FALL_LEFT, FALL_RIGHT = Value
   }
-
+  
+  // State register with async reset to WALK_LEFT
+  val state = RegInit(State.WALK_LEFT)
+  
+  // Default output values
+  io.walk_left := false.B
+  io.walk_right := false.B
+  io.aaah := false.B
+  
   // State transition logic
   switch(state) {
-    // WalkLeft state logic
-    is(WalkLeft) {
+    is(State.WALK_LEFT) {
+      io.walk_left := true.B
+      
       when(!io.ground) {
-        // Transition to Fall state if no ground, preserving WalkLeft direction
-        state := Fall
-        preservedDirection := WalkLeft
-      }.elsewhen(io.bump_left || (io.bump_left && io.bump_right)) {
-        // Bumped into left, transition to WalkRight
-        state := WalkRight
+        state := State.FALL_LEFT
+      }.elsewhen(io.bump_left) {
+        state := State.WALK_RIGHT
       }
     }
-
-    // WalkRight state logic
-    is(WalkRight) {
+    
+    is(State.WALK_RIGHT) {
+      io.walk_right := true.B
+      
       when(!io.ground) {
-        // Transition to Fall state if no ground, preserving WalkRight direction
-        state := Fall
-        preservedDirection := WalkRight
-      }.elsewhen(io.bump_right || (io.bump_left && io.bump_right)) {
-        // Bumped into right, transition to WalkLeft
-        state := WalkLeft
+        state := State.FALL_RIGHT
+      }.elsewhen(io.bump_right) {
+        state := State.WALK_LEFT
       }
     }
-
-    // Fall state logic
-    is(Fall) {
+    
+    is(State.FALL_LEFT) {
+      io.aaah := true.B
+      
       when(io.ground) {
-        // When ground is restored, return to previous walking direction
-        state := preservedDirection
+        state := State.WALK_LEFT
+      }
+    }
+    
+    is(State.FALL_RIGHT) {
+      io.aaah := true.B
+      
+      when(io.ground) {
+        state := State.WALK_RIGHT
       }
     }
   }
-
-  // Task 6 & 7: Output logic
-  io.walk_left := state === WalkLeft
-  io.walk_right := state === WalkRight
-  io.aaah := state === Fall
 }
-
-// For testing purposes, you can also include a Driver or Tester (if needed), but the above defines the essential module.

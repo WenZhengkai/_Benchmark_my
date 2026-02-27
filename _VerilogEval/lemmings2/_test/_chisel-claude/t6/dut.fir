@@ -1,0 +1,87 @@
+circuit dut :
+  module dut :
+    input clock : Clock
+    input reset : UInt<1>
+    output io : { flip bump_left : UInt<1>, flip bump_right : UInt<1>, flip ground : UInt<1>, walk_left : UInt<1>, walk_right : UInt<1>, aaah : UInt<1>}
+
+    reg state : UInt<2>, clock with :
+      reset => (reset, UInt<1>("h0")) @[dut.scala 23:22]
+    io.walk_left <= UInt<1>("h0") @[dut.scala 26:16]
+    io.walk_right <= UInt<1>("h0") @[dut.scala 27:17]
+    io.aaah <= UInt<1>("h0") @[dut.scala 28:11]
+    node _T = asUInt(UInt<1>("h0")) @[dut.scala 31:17]
+    node _T_1 = asUInt(state) @[dut.scala 31:17]
+    node _T_2 = eq(_T, _T_1) @[dut.scala 31:17]
+    when _T_2 : @[dut.scala 31:17]
+      node _T_3 = eq(io.ground, UInt<1>("h0")) @[dut.scala 33:12]
+      when _T_3 : @[dut.scala 33:24]
+        state <= UInt<2>("h2") @[dut.scala 35:15]
+      else :
+        when io.bump_left : @[dut.scala 36:32]
+          state <= UInt<1>("h1") @[dut.scala 38:15]
+        else :
+          state <= UInt<1>("h0") @[dut.scala 41:15]
+    else :
+      node _T_4 = asUInt(UInt<1>("h1")) @[dut.scala 31:17]
+      node _T_5 = asUInt(state) @[dut.scala 31:17]
+      node _T_6 = eq(_T_4, _T_5) @[dut.scala 31:17]
+      when _T_6 : @[dut.scala 31:17]
+        node _T_7 = eq(io.ground, UInt<1>("h0")) @[dut.scala 46:12]
+        when _T_7 : @[dut.scala 46:24]
+          state <= UInt<2>("h3") @[dut.scala 48:15]
+        else :
+          when io.bump_right : @[dut.scala 49:33]
+            state <= UInt<1>("h0") @[dut.scala 51:15]
+          else :
+            state <= UInt<1>("h1") @[dut.scala 54:15]
+      else :
+        node _T_8 = asUInt(UInt<2>("h2")) @[dut.scala 31:17]
+        node _T_9 = asUInt(state) @[dut.scala 31:17]
+        node _T_10 = eq(_T_8, _T_9) @[dut.scala 31:17]
+        when _T_10 : @[dut.scala 31:17]
+          when io.ground : @[dut.scala 59:23]
+            state <= UInt<1>("h0") @[dut.scala 61:15]
+          else :
+            state <= UInt<2>("h2") @[dut.scala 64:15]
+        else :
+          node _T_11 = asUInt(UInt<2>("h3")) @[dut.scala 31:17]
+          node _T_12 = asUInt(state) @[dut.scala 31:17]
+          node _T_13 = eq(_T_11, _T_12) @[dut.scala 31:17]
+          when _T_13 : @[dut.scala 31:17]
+            when io.ground : @[dut.scala 69:23]
+              state <= UInt<1>("h1") @[dut.scala 71:15]
+            else :
+              state <= UInt<2>("h3") @[dut.scala 74:15]
+    node _T_14 = asUInt(UInt<1>("h0")) @[dut.scala 80:17]
+    node _T_15 = asUInt(state) @[dut.scala 80:17]
+    node _T_16 = eq(_T_14, _T_15) @[dut.scala 80:17]
+    when _T_16 : @[dut.scala 80:17]
+      io.walk_left <= UInt<1>("h1") @[dut.scala 82:20]
+      io.walk_right <= UInt<1>("h0") @[dut.scala 83:21]
+      io.aaah <= UInt<1>("h0") @[dut.scala 84:15]
+    else :
+      node _T_17 = asUInt(UInt<1>("h1")) @[dut.scala 80:17]
+      node _T_18 = asUInt(state) @[dut.scala 80:17]
+      node _T_19 = eq(_T_17, _T_18) @[dut.scala 80:17]
+      when _T_19 : @[dut.scala 80:17]
+        io.walk_left <= UInt<1>("h0") @[dut.scala 87:20]
+        io.walk_right <= UInt<1>("h1") @[dut.scala 88:21]
+        io.aaah <= UInt<1>("h0") @[dut.scala 89:15]
+      else :
+        node _T_20 = asUInt(UInt<2>("h2")) @[dut.scala 80:17]
+        node _T_21 = asUInt(state) @[dut.scala 80:17]
+        node _T_22 = eq(_T_20, _T_21) @[dut.scala 80:17]
+        when _T_22 : @[dut.scala 80:17]
+          io.walk_left <= UInt<1>("h0") @[dut.scala 92:20]
+          io.walk_right <= UInt<1>("h0") @[dut.scala 93:21]
+          io.aaah <= UInt<1>("h1") @[dut.scala 94:15]
+        else :
+          node _T_23 = asUInt(UInt<2>("h3")) @[dut.scala 80:17]
+          node _T_24 = asUInt(state) @[dut.scala 80:17]
+          node _T_25 = eq(_T_23, _T_24) @[dut.scala 80:17]
+          when _T_25 : @[dut.scala 80:17]
+            io.walk_left <= UInt<1>("h0") @[dut.scala 97:20]
+            io.walk_right <= UInt<1>("h0") @[dut.scala 98:21]
+            io.aaah <= UInt<1>("h1") @[dut.scala 99:15]
+
+

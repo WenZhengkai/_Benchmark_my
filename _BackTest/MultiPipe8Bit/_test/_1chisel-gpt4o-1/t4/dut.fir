@@ -1,0 +1,70 @@
+circuit dut :
+  module dut :
+    input clock : Clock
+    input reset : UInt<1>
+    output io : { flip clk : Clock, flip rst_n : UInt<1>, flip mul_en_in : UInt<1>, flip mul_a : UInt<8>, flip mul_b : UInt<8>, mul_en_out : UInt<1>, mul_out : UInt<16>}
+
+    reg mul_en_out_reg : UInt<1>, clock with :
+      reset => (reset, UInt<1>("h0")) @[dut.scala 16:31]
+    reg mul_a_reg : UInt<8>, clock with :
+      reset => (reset, UInt<8>("h0")) @[dut.scala 17:26]
+    reg mul_b_reg : UInt<8>, clock with :
+      reset => (reset, UInt<8>("h0")) @[dut.scala 18:26]
+    reg partialProducts : UInt<16>[8], clock with :
+      reset => (UInt<1>("h0"), partialProducts) @[dut.scala 19:28]
+    reg accumulatedSum : UInt<16>, clock with :
+      reset => (reset, UInt<16>("h0")) @[dut.scala 20:31]
+    node _T = eq(io.rst_n, UInt<1>("h0")) @[dut.scala 23:17]
+    when _T : @[dut.scala 23:30]
+      mul_en_out_reg <= UInt<1>("h0") @[dut.scala 24:20]
+      mul_a_reg <= UInt<1>("h0") @[dut.scala 25:15]
+      mul_b_reg <= UInt<1>("h0") @[dut.scala 26:15]
+    else :
+      when io.mul_en_in : @[dut.scala 27:29]
+        mul_en_out_reg <= io.mul_en_in @[dut.scala 28:20]
+        mul_a_reg <= io.mul_a @[dut.scala 29:15]
+        mul_b_reg <= io.mul_b @[dut.scala 30:15]
+    node _partialProducts_0_T = bits(mul_b_reg, 0, 0) @[dut.scala 35:40]
+    node _partialProducts_0_T_1 = shl(mul_a_reg, 0) @[dut.scala 35:55]
+    node _partialProducts_0_T_2 = mux(_partialProducts_0_T, _partialProducts_0_T_1, UInt<1>("h0")) @[dut.scala 35:30]
+    partialProducts[0] <= _partialProducts_0_T_2 @[dut.scala 35:24]
+    node _partialProducts_1_T = bits(mul_b_reg, 1, 1) @[dut.scala 35:40]
+    node _partialProducts_1_T_1 = shl(mul_a_reg, 1) @[dut.scala 35:55]
+    node _partialProducts_1_T_2 = mux(_partialProducts_1_T, _partialProducts_1_T_1, UInt<1>("h0")) @[dut.scala 35:30]
+    partialProducts[1] <= _partialProducts_1_T_2 @[dut.scala 35:24]
+    node _partialProducts_2_T = bits(mul_b_reg, 2, 2) @[dut.scala 35:40]
+    node _partialProducts_2_T_1 = shl(mul_a_reg, 2) @[dut.scala 35:55]
+    node _partialProducts_2_T_2 = mux(_partialProducts_2_T, _partialProducts_2_T_1, UInt<1>("h0")) @[dut.scala 35:30]
+    partialProducts[2] <= _partialProducts_2_T_2 @[dut.scala 35:24]
+    node _partialProducts_3_T = bits(mul_b_reg, 3, 3) @[dut.scala 35:40]
+    node _partialProducts_3_T_1 = shl(mul_a_reg, 3) @[dut.scala 35:55]
+    node _partialProducts_3_T_2 = mux(_partialProducts_3_T, _partialProducts_3_T_1, UInt<1>("h0")) @[dut.scala 35:30]
+    partialProducts[3] <= _partialProducts_3_T_2 @[dut.scala 35:24]
+    node _partialProducts_4_T = bits(mul_b_reg, 4, 4) @[dut.scala 35:40]
+    node _partialProducts_4_T_1 = shl(mul_a_reg, 4) @[dut.scala 35:55]
+    node _partialProducts_4_T_2 = mux(_partialProducts_4_T, _partialProducts_4_T_1, UInt<1>("h0")) @[dut.scala 35:30]
+    partialProducts[4] <= _partialProducts_4_T_2 @[dut.scala 35:24]
+    node _partialProducts_5_T = bits(mul_b_reg, 5, 5) @[dut.scala 35:40]
+    node _partialProducts_5_T_1 = shl(mul_a_reg, 5) @[dut.scala 35:55]
+    node _partialProducts_5_T_2 = mux(_partialProducts_5_T, _partialProducts_5_T_1, UInt<1>("h0")) @[dut.scala 35:30]
+    partialProducts[5] <= _partialProducts_5_T_2 @[dut.scala 35:24]
+    node _partialProducts_6_T = bits(mul_b_reg, 6, 6) @[dut.scala 35:40]
+    node _partialProducts_6_T_1 = shl(mul_a_reg, 6) @[dut.scala 35:55]
+    node _partialProducts_6_T_2 = mux(_partialProducts_6_T, _partialProducts_6_T_1, UInt<1>("h0")) @[dut.scala 35:30]
+    partialProducts[6] <= _partialProducts_6_T_2 @[dut.scala 35:24]
+    node _partialProducts_7_T = bits(mul_b_reg, 7, 7) @[dut.scala 35:40]
+    node _partialProducts_7_T_1 = shl(mul_a_reg, 7) @[dut.scala 35:55]
+    node _partialProducts_7_T_2 = mux(_partialProducts_7_T, _partialProducts_7_T_1, UInt<1>("h0")) @[dut.scala 35:30]
+    partialProducts[7] <= _partialProducts_7_T_2 @[dut.scala 35:24]
+    node _accumulatedSum_T = add(partialProducts[0], partialProducts[1]) @[dut.scala 39:46]
+    node _accumulatedSum_T_1 = add(_accumulatedSum_T, partialProducts[2]) @[dut.scala 39:46]
+    node _accumulatedSum_T_2 = add(_accumulatedSum_T_1, partialProducts[3]) @[dut.scala 39:46]
+    node _accumulatedSum_T_3 = add(_accumulatedSum_T_2, partialProducts[4]) @[dut.scala 39:46]
+    node _accumulatedSum_T_4 = add(_accumulatedSum_T_3, partialProducts[5]) @[dut.scala 39:46]
+    node _accumulatedSum_T_5 = add(_accumulatedSum_T_4, partialProducts[6]) @[dut.scala 39:46]
+    node _accumulatedSum_T_6 = add(_accumulatedSum_T_5, partialProducts[7]) @[dut.scala 39:46]
+    accumulatedSum <= _accumulatedSum_T_6 @[dut.scala 39:18]
+    io.mul_en_out <= mul_en_out_reg @[dut.scala 42:17]
+    node _io_mul_out_T = mux(mul_en_out_reg, accumulatedSum, UInt<1>("h0")) @[dut.scala 43:20]
+    io.mul_out <= _io_mul_out_T @[dut.scala 43:14]
+

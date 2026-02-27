@@ -1,42 +1,42 @@
-
-
 import chisel3._
 import chisel3.util._
+import scala.math.pow
 
-class dut(val bitwidth: Int) extends Module {
-  // Ensure the bitwidth is positive
-  require(bitwidth > 0, "Bitwidth must be positive")
-
-  // IO definition
+class dut(bitwidth: Int) extends Module {
   val io = IO(new Bundle {
-    val in = Input(UInt(bitwidth.W))  // Input binary or Gray code
-    val encode = Input(Bool())       // Operation mode: true for encode, false for decode
-    val out = Output(UInt(bitwidth.W)) // Output binary or Gray code
+    val in = Input(UInt(bitwidth.W))
+    val encode = Input(Bool())
+    val out = Output(UInt(bitwidth.W))
   })
 
-  // Edge case: Special handling for single-bit width
-  if (bitwidth == 1) {
-    // 1-bit Gray code is the same as binary
-    io.out := io.in
-  } else {
-    // Task 2: Gray Code Encoding Logic
-    // Compute the Gray code encoding
-    val encoded = io.in ^ (io.in >> 1.U)
-
-    // Task 3: Gray Code Decoding Logic
-    // Compute the binary decoding from Gray code
-    val numSteps = log2Ceil(bitwidth) // Number of steps required for decoding
-    var current = io.in               // Intermediate value for iterative decoding
-
-    for (i <- 0 until numSteps) {
-      val shift = (1 << i).U       // Powers of two shifts
-      current = current ^ (current >> shift) // Shift and XOR for decoding
+  // When encode is true, convert binary to Gray code
+  // When encode is false, convert Gray code to binary
+  when(io.encode) {
+    // Binary to Gray code conversion: g = b ^ (b >> 1)
+    io.out := io.in ^ (io.in >> 1.U)
+  }.otherwise {
+    // Gray code to Binary conversion
+    // This is more complex and requires an iterative approach
+    
+    // Initialize the first value with the input Gray code
+    val iterations = log2Ceil(bitwidth)
+    val intermediateValues = Wire(Vec(iterations + 1, UInt(bitwidth.W)))
+    intermediateValues(0) := io.in
+    
+    // Perform the iterative XOR operations
+    for (i <- 0 until iterations) {
+      val shiftAmount = pow(2, i).toInt
+      intermediateValues(i + 1) := intermediateValues(i) ^ (intermediateValues(i) >> shiftAmount.U)
     }
-
-    // Handle normal operation: Select output based on the encode flag
-    // Task 4: Operation Mode Selection
-    io.out := Mux(io.encode, encoded, current)
+    
+    // Set the output to the final computed value
+    io.out := intermediateValues(iterations)
   }
 }
 
-// Testbench for the dut module
+// Optional: Object to make the module instantiable from the command line
+/*
+object dutGenerator extends App {
+  chisel3.Driver.execute(args, () => new dut(8)) // Default 8-bit width
+}
+*/

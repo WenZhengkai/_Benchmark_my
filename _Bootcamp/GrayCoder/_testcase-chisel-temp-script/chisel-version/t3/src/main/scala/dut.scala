@@ -1,34 +1,38 @@
 import chisel3._
 import chisel3.util._
+import scala.math.pow
 
 class dut(bitwidth: Int) extends Module {
-  // Validate that the bitwidth is greater than 0
-  require(bitwidth > 0, "Bitwidth must be positive")
-
-  // Define the IO interface
   val io = IO(new Bundle {
-    val in = Input(UInt(bitwidth.W))  // Input data
-    val encode = Input(Bool())        // Operation mode: true for encoding, false for decoding
-    val out = Output(UInt(bitwidth.W)) // Output data
+    val in = Input(UInt(bitwidth.W))
+    val encode = Input(Bool())
+    val out = Output(UInt(bitwidth.W))
   })
-
-  // Edge case for 1-bit width
-  if (bitwidth == 1) {
-    io.out := io.in  // No transformation required for single-bit Gray code
-  } else {
-    // Gray Code Encoding: Binary to Gray conversion
-    val encoded = io.in ^ (io.in >> 1.U)
-
-    // Gray Code Decoding: Gray to Binary conversion
-    val numSteps = log2Ceil(bitwidth) // Number of iterations based on bitwidth
-    var current = io.in               // Initialize intermediate variable for decoding
-    for (i <- 0 until numSteps) {
-      val shift = (1 << i).U          // Compute the shift amount (powers of two)
-      current = current ^ (current >> shift)
+  
+  when (io.encode) {
+    // Binary to Gray encoding: Gray = Binary XOR (Binary >> 1)
+    io.out := io.in ^ (io.in >> 1.U)
+  } .otherwise {
+    // Gray to Binary decoding
+    // This is implemented using a sequential XOR approach
+    
+    // Initialize the first value with the input Gray code
+    val steps = log2Ceil(bitwidth)
+    val decodingSteps = Wire(Vec(steps + 1, UInt(bitwidth.W)))
+    decodingSteps(0) := io.in
+    
+    // Iteratively compute the binary value
+    for (i <- 0 until steps) {
+      val shiftAmount = pow(2, i).toInt
+      decodingSteps(i + 1) := decodingSteps(i) ^ (decodingSteps(i) >> shiftAmount.U)
     }
-
-    // Select the output based on the `encode` signal
-    io.out := Mux(io.encode, encoded, current)
+    
+    // The final value in the sequence is the decoded binary output
+    io.out := decodingSteps(steps)
   }
 }
 
+// Optional companion object for easier instantiation
+object dut {
+  def apply(bitwidth: Int): dut = new dut(bitwidth)
+}

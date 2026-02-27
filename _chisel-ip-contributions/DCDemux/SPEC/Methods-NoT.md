@@ -6,10 +6,10 @@ Please act as a professional verilog designer. Give me the complete verilog code
 # Specification Document
 
 ## Module Name
-DCDemux
+dut
 
 ## Overview
-The `DCDemux` module is a hardware design unit that demultiplexes a stream of tokens identified by a selector signal (`sel`). It acts as the inverse of a round-robin arbiter (`RRArbiter`), where a single input channel is distributed across multiple output channels based on the selector's value. The data flow is controlled using a valid-ready handshake mechanism implemented via the `DecoupledIO` interface for both the input and output channels.
+The `dut` module is a hardware design unit that demultiplexes a stream of tokens identified by a selector signal (`sel`). It acts as the inverse of a round-robin arbiter (`RRArbiter`), where a single input channel is distributed across multiple output channels based on the selector's value. The data flow is controlled using a valid-ready handshake mechanism implemented via the `DecoupledIO` interface for both the input and output channels.
 
 
 
@@ -37,7 +37,7 @@ The `DCDemux` module is a hardware design unit that demultiplexes a stream of to
   output [7:0] io_p_4_bits
 
 ## Internal Logic
-The internal logic of the `DCDemux` module revolves around the control of the ready-valid handshake signals to properly route the input data to one of the output channels `p(i)`. The logic proceeds as follows:
+The internal logic of the `dut` module revolves around the control of the ready-valid handshake signals to properly route the input data to one of the output channels `p(i)`. The logic proceeds as follows:
 
 1. **Initialize Ready Signal**: Start by setting the `ready` signal of the input channel `c` to `0.U`, indicating that it is not ready by default.
 2. **Iterate Over Outputs**: For each output channel `p(i)` (where `i` ranges from `0` to `n-1`), perform the following operations:
@@ -53,22 +53,13 @@ Give me the complete verilog code.
 Please act as a professional Chisel designer. Give me the complete Chisel code.
 
 ```
-
-```
-Give me the complete Chisel code.
-
-
-## NoT Method s1-Spec Slicer
-Please act as a professional Chisel designer. Slice the `Internal logic` into several coding tasks
-
-```
 # Specification Document
 
 ## Module Name
-DCDemux
+dut
 
 ## Overview
-The `DCDemux` module is a Chisel-based hardware design unit that demultiplexes a stream of tokens identified by a selector signal (`sel`). It acts as the inverse of a round-robin arbiter (`RRArbiter`), where a single input channel is distributed across multiple output channels based on the selector's value. The data flow is controlled using a valid-ready handshake mechanism implemented via the `DecoupledIO` interface for both the input and output channels.
+The `dut` module is a Chisel-based hardware design unit that demultiplexes a stream of tokens identified by a selector signal (`sel`). It acts as the inverse of a round-robin arbiter (`RRArbiter`), where a single input channel is distributed across multiple output channels based on the selector's value. The data flow is controlled using a valid-ready handshake mechanism implemented via the `DecoupledIO` interface for both the input and output channels.
 
 ## Parameters
 - `data`: The data type of incoming and outgoing data.
@@ -83,7 +74,46 @@ The `DCDemux` module is a Chisel-based hardware design unit that demultiplexes a
 - `p` (Vec(n, DecoupledIO(data))): A vector of `DecoupledIO` output channels of size `n` that convey the demultiplexed data based on the selected channel. Each vector element, `p(i)`, corresponds to a potential target channel.
 
 ## Internal Logic
-The internal logic of the `DCDemux` module revolves around the control of the ready-valid handshake signals to properly route the input data to one of the output channels `p(i)`. The logic proceeds as follows:
+The internal logic of the `dut` module revolves around the control of the ready-valid handshake signals to properly route the input data to one of the output channels `p(i)`. The logic proceeds as follows:
+
+1. **Initialize Ready Signal**: Start by setting the `ready` signal of the input channel `c` to `0.U`, indicating that it is not ready by default.
+2. **Iterate Over Outputs**: For each output channel `p(i)` (where `i` ranges from `0` to `n-1`), perform the following operations:
+   - Assign the data bits from `c` to `p(i)`.
+   - Use a conditional statement to check if the current index `i.U` matches the selector `sel` value:
+     - If `i.U === sel`: Set the `valid` signal of `p(i)` to the `valid` state of `c`, and update the `ready` signal of `c` to the `ready` state of `p(i)`, indicating that the input can be received.
+     - Otherwise, set the `valid` signal of `p(i)` to `0.U`, indicating that this output channel is inactive for the current input data.
+
+```
+
+Give me the complete Chisel code.
+
+
+## NoT Method s1-Spec Slicer
+Please act as a professional Chisel designer. Slice the `Internal logic` into several coding tasks
+
+```
+# Specification Document
+
+## Module Name
+dut
+
+## Overview
+The `dut` module is a Chisel-based hardware design unit that demultiplexes a stream of tokens identified by a selector signal (`sel`). It acts as the inverse of a round-robin arbiter (`RRArbiter`), where a single input channel is distributed across multiple output channels based on the selector's value. The data flow is controlled using a valid-ready handshake mechanism implemented via the `DecoupledIO` interface for both the input and output channels.
+
+## Parameters
+- `data`: The data type of incoming and outgoing data.
+- `n` (Int): The number of output multiplexed channels.
+
+## Input/Output Interface
+### Inputs
+- `sel` (UInt): A selection signal of width `log2Ceil(n)` bits that determines which output channel will receive the input data.
+- `c` (Flipped DecoupledIO(data)): A `DecoupledIO` input channel that carries the incoming data to be demultiplexed.
+
+### Outputs
+- `p` (Vec(n, DecoupledIO(data))): A vector of `DecoupledIO` output channels of size `n` that convey the demultiplexed data based on the selected channel. Each vector element, `p(i)`, corresponds to a potential target channel.
+
+## Internal Logic
+The internal logic of the `dut` module revolves around the control of the ready-valid handshake signals to properly route the input data to one of the output channels `p(i)`. The logic proceeds as follows:
 
 1. **Initialize Ready Signal**: Start by setting the `ready` signal of the input channel `c` to `0.U`, indicating that it is not ready by default.
 2. **Iterate Over Outputs**: For each output channel `p(i)` (where `i` ranges from `0` to `n-1`), perform the following operations:
@@ -120,10 +150,10 @@ Notice the relation of tasks.
 # Specification Document
 
 ## Module Name
-DCDemux
+dut
 
 ## Overview
-The `DCDemux` module is a Chisel-based hardware design unit that demultiplexes a stream of tokens identified by a selector signal (`sel`). It acts as the inverse of a round-robin arbiter (`RRArbiter`), where a single input channel is distributed across multiple output channels based on the selector's value. The data flow is controlled using a valid-ready handshake mechanism implemented via the `DecoupledIO` interface for both the input and output channels.
+The `dut` module is a Chisel-based hardware design unit that demultiplexes a stream of tokens identified by a selector signal (`sel`). It acts as the inverse of a round-robin arbiter (`RRArbiter`), where a single input channel is distributed across multiple output channels based on the selector's value. The data flow is controlled using a valid-ready handshake mechanism implemented via the `DecoupledIO` interface for both the input and output channels.
 
 ## Parameters
 - `data`: The data type of incoming and outgoing data.
@@ -139,9 +169,9 @@ The `DCDemux` module is a Chisel-based hardware design unit that demultiplexes a
 
 ## Design Task
 ### Task 1: Define Input and Output Interfaces
-**Objective:** Define the input and output interface for the `DCDemux` module.
+**Objective:** Define the input and output interface for the `dut` module.
 **Step:**
-- Create the `DCDemux` class definition in Chisel.
+- Create the `dut` class definition in Chisel.
 - Define parameters `data` and `n`.
 - Declare `sel` and `c` as input fields using `IO(...)`.
 - Declare `p` as an output field, which is a vector of `DecoupledIO(data)` with size `n`.
@@ -188,10 +218,10 @@ Notice the relation of tasks.
 # Specification Document
 
 ## Module Name
-DCDemux
+dut
 
 ## Overview
-The `DCDemux` module is a Chisel-based hardware design unit that demultiplexes a stream of tokens identified by a selector signal (`sel`). It acts as the inverse of a round-robin arbiter (`RRArbiter`), where a single input channel is distributed across multiple output channels based on the selector's value. The data flow is controlled using a valid-ready handshake mechanism implemented via the `DecoupledIO` interface for both the input and output channels.
+The `dut` module is a Chisel-based hardware design unit that demultiplexes a stream of tokens identified by a selector signal (`sel`). It acts as the inverse of a round-robin arbiter (`RRArbiter`), where a single input channel is distributed across multiple output channels based on the selector's value. The data flow is controlled using a valid-ready handshake mechanism implemented via the `DecoupledIO` interface for both the input and output channels.
 
 ## Parameters
 - `data`: The data type of incoming and outgoing data.
@@ -276,7 +306,7 @@ In Chisel, `Vec` can be processed in a loop...
 ## Think Process
 Thinking...
 > 
-> Okay, I need to split the Internal Logic section of the DCDemux module into several coding tasks. Let me start by understanding what the Internal Logic requires.
+> Okay, I need to split the Internal Logic section of the dut module into several coding tasks. Let me start by understanding what the Internal Logic requires.
 > 
 > In Chisel, `Vec` can be processed in a loop. First, the module sets the input's ready signal to 0 by default. Then, it iterates over each output channel to assign data and handle valid/ready signals based on the selector.
 > 

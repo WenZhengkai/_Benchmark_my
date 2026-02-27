@@ -3,33 +3,50 @@ import chisel3.util._
 
 class dut extends Module {
   val io = IO(new Bundle {
-    val dataIn = Input(UInt(4.W))  // 4-bit input data
-    val RW = Input(Bool())         // Read/Write control signal (1 for read, 0 for write)
-    val EN = Input(Bool())         // Enable signal
-    val EMPTY = Output(Bool())     // Flag: Buffer is empty
-    val FULL = Output(Bool())      // Flag: Buffer is full
-    val dataOut = Output(UInt(4.W))// 4-bit output data
+    val dataIn = Input(UInt(4.W))
+    val RW = Input(Bool())
+    val EN = Input(Bool())
+    
+    val EMPTY = Output(Bool())
+    val FULL = Output(Bool())
+    val dataOut = Output(UInt(4.W))
   })
 
-  // Internal components
-  val stack_mem = RegInit(VecInit(Seq.fill(4)(0.U(4.W)))) // 4x4 memory array initialized to 0
-  val SP = RegInit(4.U(3.W))                             // Stack pointer initialized to 4
-
+  // Define stack memory as a vector of registers
+  val stackDepth = 4
+  val stackMem = RegInit(VecInit(Seq.fill(stackDepth)(0.U(4.W))))
+  
+  // Stack pointer - initialized to stackDepth (empty stack)
+  val sp = RegInit(stackDepth.U(3.W))  // 3 bits to hold values 0-4
+  
   // Default outputs
-  io.dataOut := 0.U  // Default output value
-  io.EMPTY := (SP === 4.U) // Buffer is empty if SP points to the top (4)
-  io.FULL := (SP === 0.U)  // Buffer is full if SP is 0
-
-  // Write operation (Push onto the stack)
-  when(io.EN && !io.RW && !io.FULL) {
-    stack_mem(SP - 1.U) := io.dataIn // Write data to stack at SP-1
-    SP := SP - 1.U                   // Decrement stack pointer
+  io.EMPTY := (sp === stackDepth.U)
+  io.FULL := (sp === 0.U)
+  io.dataOut := 0.U
+  
+  // Buffer logic
+  when(io.EN) {
+    when(reset.asBool) {
+      // Reset condition
+      sp := stackDepth.U
+      for (i <- 0 until stackDepth) {
+        stackMem(i) := 0.U
+      }
+    }.elsewhen(!io.RW && !io.FULL) {
+      // Write operation (push)
+      stackMem(sp - 1.U) := io.dataIn
+      sp := sp - 1.U
+    }.elsewhen(io.RW && !io.EMPTY) {
+      // Read operation (pop)
+      io.dataOut := stackMem(sp)
+      stackMem(sp) := 0.U  // Clear the read location
+      sp := sp + 1.U
+    }
   }
-
-  // Read operation (Pop from the stack)
-  when(io.EN && io.RW && !io.EMPTY) {
-    io.dataOut := stack_mem(SP)      // Output data from stack at SP
-    stack_mem(SP) := 0.U             // Optionally clear the read position
-    SP := SP + 1.U                   // Increment stack pointer
+  
+  // For read operation, we need to output the data regardless of whether we're
+  // incrementing the pointer (which only happens when EN is high)
+  when(io.RW && !io.EMPTY) {
+    io.dataOut := stackMem(sp)
   }
 }

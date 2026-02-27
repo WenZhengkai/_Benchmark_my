@@ -3,70 +3,76 @@ import chisel3.util._
 
 class dut extends Module {
   val io = IO(new Bundle {
-    val r = Input(UInt(3.W))  // 3-bit input signal for requests
-    val g = Output(UInt(3.W)) // 3-bit output signal for grants
+    val r = Input(UInt(3.W))
+    val g = Output(UInt(3.W))
   })
 
-  // Define state encoding
-  val A :: B :: C :: D :: Nil = Enum(4)
+  // FSM state definitions
+  object State extends ChiselEnum {
+    val A, B, C, D = Value
+  }
+  import State._
 
   // State register
   val state = RegInit(A)
-
-  // Default output: no grant
-  io.g := 0.U 
-
-  // State transition logic
+  
+  // Default output values
+  io.g := 0.U
+  
+  // Extract individual request bits for easier reading
+  val r0 = io.r(0)
+  val r1 = io.r(1)
+  val r2 = io.r(2)
+  
+  // FSM logic
   switch(state) {
     is(A) {
-      when(io.r(0)) {
-        state := B  // Priority to device 0
-      }.elsewhen(io.r(1)) {
-        state := C  // Priority to device 1
-      }.elsewhen(io.r(2)) {
-        state := D  // Priority to device 2
+      // State transitions from A based on priority
+      when(r0) {
+        state := B
+      }.elsewhen(r1) {
+        state := C
+      }.elsewhen(r2) {
+        state := D
+      }.otherwise {
+        state := A
       }
     }
+    
     is(B) {
-      when(io.r(0)) {
-        state := B  // Stay in B as long as r0 is active
+      // Set grant for device 0
+      io.g := "b001".U
+      
+      // State transitions from B
+      when(r0) {
+        state := B
       }.otherwise {
-        state := A  // Go back to A if r0 is inactive
+        state := A
       }
     }
+    
     is(C) {
-      when(io.r(1)) {
-        state := C  // Stay in C as long as r1 is active
+      // Set grant for device 1
+      io.g := "b010".U
+      
+      // State transitions from C
+      when(r1) {
+        state := C
       }.otherwise {
-        state := A  // Go back to A if r1 is inactive
+        state := A
       }
     }
+    
     is(D) {
-      when(io.r(2)) {
-        state := D  // Stay in D as long as r2 is active
+      // Set grant for device 2
+      io.g := "b100".U
+      
+      // State transitions from D
+      when(r2) {
+        state := D
       }.otherwise {
-        state := A  // Go back to A if r2 is inactive
+        state := A
       }
     }
   }
-
-  // Output logic
-  switch(state) {
-    is(B) {
-      io.g := "b001".U  // Grant to device 0
-    }
-    is(C) {
-      io.g := "b010".U  // Grant to device 1
-    }
-    is(D) {
-      io.g := "b100".U  // Grant to device 2
-    }
-  }
 }
-
-// Main object to generate Verilog
-/*
-object dut extends App {
-  (new chisel3.stage.ChiselStage).emitVerilog(new dut)
-}
-*/

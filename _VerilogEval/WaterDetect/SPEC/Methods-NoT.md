@@ -5,7 +5,7 @@ Please act as a professional verilog designer. Give me the complete verilog code
 ```
 # Specification
 ## Module Name
-WaterDetect
+dut
 ## Overview
 A large reservior of water serves several users. In order to keep the level of water succificently high, three sensors are placed vertically at 5-inch intervals. 
 
@@ -42,7 +42,7 @@ Please act as a professional Chisel designer. Give me the complete Chisel code.
 ```
 # Specification
 ## Module Name
-WaterDetect
+dut
 ## Overview
 A large reservior of water serves several users. In order to keep the level of water succificently high, three sensors are placed vertically at 5-inch intervals. 
 
@@ -76,7 +76,7 @@ Please act as a professional Chisel designer. Slice the `Internal logic` into se
 ```
 # Specification
 ## Module Name
-WaterDetect
+dut
 ## Overview
 A large reservior of water serves several users. In order to keep the level of water succificently high, three sensors are placed vertically at 5-inch intervals. 
 
@@ -120,7 +120,7 @@ Notice the relation of tasks.
 ````
 # Specification
 ## Module Name
-WaterDetect
+dut
 ## Overview
 A large reservior of water serves several users. In order to keep the level of water succificently high, three sensors are placed vertically at 5-inch intervals. 
 

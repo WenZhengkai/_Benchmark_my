@@ -1,54 +1,56 @@
+// package spc
+
 import chisel3._
 import chisel3.util._
 
-class dut extends Module {
+class SerialToParallel extends Module {
   val io = IO(new Bundle {
-    // Input ports
-    val din_serial  = Input(Bool())    // Single-bit serial input
-    val din_valid   = Input(Bool())    // Single-bit valid signal
-
-    // Output ports
-    val dout_parallel = Output(UInt(8.W)) // 8-bit parallel output
-    val dout_valid    = Output(Bool())    // Parallel data valid signal
+    val din_serial = Input(Bool())
+    val din_valid = Input(Bool())
+    val dout_parallel = Output(UInt(8.W))
+    val dout_valid = Output(Bool())
   })
 
-  // Task 2: 4-bit counter to track received bits
-  val cnt = RegInit(0.U(4.W)) // 4-bit counter initialized to 0
+  // 4-bit counter to track the number of bits received
+  val cnt = RegInit(0.U(4.W))
+  // 8-bit shift register to accumulate input bits
+  val shiftReg = RegInit(0.U(8.W))
+  // Output register
+  val outputReg = RegInit(0.U(8.W))
+  // Output valid signal
+  val outputValid = RegInit(false.B)
 
-  // Task 3: 8-bit shift register for serial-to-parallel conversion
-  val shift_reg = RegInit(0.U(8.W)) // 8-bit shift register initialized to 0
+  // Default output connections
+  io.dout_parallel := outputReg
+  io.dout_valid := outputValid
 
-  // Task 5: Register to hold dout_valid signal
-  val dout_valid_reg = RegInit(false.B) // dout_valid initialized to false
+  // Reset output valid by default each cycle
+  outputValid := false.B
 
-  // Sequential logic
-  when (io.din_valid) {
+  when(io.din_valid) {
+    // Shift in new bit from MSB to LSB
+    shiftReg := Cat(shiftReg(6, 0), io.din_serial)
+    
     // Increment counter
     cnt := cnt + 1.U
-
-    // Shift left and insert new bit at LSB in shift register
-    shift_reg := Cat(shift_reg(6, 0), io.din_serial)
-
-    // If 8 bits are received, latch outputs and reset counter
-    when (cnt === 8.U) {
-      cnt := 0.U                 // Reset counter
-      dout_valid_reg := true.B   // Set dout_valid to true
-    } .otherwise {
-      dout_valid_reg := false.B  // Clear dout_valid for other cases
+    
+    // When we've received 8 bits
+    when(cnt === 7.U) {
+      // Reset counter
+      cnt := 0.U
+      
+      // Update output register with the completed byte
+      outputReg := Cat(shiftReg(6, 0), io.din_serial)
+      
+      // Set output valid
+      outputValid := true.B
     }
-  } .otherwise {
-    // If din_valid is not asserted, keep current state
-    dout_valid_reg := false.B
   }
-
-  // Task 4: Assign outputs
-  io.dout_parallel := shift_reg // Parallel output always reflects shift_reg value
-  io.dout_valid := dout_valid_reg // Validity signal output
 }
 
-// Generate the Verilog code for the module
+// Object to make the module instantiable from FIRRTL
 /*
-object dut extends App {
-  (new chisel3.stage.ChiselStage).emitVerilog(new dut)
+object SerialToParallel extends App {
+  chisel3.Driver.execute(args, () => new SerialToParallel)
 }
 */

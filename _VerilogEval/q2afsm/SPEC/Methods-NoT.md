@@ -5,7 +5,7 @@ Please act as a professional verilog designer. Give me the complete verilog code
 # Specification
 
 ## Module Name
-Q2AFSM
+dut
 
 ## Overview
 The module should implement the FSM. This FSM acts as an arbiter circuit, which controls access to some type of resource by three requesting devices.
@@ -52,7 +52,7 @@ Please act as a professional Chisel designer. Give me the complete Chisel code.
 # Specification
 
 ## Module Name
-Q2AFSM
+dut
 
 ## Overview
 The module should implement the FSM. This FSM acts as an arbiter circuit, which controls access to some type of resource by three requesting devices.
@@ -93,7 +93,7 @@ Please act as a professional Chisel designer. Slice the `Internal logic` into se
 # Specification
 
 ## Module Name
-Q2AFSM
+dut
 
 ## Overview
 The module should implement the FSM. This FSM acts as an arbiter circuit, which controls access to some type of resource by three requesting devices.
@@ -139,7 +139,7 @@ Please act as a professional Chisel designer. Give me the complete Chisel code.
 # Specification
 
 ## Module Name
-Q2AFSM
+dut
 
 ## Overview
 The module should implement the FSM. This FSM acts as an arbiter circuit, which controls access to some type of resource by three requesting devices.
@@ -226,7 +226,7 @@ Notice the relation of tasks.
 # Specification
 
 ## Module Name
-Q2AFSM
+dut
 
 ## Overview
 The module should implement the FSM. This FSM acts as an arbiter circuit, which controls access to some type of resource by three requesting devices.
@@ -313,7 +313,7 @@ Give me the complete Chisel code.
 ## Think Process
 Thinking...
 > 
-> Okay, let's see. I need to break down the Internal Logic of the Q2AFSM module into several coding tasks for Chisel. The user wants me to act as a professional Chisel designer, so I should structure this properly.
+> Okay, let's see. I need to break down the Internal Logic of the dut module into several coding tasks for Chisel. The user wants me to act as a professional Chisel designer, so I should structure this properly.
 > 
 > First, I'll start by understanding the module's requirements. The FSM has four states: A, B, C, D. The transitions depend on the input r's bits. The outputs g are set based on the current state. The priority is r0 > r1 > r2. So when in state A, if multiple requests are present, the highest priority one gets the grant. Once granted, the FSM stays in that state as long as the request is active.
 > 
@@ -511,7 +511,7 @@ Thinking...
 > 
 > Task 7: Integrate All Components into the FSM Module
 > 
-> Objective: Combine the state register, transitions, and outputs into the Q2AFSM module.
+> Objective: Combine the state register, transitions, and outputs into the dut module.
 > 
 > Steps:
 > 1. Use a switch statement on the current state to handle transitions for each state.

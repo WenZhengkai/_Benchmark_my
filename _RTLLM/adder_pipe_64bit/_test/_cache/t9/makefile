@@ -24,7 +24,7 @@ vcs:
 		-P ${Verdi_HOME}/share/PLI/VCS/LINUX64/novas.tab \
 		${Verdi_HOME}/share/PLI/VCS/LINUX64/pli.a \
 		-kdb -lca\
-		${TEST_DESIGN}.v testbench.sv
+		${TEST_DESIGN}.v testbench.v
 
 sim: tcl
 		./simv -ucli -i wave_gen.tcl -l sim.log

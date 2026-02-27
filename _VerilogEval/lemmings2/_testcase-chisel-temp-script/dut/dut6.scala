@@ -1,3 +1,5 @@
+// package lemmings
+
 import chisel3._
 import chisel3.util._
 
@@ -6,56 +8,95 @@ class dut extends Module {
     val bump_left = Input(Bool())
     val bump_right = Input(Bool())
     val ground = Input(Bool())
-    val reset = Input(Bool()) // Added explicit reset input for asynchronous reset
     val walk_left = Output(Bool())
     val walk_right = Output(Bool())
     val aaah = Output(Bool())
   })
 
-  // Task 1: Define FSM states
-  object State extends ChiselEnum {
-    val WalkLeft, WalkRight, Fall = Value
+  // Define states for the Lemming
+  object LemmingState extends ChiselEnum {
+    val WALK_LEFT, WALK_RIGHT, FALL_LEFT, FALL_RIGHT = Value
   }
-  val state = RegInit(State.WalkLeft) // Default state on reset is WalkLeft
+  import LemmingState._
 
-  // Preserve walking direction during Fall
-  val directionPreserved = RegInit(State.WalkLeft)
+  // State register with asynchronous reset to WALK_LEFT
+  val state = RegInit(WALK_LEFT)
 
-  // Task 2: Initialization of output signals
+  // Default output values
   io.walk_left := false.B
   io.walk_right := false.B
   io.aaah := false.B
 
-  // Task 3: Handle reset functionality
-  when(io.reset) {
-    state := State.WalkLeft
-    directionPreserved := State.WalkLeft
+  // State transition logic
+  switch(state) {
+    is(WALK_LEFT) {
+      when(!io.ground) {
+        // Start falling if no ground
+        state := FALL_LEFT
+      }.elsewhen(io.bump_left) {
+        // Change direction if bumped on the left
+        state := WALK_RIGHT
+      }.otherwise {
+        // Continue walking left
+        state := WALK_LEFT
+      }
+    }
+
+    is(WALK_RIGHT) {
+      when(!io.ground) {
+        // Start falling if no ground
+        state := FALL_RIGHT
+      }.elsewhen(io.bump_right) {
+        // Change direction if bumped on the right
+        state := WALK_LEFT
+      }.otherwise {
+        // Continue walking right
+        state := WALK_RIGHT
+      }
+    }
+
+    is(FALL_LEFT) {
+      when(io.ground) {
+        // Resume walking left when ground reappears
+        state := WALK_LEFT
+      }.otherwise {
+        // Continue falling
+        state := FALL_LEFT
+      }
+    }
+
+    is(FALL_RIGHT) {
+      when(io.ground) {
+        // Resume walking right when ground reappears
+        state := WALK_RIGHT
+      }.otherwise {
+        // Continue falling
+        state := FALL_RIGHT
+      }
+    }
   }
 
-  // Task 7: Define state transition logic (accordance with the FSM)
+  // Output logic (Moore machine - outputs depend only on current state)
   switch(state) {
-    is(State.WalkLeft) {
-      when(!io.ground) { // Fall if no ground
-        state := State.Fall
-        directionPreserved := State.WalkLeft
-      }.elsewhen(io.bump_left) { // Bump left -> WalkRight
-        state := State.WalkRight
-      }.elsewhen(io.bump_right) { // Bump right -> Keep walking left
-        state := State.WalkRight
-      }
+    is(WALK_LEFT) {
+      io.walk_left := true.B
+      io.walk_right := false.B
+      io.aaah := false.B
     }
-
-    is(State.WalkRight) {
-      when(!io.ground) { // Fall if no ground
-        state := State.Fall
-        directionPreserved := State.WalkRight
-      }.elsewhen(io.bump_right) { // Bump right -> WalkLeft
-        state := State.WalkLeft
-      }.elsewhen(io.bump_left) { // Bump left -> Keep walking right
-        state := State.WalkLeft
-      }
+    is(WALK_RIGHT) {
+      io.walk_left := false.B
+      io.walk_right := true.B
+      io.aaah := false.B
     }
-
-    is(State.Fall) {
-      io.aaah:= latch.-- ->
-警告：dut6.scala格式异常
+    is(FALL_LEFT) {
+      io.walk_left := false.B
+      io.walk_right := false.B
+      io.aaah := true.B
+    }
+    is(FALL_RIGHT) {
+      io.walk_left := false.B
+      io.walk_right := false.B
+      io.aaah := true.B
+    }
+  }
+}

@@ -1,71 +1,81 @@
-module dut(
+module dut (
     input clk,
     input resetn,
     input [2:0] r,
     output reg [2:0] g
 );
 
-    // Define state encoding
-    typedef enum reg [1:0] {
-        A = 2'd0,
-        B = 2'd1,
-        C = 2'd2,
-        D = 2'd3
-    } state_t;
+// Define the states
+typedef enum reg [1:0] {
+    STATE_A,
+    STATE_B,
+    STATE_C,
+    STATE_D
+} state_t;
 
-    state_t state, next_state;
+// State register
+state_t state, next_state;
 
-    // Sequential logic for state transition
-    always @(posedge clk or negedge resetn) begin
-        if (!resetn)
-            state <= A;
-        else
-            state <= next_state;
+// State transition and output logic
+always @(posedge clk or negedge resetn) begin
+    if (!resetn) begin
+        state <= STATE_A; // Reset to state A
+        g <= 3'b000;      // Clear all grants
+    end else begin
+        state <= next_state;
     end
+end
 
-    // Combinational logic for next state logic and outputs
-    always @(*) begin
-        // Default outputs
-        g = 3'b000;
-        
-        case (state)
-            A: begin
-                if (r[0])
-                    next_state = B;
-                else if (r[1])
-                    next_state = C;
-                else if (r[2])
-                    next_state = D;
-                else
-                    next_state = A;
-            end
+// Next state logic
+always @(*) begin
+    next_state = state; // Default to current state
+    g = 3'b000;         // Default to no grants
 
-            B: begin
+    case (state)
+        STATE_A: begin
+            if (r[0]) begin
+                next_state = STATE_B;
                 g[0] = 1'b1;
-                if (r[0])
-                    next_state = B;
-                else
-                    next_state = A;
-            end
-
-            C: begin
+            end else if (r[1]) begin
+                next_state = STATE_C;
                 g[1] = 1'b1;
-                if (r[1])
-                    next_state = C;
-                else
-                    next_state = A;
-            end
-
-            D: begin
+            end else if (r[2]) begin
+                next_state = STATE_D;
                 g[2] = 1'b1;
-                if (r[2])
-                    next_state = D;
-                else
-                    next_state = A;
             end
+        end
 
-            default: next_state = A;
-        endcase
-    end
+        STATE_B: begin
+            if (r[0]) begin
+                next_state = STATE_B;
+                g[0] = 1'b1;
+            end else begin
+                next_state = STATE_A;
+            end
+        end
+
+        STATE_C: begin
+            if (r[1]) begin
+                next_state = STATE_C;
+                g[1] = 1'b1;
+            end else begin
+                next_state = STATE_A;
+            end
+        end
+
+        STATE_D: begin
+            if (r[2]) begin
+                next_state = STATE_D;
+                g[2] = 1'b1;
+            end else begin
+                next_state = STATE_A;
+            end
+        end
+
+        default: begin
+            next_state = STATE_A;
+        end
+    endcase
+end
 
 endmodule

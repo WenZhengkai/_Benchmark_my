@@ -6,10 +6,10 @@ Please act as a professional verilog designer. Give me the complete verilog code
 # Specification
 
 ## Module Name
-GrayCoder
+dut
 
 ## Overview
-The `GrayCoder` module is a digital circuit implemented using the hardware description language. It provides functionality to encode and decode binary numbers into their corresponding Gray code representations and vice versa, based on the input bit width. The module can perform both operations of encoding a binary number to Gray code and decoding a Gray code number back to binary, controlled by a boolean signal.
+The `dut` module is a digital circuit implemented using the hardware description language. It provides functionality to encode and decode binary numbers into their corresponding Gray code representations and vice versa, based on the input bit width. The module can perform both operations of encoding a binary number to Gray code and decoding a Gray code number back to binary, controlled by a boolean signal.
 
 
 ## Input/Output Interface
@@ -45,10 +45,10 @@ Please act as a professional Chisel designer. Give me the complete Chisel code.
 # Specification 5
 
 ## Module Name
-GrayCoder
+dut
 
 ## Overview
-The `GrayCoder` module is a digital circuit implemented using the Chisel hardware description language. It provides functionality to encode and decode binary numbers into their corresponding Gray code representations and vice versa, based on the input bit width. The module can perform both operations of encoding a binary number to Gray code and decoding a Gray code number back to binary, controlled by a boolean signal.
+The `dut` module is a digital circuit implemented using the Chisel hardware description language. It provides functionality to encode and decode binary numbers into their corresponding Gray code representations and vice versa, based on the input bit width. The module can perform both operations of encoding a binary number to Gray code and decoding a Gray code number back to binary, controlled by a boolean signal.
 
 ## Library
  chisel3._
@@ -90,10 +90,10 @@ Please act as a professional Chisel designer. Slice the `Internal logic` into se
 # Specification 5
 
 ## Module Name
-GrayCoder
+dut
 
 ## Overview
-The `GrayCoder` module is a digital circuit implemented using the Chisel hardware description language. It provides functionality to encode and decode binary numbers into their corresponding Gray code representations and vice versa, based on the input bit width. The module can perform both operations of encoding a binary number to Gray code and decoding a Gray code number back to binary, controlled by a boolean signal.
+The `dut` module is a digital circuit implemented using the Chisel hardware description language. It provides functionality to encode and decode binary numbers into their corresponding Gray code representations and vice versa, based on the input bit width. The module can perform both operations of encoding a binary number to Gray code and decoding a Gray code number back to binary, controlled by a boolean signal.
 
 ## Library
  chisel3._
@@ -153,10 +153,10 @@ Notice the relation of tasks.
 # Specification 5
 
 ## Module Name
-GrayCoder
+dut
 
 ## Overview
-The `GrayCoder` module is a digital circuit implemented using the Chisel hardware description language. It provides functionality to encode and decode binary numbers into their corresponding Gray code representations and vice versa, based on the input bit width. The module can perform both operations of encoding a binary number to Gray code and decoding a Gray code number back to binary, controlled by a boolean signal.
+The `dut` module is a digital circuit implemented using the Chisel hardware description language. It provides functionality to encode and decode binary numbers into their corresponding Gray code representations and vice versa, based on the input bit width. The module can perform both operations of encoding a binary number to Gray code and decoding a Gray code number back to binary, controlled by a boolean signal.
 
 ## Library
  chisel3._
@@ -213,10 +213,10 @@ Notice the relation of tasks.
 # Specification
 
 ## Module Name
-GrayCoder
+dut
 
 ## Overview
-The `GrayCoder` module is a digital circuit implemented using the Chisel hardware description language. It provides functionality to encode and decode binary numbers into their corresponding Gray code representations and vice versa, based on the input bit width. The module can perform both operations of encoding a binary number to Gray code and decoding a Gray code number back to binary, controlled by a boolean signal.
+The `dut` module is a digital circuit implemented using the Chisel hardware description language. It provides functionality to encode and decode binary numbers into their corresponding Gray code representations and vice versa, based on the input bit width. The module can perform both operations of encoding a binary number to Gray code and decoding a Gray code number back to binary, controlled by a boolean signal.
 
 ## Library
  chisel3._
@@ -239,7 +239,7 @@ The `GrayCoder` module is a digital circuit implemented using the Chisel hardwar
 ### Task 1: Module and IO Interface Setup  
 **Objective:** Create basic module structure and define I/O ports  
 **Step:**  
-1. Create GrayCoder class with bitwidth parameter  
+1. Create dut class with bitwidth parameter  
 2. Define IO Bundle with:  
    - Input `in` as UInt(bitwidth.W)  
    - Input `encode` as Bool()  
@@ -315,7 +315,7 @@ Give me the complete Chisel code.
 ## Think process
 Thinking...
 > 
-> Okay, I need to split the internal logic of the GrayCoder module into several coding tasks. Let me start by understanding the module's requirements.
+> Okay, I need to split the internal logic of the dut module into several coding tasks. Let me start by understanding the module's requirements.
 > 
 > First, the module has two main operations: encoding and decoding. For encoding, it's straightforward—XOR the input with itself shifted right by one. But decoding is more complex, involving iterative XOR operations based on log2Ceil(bitwidth) steps.
 > 
@@ -340,7 +340,7 @@ Thinking...
 > 
 > So breaking down into tasks:
 > 
-> Task 1: Module and IO Setup. Define the GrayCoder module with parameters, IO ports.
+> Task 1: Module and IO Setup. Define the dut module with parameters, IO ports.
 > 
 > Task 2: Implement Encoding Logic. Assign io.out to in ^ (in >> 1) when encode is true.
 > 

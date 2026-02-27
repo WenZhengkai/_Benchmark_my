@@ -1,47 +1,53 @@
+// package flow
+
 import chisel3._
 import chisel3.util._
 
-// CreditIO: Custom interface for credit-based flow control.
+// Credit IO Bundle definition
 class CreditIO[D <: Data](data: D) extends Bundle {
   val valid = Output(Bool())
   val credit = Input(Bool())
   val bits = Output(data.cloneType)
 }
 
-// dut Module
+// Main dut module
 class dut[D <: Data](data: D, maxCredit: Int) extends Module {
-  require(maxCredit >= 1, "maxCredit must be greater than or equal to 1")
-
+  require(maxCredit >= 1, "maxCredit must be at least 1")
+  
   val io = IO(new Bundle {
-    val enq = Flipped(Decoupled(data))  // Input interface for enqueueing data
-    val deq = new CreditIO(data)       // Output interface for dequeueing data
-    val curCredit = Output(UInt(log2Ceil(maxCredit).W)) // Current credit count
+    val enq = Flipped(Decoupled(data))
+    val deq = new CreditIO(data)
+    val curCredit = Output(UInt(log2Ceil(maxCredit + 1).W))
   })
-
-  // Task 1: Credit Register (icredit)
+  
+  // Credit tracking register
   val icredit = RegNext(io.deq.credit, false.B)
-
-  // Task 2: Credit Counter (curCredit)
-  val curCredit = RegInit(maxCredit.U(log2Ceil(maxCredit).W))
+  
+  // Credit counter - starts at maximum credit
+  val curCredit = RegInit(maxCredit.U(log2Ceil(maxCredit + 1).W))
+  
+  // Default values
+  io.enq.ready := curCredit > 0.U
+  
+  // Credit counter logic
   when(icredit && !io.enq.fire) {
-    curCredit := curCredit + 1.U // Increment credit when credit is high and enqueue is not firing
+    // Receiving credit without sending data - increment credit counter
+    curCredit := Mux(curCredit === maxCredit.U, curCredit, curCredit + 1.U)
   }.elsewhen(!icredit && io.enq.fire) {
-    curCredit := curCredit - 1.U // Decrement credit when credit is low and enqueue is firing
+    // Sending data without receiving credit - decrement credit counter
+    curCredit := curCredit - 1.U
   }
-
-  // Output current credit through the interface
+  
+  // Output the current credit value
   io.curCredit := curCredit
-
-  // Task 3: Ready Signal (io.enq.ready)
-  io.enq.ready := curCredit > 0.U // Ready signal is true only when credits are available
-
-  // Task 4: Data Register (dataOut)
+  
+  // Data register for the output
   val dataOut = RegEnable(io.enq.bits, io.enq.fire)
-
-  // Task 5: Valid Register (validOut)
-  val validOut = RegNext(io.enq.fire, false.B) // Track if output data is valid
-
-  // Drive outputs
+  
+  // Valid register - data is valid when enqueue fires
+  val validOut = RegNext(io.enq.fire, false.B)
+  
+  // Connect output signals
   io.deq.valid := validOut
   io.deq.bits := dataOut
 }

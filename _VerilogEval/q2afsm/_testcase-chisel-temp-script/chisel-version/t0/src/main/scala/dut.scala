@@ -3,51 +3,69 @@ import chisel3.util._
 
 class dut extends Module {
   val io = IO(new Bundle {
-    val r = Input(UInt(3.W)) // 3-bit input representing requests from the devices
-    val g = Output(UInt(3.W)) // 3-bit output representing grants to the devices
+    val r = Input(UInt(3.W))
+    val g = Output(UInt(3.W))
   })
 
-  // FSM State Encoding
-  val sA :: sB :: sC :: sD :: Nil = Enum(4) // States: A, B, C, D
-  val state = RegInit(sA) // Initialize the FSM in state A
+  // Define states
+  object State extends ChiselEnum {
+    val A, B, C, D = Value
+  }
+  import State._
 
-  // Default outputs (all grants are inactive by default)
+  // State register
+  val state = RegInit(A)
+  
+  // Default output value
   io.g := 0.U
-
-  // FSM State Transition Logic
+  
+  // Extract individual request bits for clarity
+  val r0 = io.r(0)
+  val r1 = io.r(1)
+  val r2 = io.r(2)
+  
+  // FSM state transitions
   switch(state) {
-    is(sA) {
-      when(io.r(0)) {
-        state := sB // Priority to device 0
-      }.elsewhen(io.r(1)) {
-        state := sC // Priority to device 1 if device 0 is not requesting
-      }.elsewhen(io.r(2)) {
-        state := sD // Priority to device 2 if both device 0 and 1 are not requesting
+    is(A) {
+      when(r0) {
+        state := B
+      }.elsewhen(r1) {
+        state := C
+      }.elsewhen(r2) {
+        state := D
+      }.otherwise {
+        state := A
       }
     }
-    is(sB) {
-      io.g := "b001".U // Grant to device 0
-      when(!io.r(0)) {
-        state := sA // Go back to state A if device 0 stops requesting
+    
+    is(B) {
+      // g0 = 1 in state B
+      io.g := "b001".U
+      when(r0) {
+        state := B
+      }.otherwise {
+        state := A
       }
     }
-    is(sC) {
-      io.g := "b010".U // Grant to device 1
-      when(!io.r(1)) {
-        state := sA // Go back to state A if device 1 stops requesting
+    
+    is(C) {
+      // g1 = 1 in state C
+      io.g := "b010".U
+      when(r1) {
+        state := C
+      }.otherwise {
+        state := A
       }
     }
-    is(sD) {
-      io.g := "b100".U // Grant to device 2
-      when(!io.r(2)) {
-        state := sA // Go back to state A if device 2 stops requesting
+    
+    is(D) {
+      // g2 = 1 in state D
+      io.g := "b100".U
+      when(r2) {
+        state := D
+      }.otherwise {
+        state := A
       }
     }
   }
 }
-
-/*
-object dut extends App {
-  (new chisel3.stage.ChiselStage).emitVerilog(new dut)
-}
-*/

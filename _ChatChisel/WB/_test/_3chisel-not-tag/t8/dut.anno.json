@@ -1,0 +1,21 @@
+[
+  {
+    "class":"firrtl.EmitCircuitAnnotation",
+    "emitter":"firrtl.VerilogEmitter"
+  },
+  {
+    "class":"firrtl.transforms.BlackBoxTargetDirAnno",
+    "targetDir":"../../_test/_cache/t8"
+  },
+  {
+    "class":"firrtl.transforms.CombinationalPath",
+    "sink":"~dut|dut>io_writedata",
+    "sources":[
+      "~dut|dut>io_wb_reg_pc",
+      "~dut|dut>io_wb_memtoreg",
+      "~dut|dut>io_wb_readdata",
+      "~dut|dut>io_wb_aluresult",
+      "~dut|dut>io_csr_read_data_in"
+    ]
+  }
+]

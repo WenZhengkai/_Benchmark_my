@@ -6,62 +6,58 @@ class dut extends Module {
     val bump_left = Input(Bool())
     val bump_right = Input(Bool())
     val ground = Input(Bool())
-    val reset = Input(Bool())
     val walk_left = Output(Bool())
     val walk_right = Output(Bool())
     val aaah = Output(Bool())
   })
 
-  // Task 1: Define FSM states
-  object State extends ChiselEnum {
-    val WalkLeft, WalkRight, Fall = Value
-  }
-  val state = RegInit(State.WalkLeft)
-  val preservedWalkingDirection = RegInit(State.WalkLeft)
-
-  // Task 3: Handle reset functionality
-  when(io.reset) {
-    state := State.WalkLeft
-    preservedWalkingDirection := State.WalkLeft
+  // Define state constants
+  object State {
+    val WALK_LEFT = 0.U(2.W)
+    val WALK_RIGHT = 1.U(2.W)
+    val FALL_LEFT = 2.U(2.W)
+    val FALL_RIGHT = 3.U(2.W)
   }
 
-  // Task 7: Define state transition logic
+  // State register with async reset to walk left
+  val state = RegInit(State.WALK_LEFT)
+
+  // Next state logic
+  val nextState = Wire(UInt(2.W))
+  nextState := state
+
   switch(state) {
-    is(State.WalkLeft) {
+    is(State.WALK_LEFT) {
       when(!io.ground) {
-        state := State.Fall
-        preservedWalkingDirection := State.WalkLeft
-      }.elsewhen(io.bump_left && io.bump_right) {
-        state := State.WalkRight
+        nextState := State.FALL_LEFT
       }.elsewhen(io.bump_left) {
-        state := State.WalkRight
+        nextState := State.WALK_RIGHT
       }
     }
-    is(State.WalkRight) {
+    is(State.WALK_RIGHT) {
       when(!io.ground) {
-        state := State.Fall
-        preservedWalkingDirection := State.WalkRight
-      }.elsewhen(io.bump_left && io.bump_right) {
-        state := State.WalkLeft
+        nextState := State.FALL_RIGHT
       }.elsewhen(io.bump_right) {
-        state := State.WalkLeft
+        nextState := State.WALK_LEFT
       }
     }
-    is(State.Fall) {
+    is(State.FALL_LEFT) {
       when(io.ground) {
-        state := preservedWalkingDirection
+        nextState := State.WALK_LEFT
+      }
+    }
+    is(State.FALL_RIGHT) {
+      when(io.ground) {
+        nextState := State.WALK_RIGHT
       }
     }
   }
 
-  // Task 6: Define output logic
-  io.walk_left := (state === State.WalkLeft)
-  io.walk_right := (state === State.WalkRight)
-  io.aaah := (state === State.Fall)
-}
+  // State register update
+  state := nextState
 
-/*
-object dut extends App {
-  (new chisel3.stage.ChiselStage).emitVerilog(new dut)
+  // Output logic (Moore machine - outputs depend only on current state)
+  io.walk_left := (state === State.WALK_LEFT)
+  io.walk_right := (state === State.WALK_RIGHT)
+  io.aaah := (state === State.FALL_LEFT || state === State.FALL_RIGHT)
 }
-*/

@@ -5,7 +5,7 @@ Please act as a professional Verilog designer. Give me the complete Verilog code
 # Specification
 
 ## Module Name
-lemmings
+dut
 
 ## Overview
 
@@ -41,7 +41,7 @@ Please act as a professional Chisel designer. Give me the complete Chisel code.
 # Specification
 
 ## Module Name
-lemmings
+dut
 
 ## Overview
 

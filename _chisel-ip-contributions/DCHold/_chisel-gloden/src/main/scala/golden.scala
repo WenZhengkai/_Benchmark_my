@@ -11,6 +11,7 @@ import chisel3.util.DecoupledIO
   * accept data at a maximum of every other cycle.
   *
   * @param data The data type for the payload
+  * 
   */
 class DCHold[D <: Data](data: D) extends Module {
   val io = IO(new Bundle {
@@ -26,12 +27,16 @@ class DCHold[D <: Data](data: D) extends Module {
   when(io.enq.valid && !pValid) {
     pValid := io.enq.valid
     pData := io.enq.bits
+
   }.elsewhen((pValid & io.deq.ready) === 1.U) {
     pValid := 0.U
+
   }
+
   io.deq.valid := pValid
   io.deq.bits := pData
   io.enq.ready := ~pValid
+  
 }
 
 // Helper function for functional inference

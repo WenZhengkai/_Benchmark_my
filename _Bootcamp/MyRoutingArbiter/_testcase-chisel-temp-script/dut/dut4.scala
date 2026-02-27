@@ -3,36 +3,26 @@ import chisel3.util._
 
 class dut(numChannels: Int) extends Module {
   val io = IO(new Bundle {
-    val in = Flipped(Vec(numChannels, Decoupled(UInt(8.W)))) // Input channels
-    val out = Decoupled(UInt(8.W)) // Output channel
+    val in = Vec(numChannels, Flipped(Decoupled(UInt(8.W))))
+    val out = Decoupled(UInt(8.W))
   })
-
-  // Task 1: Output Validity Signal Generation
-  // Create the OR-aggregation of all input `valid` signals
+  
+  // Check if any input channel is valid
   io.out.valid := io.in.map(_.valid).reduce(_ || _)
-
-  // Task 2: Priority Channel Selection Logic
-  // Select the lowest-indexed valid channel using PriorityMux
-  val validAndIndex = io.in.zipWithIndex.map { case (channel, idx) =>
-    (channel.valid, idx.U)
+  
+  // Create a priority selector to determine which valid channel to select
+  val selectedChannel = PriorityMux(
+    io.in.zipWithIndex.map { case (channel, index) => 
+      (channel.valid, index.U)
+    }
+  )
+  
+  // Route the data from the selected channel to the output
+  io.out.bits := io.in(selectedChannel).bits
+  
+  // Set the ready signals for each input channel
+  // Only the selected channel will be marked as ready if the output is ready
+  for (i <- 0 until numChannels) {
+    io.in(i).ready := io.out.ready && (selectedChannel === i.U)
   }
-  val selectedChannel = PriorityMux(validAndIndex, validAndIndex.map(_._2))
-
-  // Task 3: Output Data Routing Implementation
-  // Direct the selected channel's data to the output
-  io.out.bits := Mux1H(io.in.zipWithIndex.map { case (channel, idx) =>
-    (selectedChannel === idx.U) -> channel.bits
-  })
-
-  // Task 4: Input Ready Signal Generation
-  // Generate `ready` signals for all input channels
-  io.in.zipWithIndex.foreach { case (channel, idx) =>
-    // The channel is ready if it is the selected channel and the output is ready
-    channel.ready := (selectedChannel === idx.U) && io.out.ready
-  }
-
-  // Task 5: Integration & Final Wiring
-  // All signals are integrated and parameterized to handle `numChannels`
-  // No unintended latches are created because the logic is purely combinational
 }
-

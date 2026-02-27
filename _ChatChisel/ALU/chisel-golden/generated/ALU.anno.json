@@ -1,0 +1,27 @@
+[
+  {
+    "class":"firrtl.EmitCircuitAnnotation",
+    "emitter":"firrtl.VerilogEmitter"
+  },
+  {
+    "class":"firrtl.transforms.BlackBoxTargetDirAnno",
+    "targetDir":"generated"
+  },
+  {
+    "class":"firrtl.transforms.CombinationalPath",
+    "sink":"~ALU|ALU>io_zero",
+    "sources":[
+      "~ALU|ALU>io_alu_in1",
+      "~ALU|ALU>io_alu_in2"
+    ]
+  },
+  {
+    "class":"firrtl.transforms.CombinationalPath",
+    "sink":"~ALU|ALU>io_alu_result",
+    "sources":[
+      "~ALU|ALU>io_aluop",
+      "~ALU|ALU>io_alu_in1",
+      "~ALU|ALU>io_alu_in2"
+    ]
+  }
+]

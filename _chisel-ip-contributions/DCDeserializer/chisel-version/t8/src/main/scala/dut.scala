@@ -1,44 +1,50 @@
 import chisel3._
 import chisel3.util._
 
-class dut[D <: Data](data: D, width: Int) extends Module {
+class Deserializer[D <: Data](data: D, width: Int) extends Module {
   val io = IO(new Bundle {
-    val dataIn = Flipped(Decoupled(UInt(width.W))) // Input serialized data channel
-    val dataOut = Decoupled(data.cloneType)        // Output deserialized data channel
+    val dataIn = Flipped(Decoupled(UInt(width.W)))
+    val dataOut = Decoupled(data.cloneType)
   })
 
-  // Step 1: Calculate the number of cycles required for deserialization
-  val totalDataWidth = data.getWidth              // Total width of the parallel data
-  val cycles = (totalDataWidth + width - 1) / width // Ceiling division to compute cycles
+  // Calculate the total number of bits in the data type
+  val totalBits = data.getWidth
 
-  // Step 2: Register initialization to track deserialization state and data
-  val cycleCount = RegInit(0.U(log2Ceil(cycles).W)) // Counter for tracking cycles
-  val dataValid = RegInit(false.B)                  // Flag to indicate deserialization completion
-  val dataSelect = Reg(Vec(cycles, UInt(width.W)))  // Vector register to store intermediate data segments
+  // Calculate the number of cycles needed to deserialize the data
+  val cycles = (totalBits + width - 1) / width  // Ceiling division
 
-  // Step 3: Data input handling
-  io.dataIn.ready := !dataValid || io.dataOut.ready // Ready signal logic for `dataIn`
+  // Cycle counter
+  val cycleCount = RegInit(0.U(log2Ceil(cycles).W))
+  
+  // Data collection register
+  val dataSelect = RegInit(0.U(totalBits.W))
+  
+  // Valid flag for output data
+  val dataValid = RegInit(false.B)
 
-  when(io.dataIn.fire) { // When dataIn is valid and ready
-    dataSelect(cycleCount) := io.dataIn.bits       // Store current data segment
-    when(cycleCount === (cycles - 1).U) {         // If it's the last cycle
-      cycleCount := 0.U                           // Reset the cycle counter
-      dataValid := true.B                         // Set valid flag to true
+  // Default values
+  io.dataIn.ready := !dataValid || io.dataOut.ready
+  io.dataOut.valid := dataValid
+  io.dataOut.bits := dataSelect.asTypeOf(data.cloneType)
+
+  // Deserialization process
+  when(io.dataIn.fire) {
+    // Shift in the incoming data at the appropriate position
+    dataSelect := dataSelect | (io.dataIn.bits << (cycleCount * width.U)).asUInt
+    
+    when(cycleCount === (cycles - 1).U) {
+      // When we've received the last segment
+      cycleCount := 0.U
+      dataValid := true.B
     }.otherwise {
-      cycleCount := cycleCount + 1.U              // Increment the cycle counter
+      // Move to the next cycle
+      cycleCount := cycleCount + 1.U
     }
   }
 
-  // Step 4: Output data construction
-  io.dataOut.bits := dataSelect.asTypeOf(data)    // Concatenate and cast intermediate data to original type
-  io.dataOut.valid := dataValid                   // Set valid signal for `dataOut`
-
-  // Step 5: Output transmission handling
-  when(io.dataOut.fire) { // When dataOut is valid and ready
-    dataValid := false.B                          // Reset valid flag for new deserialization cycle
+  // Reset the data valid flag when data is accepted
+  when(io.dataOut.fire) {
+    dataValid := false.B
+    dataSelect := 0.U  // Clear the data for the next transaction
   }
 }
-
-// Example usage:
-// val deserializer = Module(new dut(UInt(64.W), 8))
-// This creates a deserializer that reconstructs a 64-bit word using an 8-bit serialized stream.

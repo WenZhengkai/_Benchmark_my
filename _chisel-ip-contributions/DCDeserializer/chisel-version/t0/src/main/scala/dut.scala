@@ -1,44 +1,59 @@
 import chisel3._
 import chisel3.util._
 
-class dut[D <: Data](data: D, width: Int) extends Module {
-  require(width > 0, "Width must be greater than 0")
-
+/** Serial to Parallel converter that reconstructs serialized data
+  * 
+  * @param data The Chisel data type to be reconstructed
+  * @param width The width of the serialized data channel in bits
+  */
+class SerialToParallel[D <: Data](data: D, width: Int) extends Module {
   val io = IO(new Bundle {
-    val dataIn = Flipped(Decoupled(UInt(width.W))) // Serialized data input
-    val dataOut = Decoupled(data.cloneType)        // Deserialized data output
+    // Input serialized data stream
+    val dataIn = Flipped(Decoupled(UInt(width.W)))
+    // Output deserialized data
+    val dataOut = Decoupled(data.cloneType)
   })
 
-  // Compute total cycles required for deserialization
-  val totalBits = data.getWidth                 // Total width of the data type D
-  val cycles = (totalBits + width - 1) / width  // Number of cycles required, ceiling division
+  // Calculate the total number of bits in the data type
+  val dataWidth = data.getWidth
+  
+  // Calculate the number of cycles needed to deserialize the data
+  val cycles = (dataWidth + width - 1) / width  // Ceiling division
+  
+  // Register to track the current cycle in the deserialization process
+  val cycleCount = RegInit(0.U(log2Ceil(cycles).W))
+  
+  // Register to store the accumulated serialized data segments
+  val dataSelect = RegInit(0.U(dataWidth.W))
+  
+  // Register to track if deserialized data is valid and ready to be output
+  val dataValid = RegInit(false.B)
 
-  // Registers to track state and intermediate data
-  val cycleCount = RegInit(0.U(log2Ceil(cycles).W))  // Counter for cycles
-  val dataSelect = Reg(Vec(cycles, UInt(width.W)))   // Vector to store segments of data
-  val dataValid = RegInit(false.B)                  // Flag: Deserialized data is ready
-
-  // Initialize output signals
+  // Default values
   io.dataOut.valid := dataValid
-  io.dataOut.bits := dataSelect.asTypeOf(data) // Assemble output data using dataSelect
+  io.dataOut.bits := dataSelect.asTypeOf(data.cloneType)
+  io.dataIn.ready := !dataValid || io.dataOut.ready
 
-  // Handle input and deserialization logic
-  io.dataIn.ready := !dataValid || io.dataOut.ready // Ready to accept new data if not processing or output is ready
+  // Process incoming serialized data
+  when(io.dataIn.fire) {
+    // Store incoming data segment at the appropriate position based on current cycle
+    dataSelect := Cat(
+      dataSelect(dataWidth - 1, (cycleCount + 1.U) * width.U),
+      io.dataIn.bits,
+      dataSelect((cycleCount * width.U) - 1.U, 0.U)
+    )
 
-  when(io.dataIn.fire) { // Input data is valid and ready
-    dataSelect(cycleCount) := io.dataIn.bits  // Store incoming serialized data
-    when(cycleCount === (cycles - 1).U) {    // Last cycle of deserialization
-      cycleCount := 0.U                       // Reset cycle counter
-      dataValid := true.B                     // Mark data as ready
+    // Increment cycle count or reset if this is the last cycle
+    when(cycleCount === (cycles - 1).U) {
+      cycleCount := 0.U
+      dataValid := true.B
     }.otherwise {
-      cycleCount := cycleCount + 1.U          // Increment cycle counter
+      cycleCount := cycleCount + 1.U
     }
   }
 
-  // Handle output transmission
-  when(io.dataOut.fire) { // Output data is being consumed
-    dataValid := false.B  // Reset valid flag to indicate new deserialization can start
+  // Reset data valid flag when output is consumed
+  when(io.dataOut.fire) {
+    dataValid := false.B
   }
 }
-
-// Testbench and main object can be created for simulation purposes if necessary.

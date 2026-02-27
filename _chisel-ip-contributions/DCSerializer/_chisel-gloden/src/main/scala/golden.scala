@@ -9,14 +9,17 @@ import chisel3.util._
   * @param data  Data structure to be sent
   * @param width Width of the serialized channel
   * @tparam D
+  * 
   */
 class DCSerializer[D <: Data](data: D, width: Int) extends Module {
   val io = IO(new Bundle {
     val dataIn = Flipped(Decoupled(data.cloneType))
     val dataOut = Decoupled(UInt(width.W))
   })
+
   val cycles = if (data.getWidth % width != 0) data.getWidth / width + 1 else data.getWidth / width
   require(cycles > 1)
+
   val cycleCount = RegInit(init = 0.U(log2Ceil(cycles).W))
   val dataSelect = Wire(Vec(cycles, UInt(width.W)))
 
@@ -28,8 +31,10 @@ class DCSerializer[D <: Data](data: D, width: Int) extends Module {
 
   when(io.dataIn.fire) {
     cycleCount := 0.U
+
   }.elsewhen(io.dataOut.fire) {
     cycleCount := cycleCount + 1.U
+    
   }
 }
 

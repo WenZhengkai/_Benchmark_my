@@ -3,30 +3,35 @@ import chisel3.util._
 
 class dut(numChannels: Int) extends Module {
   val io = IO(new Bundle {
-    val in = Flipped(Vec(numChannels, Decoupled(UInt(8.W))))
+    val in = Vec(numChannels, Flipped(Decoupled(UInt(8.W))))
     val out = Decoupled(UInt(8.W))
   })
-
-  // Task 1: Output Validity Signal Generation
-  // Combine all input valid signals into one validity signal for output
-  io.out.valid := io.in.map(_.valid).reduce(_ || _)
-
-  // Task 2: Priority Channel Selection Logic
-  // Determine which input channel gets access using PriorityMux
-  // Zip validity with index, map to a tuple of (valid, index.U), then use PriorityMux
-  val validWithIndex = io.in.zipWithIndex.map { case (ch, idx) => ch.valid -> idx.U }
-  val selectedChannel = PriorityMux(validWithIndex, io.in.indices.map(_.U))
-
-  // Task 3: Output Data Routing Implementation
-  // Route the selected channel's data to the output
-  io.out.bits := Mux1H(io.in.zipWithIndex.map { case (ch, idx) =>
-    (selectedChannel === idx.U) -> ch.bits
-  })
-
-  // Task 4: Input Ready Signal Generation
-  // Generate per-channel ready signals based on selection
-  io.in.zipWithIndex.foreach { case (ch, idx) =>
-    ch.ready := (selectedChannel === idx.U) && io.out.ready
+  
+  // Create a vector of valid signals from all input channels
+  val valids = io.in.map(_.valid)
+  
+  // Set output valid if at least one input channel is valid
+  io.out.valid := valids.reduce(_ || _)
+  
+  // Use PriorityMux to select the first valid channel
+  val selectedChannel = PriorityMux(
+    valids.zipWithIndex.map { case (valid, index) => 
+      (valid, index.U)
+    }
+  )
+  
+  // Route data from the selected input channel to the output
+  io.out.bits := MuxLookup(
+    selectedChannel,
+    0.U, // Default value (should never be used if at least one channel is valid)
+    io.in.zipWithIndex.map { case (channel, index) => 
+      (index.U, channel.bits)
+    }
+  )
+  
+  // Set ready signals for input channels
+  // Only the selected channel is ready when the output is ready
+  for (i <- 0 until numChannels) {
+    io.in(i).ready := io.out.ready && (selectedChannel === i.U)
   }
 }
-

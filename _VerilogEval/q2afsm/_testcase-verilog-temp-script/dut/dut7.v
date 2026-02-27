@@ -1,73 +1,68 @@
 module dut (
-    input wire clk,
-    input wire resetn,
-    input wire [2:0] r,  // requesting devices
-    output reg [2:0] g   // grant signals
+    input clk,
+    input resetn,
+    input [2:0] r,
+    output reg [2:0] g
 );
 
-    // Define state encoding
-    typedef enum logic [1:0] {
+    // Define states
+    typedef enum reg [1:0] {
         STATE_A = 2'b00,
         STATE_B = 2'b01,
         STATE_C = 2'b10,
         STATE_D = 2'b11
     } state_t;
 
-    state_t current_state, next_state;
+    // State register
+    state_t state, next_state;
 
-    // Sequential logic for state transition
+    // State transition logic
     always @(posedge clk or negedge resetn) begin
-        if (!resetn)
-            current_state <= STATE_A;
-        else
-            current_state <= next_state;
+        if (!resetn) begin
+            state <= STATE_A;
+        end else begin
+            state <= next_state;
+        end
     end
 
-    // Combinational logic for next state and output logic
+    // Next state and output logic
     always @(*) begin
         // Default values
-        next_state = current_state;
+        next_state = state;
         g = 3'b000;
-        
-        case (current_state)
+
+        case (state)
             STATE_A: begin
-                if (r[0])
+                if (r[0]) begin
                     next_state = STATE_B;
-                else if (r[1])
+                end else if (r[1]) begin
                     next_state = STATE_C;
-                else if (r[2])
+                end else if (r[2]) begin
                     next_state = STATE_D;
-                else
-                    next_state = STATE_A;
+                end
             end
 
             STATE_B: begin
-                g = 3'b001; // Grant signal for device 0
-                if (!r[0])
+                g[0] = 1'b1;
+                if (!r[0]) begin
                     next_state = STATE_A;
-                else
-                    next_state = STATE_B;
+                end
             end
 
             STATE_C: begin
-                g = 3'b010; // Grant signal for device 1
-                if (!r[1])
+                g[1] = 1'b1;
+                if (!r[1]) begin
                     next_state = STATE_A;
-                else
-                    next_state = STATE_C;
+                end
             end
 
             STATE_D: begin
-                g = 3'b100; // Grant signal for device 2
-                if (!r[2])
+                g[2] = 1'b1;
+                if (!r[2]) begin
                     next_state = STATE_A;
-                else
-                    next_state = STATE_D;
-            end
-
-            default: begin
-                next_state = STATE_A;
+                end
             end
         endcase
     end
+
 endmodule

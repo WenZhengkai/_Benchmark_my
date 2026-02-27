@@ -1,31 +1,35 @@
 import chisel3._
 import chisel3.util._
 
-class dut[D <: Data](gen: D) extends Module {
+/** A ready/valid holding register that holds a data word until successfully unloaded
+  * via the deq interface. No combinational paths through this module. Can accept
+  * data at most every other cycle due to internal state.
+  *
+  * @param data The data type to be passed through this module
+  */
+class dut[D <: Data](data: D) extends Module {
   val io = IO(new Bundle {
-    val enq = Flipped(Decoupled(gen))
-    val deq = Decoupled(gen)
+    val enq = Flipped(DecoupledIO(data.cloneType))
+    val deq = DecoupledIO(data.cloneType)
   })
-
-  // Task 1: Define and Initialize Registers
-  val pValid = RegInit(false.B)  // Indicates if there's valid data held
-  val pData = Reg(gen)  // Stores the data when valid
-
-  // Task 2: Implement Data Storage Logic
+  
+  // Internal state registers
+  val pValid = RegInit(false.B)
+  val pData = Reg(data.cloneType)
+  
+  // Default values
+  io.deq.valid := pValid
+  io.deq.bits := pData
+  io.enq.ready := !pValid
+  
+  // When we can accept data (pValid is false) and valid data is presented
   when(io.enq.valid && !pValid) {
     pData := io.enq.bits
     pValid := true.B
   }
-
-  // Task 3: Implement Data Release Logic
-  when(io.deq.ready && pValid) {
-    // Clear pValid indicating the data has been forwarded
+  
+  // When data is being dequeued (pValid is true and downstream is ready)
+  when(pValid && io.deq.ready) {
     pValid := false.B
   }
-
-  // Task 4: Output Assignments
-  io.deq.valid := pValid
-  io.deq.bits := pData
-  io.enq.ready := !pValid  // Ready to accept new data if no data is currently held
 }
-

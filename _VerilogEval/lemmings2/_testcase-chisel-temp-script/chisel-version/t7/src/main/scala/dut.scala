@@ -6,73 +6,61 @@ class dut extends Module {
     val bump_left = Input(Bool())
     val bump_right = Input(Bool())
     val ground = Input(Bool())
-    val reset = Input(Bool()) // Explicit reset signal
     val walk_left = Output(Bool())
     val walk_right = Output(Bool())
     val aaah = Output(Bool())
   })
 
-  // Task 1: Define FSM states
-  val WalkLeft :: WalkRight :: Fall :: Nil = Enum(3)
-
-  // State and preserved direction registers
-  val state = RegInit(WalkLeft) // Default state is WalkLeft
-  val preservedDirection = RegInit(WalkLeft) // Used to preserve walking state
-
-  // Task 3: Reset logic
-  when(io.reset) {
-    state := WalkLeft
-    preservedDirection := WalkLeft
+  // Define the states
+  object State extends ChiselEnum {
+    val WALK_LEFT, WALK_RIGHT, FALL_LEFT, FALL_RIGHT = Value
   }
+  import State._
 
-  // Task 7: FSM transition logic
+  // State register with asynchronous reset to WALK_LEFT
+  val state = RegInit(WALK_LEFT)
+
+  // Default output values
+  io.walk_left := false.B
+  io.walk_right := false.B
+  io.aaah := false.B
+
+  // Next state logic
   switch(state) {
-    is(WalkLeft) {
+    is(WALK_LEFT) {
+      io.walk_left := true.B
+      
       when(!io.ground) {
-        // Falling when no ground
-        state := Fall
-        preservedDirection := WalkLeft
-      }.elsewhen(io.bump_left && io.bump_right) {
-        // Both bumps: toggle direction (go right in this case)
-        state := WalkRight
+        state := FALL_LEFT
       }.elsewhen(io.bump_left) {
-        // Bump left: switch to WalkRight
-        state := WalkRight
+        state := WALK_RIGHT
       }
     }
-
-    is(WalkRight) {
+    
+    is(WALK_RIGHT) {
+      io.walk_right := true.B
+      
       when(!io.ground) {
-        // Falling when no ground
-        state := Fall
-        preservedDirection := WalkRight
-      }.elsewhen(io.bump_left && io.bump_right) {
-        // Both bumps: toggle direction (go left in this case)
-        state := WalkLeft
+        state := FALL_RIGHT
       }.elsewhen(io.bump_right) {
-        // Bump right: switch to WalkLeft
-        state := WalkLeft
+        state := WALK_LEFT
       }
     }
-
-    is(Fall) {
+    
+    is(FALL_LEFT) {
+      io.aaah := true.B
+      
       when(io.ground) {
-        // When ground becomes 1, resume preserved walking state
-        state := preservedDirection
+        state := WALK_LEFT
+      }
+    }
+    
+    is(FALL_RIGHT) {
+      io.aaah := true.B
+      
+      when(io.ground) {
+        state := WALK_RIGHT
       }
     }
   }
-
-  // Task 6: Output logic
-  io.walk_left := (state === WalkLeft)
-  io.walk_right := (state === WalkRight)
-  io.aaah := (state === Fall)
 }
-
-// Generate the Verilog code (for testing purposes)
-/*
-object dutMain extends App {
-  println("Generating Verilog for dut...")
-  (new chisel3.stage.ChiselStage).emitVerilog(new dut)
-}
-*/

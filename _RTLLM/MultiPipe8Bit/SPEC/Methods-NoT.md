@@ -8,7 +8,7 @@ Please act as a professional Chisel designer. Give me the complete Chisel code.
 Implement the design of unsigned 8bit multiplier based on pipelining processing. It utilizes an input enable signal (mul_en_in), and provides an output enable signal (mul_en_out) and the product output (mul_out) of size 16 bits.
 
 ## Module name:  
-    MultiPipe8Bit 
+    dut 
 
 ## Input ports:
     mul_en_in: Input enable signal that controls the multiplication operation.
@@ -65,7 +65,7 @@ Please act as a professional Chisel designer. Slice the `Internal logic` into se
 Implement the design of unsigned 8bit multiplier based on pipelining processing. It utilizes an input enable signal (mul_en_in), and provides an output enable signal (mul_en_out) and the product output (mul_out) of size 16 bits.
 
 ## Module name:  
-    MultiPipe8Bit 
+    dut 
 
 ## Input ports:
     mul_en_in: Input enable signal that controls the multiplication operation.
@@ -127,7 +127,7 @@ Please act as a professional Chisel designer. Give me the complete Chisel code.
 Implement the design of unsigned 8bit multiplier based on pipelining processing. It utilizes an input enable signal (mul_en_in), and provides an output enable signal (mul_en_out) and the product output (mul_out) of size 16 bits.
 
 ## Module name:  
-    MultiPipe8Bit 
+    dut 
 
 ## Input ports:
     mul_en_in: Input enable signal that controls the multiplication operation.
@@ -206,7 +206,7 @@ Notice the relation of tasks.
 Implement the design of unsigned 8bit multiplier based on pipelining processing. It utilizes an input enable signal (mul_en_in), and provides an output enable signal (mul_en_out) and the product output (mul_out) of size 16 bits.
 
 ## Module name:  
-    MultiPipe8Bit 
+    dut 
 
 ## Input ports:
     mul_en_in: Input enable signal that controls the multiplication operation.
@@ -308,7 +308,7 @@ Give me the complete Chisel code.
 ## Think Process
 Thinking...
 > 
-> Okay, I need to break down the Internal Logic section of the MultiPipe8Bit module into several coding tasks for Chisel. Let me start by understanding what each part of the internal logic does.
+> Okay, I need to break down the Internal Logic section of the dut module into several coding tasks for Chisel. Let me start by understanding what each part of the internal logic does.
 > 
 > First, the Input Control part. It mentions sampling the input enable signal (mul_en_in) into a register called mul_en_out_reg on the positive clock edge. Then, the output enable signal (mul_en_out) comes from the MSB of that register. So this part involves creating a register for the enable signal and connecting the output.
 > 

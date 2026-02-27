@@ -1,32 +1,42 @@
+// package holding_register
+
 import chisel3._
 import chisel3.util._
 
-class dut[D <: Data](gen: D) extends Module {
+class HoldingRegister[T <: Data](data: T) extends Module {
   val io = IO(new Bundle {
-    val enq = Flipped(Decoupled(gen))  // Input enqueue interface
-    val deq = Decoupled(gen)           // Output dequeue interface
+    val enq = Flipped(DecoupledIO(data.cloneType))
+    val deq = DecoupledIO(data.cloneType)
   })
 
-  // Task 1: Define and Initialize Registers
-  val pValid = RegInit(false.B)      // Register to hold the validity of pData
-  val pData = Reg(gen)               // Register to hold the data payload
+  // Internal registers
+  val pValid = RegInit(false.B)
+  val pData = Reg(data.cloneType)
 
-  // Task 2: Implement Data Storage Logic
+  // Default assignments
+  io.enq.ready := !pValid
+  io.deq.valid := pValid
+  io.deq.bits := pData
+
+  // Store data when:
+  // - Input is valid (enq.valid)
+  // - Module is ready to accept data (enq.ready, which is !pValid)
   when(io.enq.valid && !pValid) {
-    // Latch incoming data into pData and set pValid to true when enq.valid is asserted
     pData := io.enq.bits
     pValid := true.B
   }
 
-  // Task 3: Implement Data Release Logic
+  // Clear stored data when:
+  // - Output interface acknowledges receipt (deq.ready)
+  // - Module has valid data to provide (deq.valid, which is pValid)
   when(io.deq.ready && pValid) {
-    // Clear pValid to false when data is released
     pValid := false.B
   }
-
-  // Task 4: Output Assignments
-  io.deq.valid := pValid              // Drive io.deq.valid from pValid
-  io.deq.bits := pData                // Drive io.deq.bits from pData
-  io.enq.ready := !pValid             // Drive io.enq.ready with negation of pValid
 }
 
+// If you need a main to test/demonstrate
+/*
+object HoldingRegisterMain extends App {
+  emitVerilog(new HoldingRegister(UInt(32.W)), Array("--target-dir", "generated"))
+}
+*/

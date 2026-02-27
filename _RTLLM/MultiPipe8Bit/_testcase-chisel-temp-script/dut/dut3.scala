@@ -3,66 +3,56 @@ import chisel3.util._
 
 class dut extends Module {
   val io = IO(new Bundle {
-    val mul_en_in = Input(Bool())      // Input enable signal
-    val mul_a = Input(UInt(8.W))      // 8-bit multiplicand
-    val mul_b = Input(UInt(8.W))      // 8-bit multiplier
-    val mul_en_out = Output(Bool())   // Output enable signal
-    val mul_out = Output(UInt(16.W))  // 16-bit product output
+    // Input ports
+    val mul_en_in = Input(Bool())
+    val mul_a = Input(UInt(8.W))
+    val mul_b = Input(UInt(8.W))
+    
+    // Output ports
+    val mul_en_out = Output(Bool())
+    val mul_out = Output(UInt(16.W))
   })
-
-  // Task 1: Input control logic
-  // A 5-bit shift register to store the enable signal across clock cycles
+  
+  // Pipeline registers for enable signal
   val mul_en_out_reg = RegInit(0.U(5.W))
+  
+  // Input registers
+  val mul_a_reg = RegInit(0.U(8.W))
+  val mul_b_reg = RegInit(0.U(8.W))
+  
+  // Register updates for input control
   when(io.mul_en_in) {
-    mul_en_out_reg := Cat(mul_en_out_reg(3, 0), io.mul_en_in) // Shift enable signal
-  } .otherwise {
-    mul_en_out_reg := Cat(mul_en_out_reg(3, 0), 0.U) // Shift 0 if enable isn't active
+    mul_a_reg := io.mul_a
+    mul_b_reg := io.mul_b
   }
-
-  // The most significant bit (MSB) of `mul_en_out_reg` determines `mul_en_out`
-  val mul_en_out = mul_en_out_reg(4)
-  io.mul_en_out := mul_en_out
-
-  // Task 2: Input registers for storing `mul_a` and `mul_b`
-  val mul_a_reg = RegInit(0.U(8.W)) // 8-bit register for multiplicand
-  val mul_b_reg = RegInit(0.U(8.W)) // 8-bit register for multiplier
-
-  when(io.mul_en_in) {
-    mul_a_reg := io.mul_a // Update multiplicand when enable is active
-    mul_b_reg := io.mul_b // Update multiplier when enable is active
-  }
-
-  // Task 3: Generate partial products
-  val partial_products = Wire(Vec(8, UInt(16.W))) // Partial products array
-
-  for (i <- 0 until 8) {
-    partial_products(i) := mul_a_reg.asUInt & Fill(16, mul_b_reg(i)) // AND operation
-  }
-
-  // Task 4: Partial sum calculations
-  val sum1 = RegInit(0.U(16.W)) // Intermediate sum register 1
-  val sum2 = RegInit(0.U(16.W)) // Intermediate sum register 2
-  val sum3 = RegInit(0.U(16.W)) // Intermediate sum register 3
-
-  when(io.mul_en_in) {
-    sum1 := partial_products(0) + (partial_products(1) << 1)
-    sum2 := (partial_products(2) << 2) + (partial_products(3) << 3)
-    sum3 := (partial_products(4) << 4) + (partial_products(5) << 5) +
-            (partial_products(6) << 6) + (partial_products(7) << 7)
-  }
-
-  // Task 5: Calculate the final product
-  val mul_out_reg = RegInit(0.U(16.W)) // Final product register
-  when(io.mul_en_in) {
-    mul_out_reg := sum1 + sum2 + sum3 // Accumulated sum
-  }
-
-  // Task 6: Output assignment
-  when(mul_en_out) {
-    io.mul_out := mul_out_reg // Assign final product to output
-  } .otherwise {
-    io.mul_out := 0.U // Assign 0 if output enable is not active
-  }
+  
+  // Update enable pipeline register
+  mul_en_out_reg := Cat(mul_en_out_reg(3, 0), io.mul_en_in)
+  
+  // Generate partial products
+  val pp0 = mul_a_reg & Fill(8, mul_b_reg(0))
+  val pp1 = mul_a_reg & Fill(8, mul_b_reg(1))
+  val pp2 = mul_a_reg & Fill(8, mul_b_reg(2))
+  val pp3 = mul_a_reg & Fill(8, mul_b_reg(3))
+  val pp4 = mul_a_reg & Fill(8, mul_b_reg(4))
+  val pp5 = mul_a_reg & Fill(8, mul_b_reg(5))
+  val pp6 = mul_a_reg & Fill(8, mul_b_reg(6))
+  val pp7 = mul_a_reg & Fill(8, mul_b_reg(7))
+  
+  // Pipeline stage 1: Partial sum calculation
+  val sum1_reg = RegNext(Cat(0.U(1.W), pp0) + Cat(0.U(1.W), pp1) << 1)
+  val sum2_reg = RegNext(Cat(0.U(1.W), pp2) << 2 + Cat(0.U(1.W), pp3) << 3)
+  val sum3_reg = RegNext(Cat(0.U(1.W), pp4) << 4 + Cat(0.U(1.W), pp5) << 5)
+  val sum4_reg = RegNext(Cat(0.U(1.W), pp6) << 6 + Cat(0.U(1.W), pp7) << 7)
+  
+  // Pipeline stage 2: Combine partial sums
+  val sum12_reg = RegNext(sum1_reg + sum2_reg)
+  val sum34_reg = RegNext(sum3_reg + sum4_reg)
+  
+  // Pipeline stage 3: Final product calculation
+  val mul_out_reg = RegNext(sum12_reg + sum34_reg)
+  
+  // Output assignments
+  io.mul_en_out := mul_en_out_reg(4)
+  io.mul_out := Mux(io.mul_en_out, mul_out_reg, 0.U)
 }
-
-

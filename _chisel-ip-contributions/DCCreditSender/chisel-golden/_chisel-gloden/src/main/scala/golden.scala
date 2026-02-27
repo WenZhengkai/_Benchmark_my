@@ -8,6 +8,7 @@ import chisel3.util._
   * This is useful for building systems which are insensitive to variable latency
   * delays.
   */
+
 class CreditIO[D <: Data](data: D) extends Bundle {
   val valid = Output(Bool())
   val credit = Input(Bool())
@@ -15,6 +16,7 @@ class CreditIO[D <: Data](data: D) extends Bundle {
 }
 
 class DCCreditSender[D <: Data](data: D, maxCredit: Int) extends Module {
+
   val io = IO(new Bundle {
     val enq = Flipped(Decoupled(data.cloneType))
     val deq = new CreditIO(data.cloneType)
@@ -26,14 +28,18 @@ class DCCreditSender[D <: Data](data: D, maxCredit: Int) extends Module {
 
   val icredit = RegNext(io.deq.credit)
   val curCredit = RegInit(init = maxCredit.U)
+
   when(icredit && !io.enq.fire) {
     curCredit := curCredit + 1.U
   }.elsewhen(!icredit && io.enq.fire) {
     curCredit := curCredit - 1.U
   }
+
   io.enq.ready := curCredit > 0.U
+
   val dataOut = RegEnable(io.enq.bits, io.enq.fire)
   val validOut = RegNext(io.enq.fire, false.B)
+  
   io.deq.valid := validOut
   io.deq.bits := dataOut
   io.curCredit := curCredit

@@ -1,47 +1,63 @@
+// package chisel_tutorial
+
 import chisel3._
 import chisel3.util._
 
+/**
+ * A module that distributes tokens (data payloads) to multiple output destinations.
+ *
+ * @param data The type of the payload data
+ * @param n    The number of output destinations
+ */
 class dut[D <: Data](data: D, n: Int) extends Module {
   val io = IO(new Bundle {
-    val dst = Input(UInt(n.W))                           // Destination bit vector
-    val c   = Flipped(DecoupledIO(data.cloneType))       // Input channel (DecoupledIO)
-    val p   = Vec(n, DecoupledIO(data.cloneType))        // Output channels (DecoupledIO)
+    // Bit vector that determines which output channels should receive the data
+    val dst = Input(UInt(n.W))
+    
+    // Input channel for the data payload
+    val c = Flipped(new DecoupledIO(data.cloneType))
+    
+    // Array of output channels corresponding to the potential destinations
+    val p = Vec(n, new DecoupledIO(data.cloneType))
   })
 
-  // *** Task 1: Define Registers and Signals ***
-  val pData = Reg(data.cloneType)                        // Data register
-  val pValid = RegInit(0.U(n.W))                         // Valid register (tracks active output channels)
-  val pReady = Wire(Vec(n, Bool()))                      // Signal for output readiness
-  val nxtAccept = Wire(Bool())                           // Signal to determine if new data can be accepted
-
-  // *** Task 2: Implement Data Register (pData) ***
-  when(nxtAccept && io.c.fire()) {                       // Update pData if new data is being accepted
+  // Register to store the incoming data payload
+  val pData = RegInit(0.U.asTypeOf(data.cloneType))
+  
+  // Register to track which output channels have valid data
+  val pValid = RegInit(0.U(n.W))
+  
+  // Vector of ready signals from all output channels
+  val pReady = Cat(io.p.map(_.ready).reverse)
+  
+  // Determines when the module is ready to accept new data
+  val nxtAccept = (pValid === 0.U) || ((pValid & pReady) === pValid)
+  
+  // Signal to input channel if we're ready to accept new data
+  io.c.ready := nxtAccept
+  
+  // Update valid bits and data register based on next accept condition
+  when(nxtAccept) {
+    // Update data register with incoming data (regardless of validity)
     pData := io.c.bits
-  }
-
-  // *** Task 3: Implement Valid Register (pValid) ***
-  when(nxtAccept) {                                      // When accepting new data:
-    when(io.c.valid) {                                   // If input data is valid:
-      pValid := io.dst                                   // Set pValid to match active bits in dst
+    
+    // Update valid bits based on dst and incoming data validity
+    when(io.c.valid) {
+      pValid := io.dst
     }.otherwise {
-      pValid := 0.U                                      // Otherwise, clear pValid
+      pValid := 0.U
     }
-  }.otherwise {                                          // Retain valid bits for outputs not ready
-    pValid := pValid & ~pReady.asUInt
+  }.otherwise {
+    // Clear bits for outputs that are ready, keep others
+    pValid := pValid & ~pReady
   }
-
-  // *** Task 4: Compute the Next Accept Signal (nxtAccept) ***
-  // nxtAccept is true if there is no valid data or all valid data has been accepted
-  nxtAccept := (pValid === 0.U) || (pValid & ~pReady.asUInt) === 0.U
-
-  // *** Task 5: Assign Outputs ***
+  
+  // Connect each output channel
   for (i <- 0 until n) {
-    io.p(i).valid := pValid(i)                           // Output channel valid signal follows pValid
-    io.p(i).bits := pData                                // Output channel data is driven by pData
-    pReady(i) := io.p(i).ready                           // Output readiness is passed through to pReady
+    // Output is valid if corresponding bit in pValid is set
+    io.p(i).valid := pValid(i)
+    
+    // All active outputs receive the same data payload
+    io.p(i).bits := pData
   }
-
-  // *** Task 6: Integrate Flow Control ***
-  // Input ready depends on nxtAccept
-  io.c.ready := nxtAccept                               // Only accept input when nxtAccept is true
 }

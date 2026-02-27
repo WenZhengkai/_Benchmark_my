@@ -75,7 +75,7 @@ LD_PARTIAL_LOADER=ld
 # Partial linking
 LD_PARTIAL=$(LD_PARTIAL_LOADER) -r -o
 ASFLAGS=
-LIBS=-lzerosoft_rt_stubs -lvirsim -lerrorinf -lsnpsmalloc -lvfs /home/kai/synopsys_tools/Verdi_2018/verdi/Verdi_O-2018.09-SP2/share/PLI/VCS/LINUX64/pli.a 
+LIBS=-lnuma -lzerosoft_rt_stubs -lvirsim -lerrorinf -lsnpsmalloc -lvfs /home/kai/synopsys_tools/Verdi_2018/verdi/Verdi_O-2018.09-SP2/share/PLI/VCS/LINUX64/pli.a 
 # Note: if make gives you errors about include, either get gmake, or
 # replace the following line with the contents of the file filelist,
 # EACH TIME IT CHANGES

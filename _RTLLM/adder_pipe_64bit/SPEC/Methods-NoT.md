@@ -8,7 +8,7 @@ Please act as a professional Chisel designer. Give me the complete Chisel code.
 Implement a module of a 64-bit ripple carry adder, which includes several registers to enable the pipeline stages. The output result is available on the result port, and the o_en = 1 indicates the availability of the result.
 
 ## Module name 
-    adder_pipe_64bit               
+    dut               
 ## Input ports
     i_en: Enable signal for addition operation
     adda: 64-bit input operand A
@@ -103,7 +103,7 @@ Implement a module of a 64-bit ripple carry adder, which includes several regist
 ### Task 1: 
 **Objective:** Define the module interface and create the input/output ports.
 **Step:** 
-1. Define the module `adder_pipe_64bit` with its input and output ports as specified in the module specification.
+1. Define the module `dut` with its input and output ports as specified in the module specification.
 
 ### Task 2: 
 **Objective:** Set up basic infrastructure for pipeline stages.

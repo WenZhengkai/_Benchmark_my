@@ -3,35 +3,26 @@ import chisel3.util._
 
 class dut(numChannels: Int) extends Module {
   val io = IO(new Bundle {
-    val in = Flipped(Vec(numChannels, Decoupled(UInt(8.W)))) // Input channels
-    val out = Decoupled(UInt(8.W)) // Output channel
+    val in = Vec(numChannels, Flipped(Decoupled(UInt(8.W))))
+    val out = Decoupled(UInt(8.W))
   })
 
-  // Task 1: Output Validity Signal Generation
-  // Combine valid signals from all input channels
+  // The output is valid if at least one input channel is valid
   io.out.valid := io.in.map(_.valid).reduce(_ || _)
 
-  // Task 2: Priority Channel Selection Logic
-  // Create a priority-based selection of the input channel
-  val validWithIndex = io.in.zipWithIndex.map { case (channel, index) => (channel.valid, index.U) }
-  val selectedChannel = PriorityMux(validWithIndex.map(_._1), validWithIndex.map(_._2))
-
-  // Task 3: Output Data Routing Implementation
-  // Route the data from the selected channel to the output
-  io.out.bits := Mux1H(
-    io.in.zipWithIndex.map { case (channel, index) =>
-      (index.U === selectedChannel) -> channel.bits
-    }
-  )
+  // Create a vector of channel valid signals
+  val channelValids = VecInit(io.in.map(_.valid))
   
-  // Task 4: Input Ready Signal Generation
-  // Set the `ready` signal on the input channel that is currently selected
-  io.in.zipWithIndex.foreach { case (channel, index) =>
-    channel.ready := (selectedChannel === index.U) && io.out.ready
+  // Select the first valid channel using PriorityMux
+  // This returns the index of the highest priority (lowest-indexed) valid channel
+  val selectedChannel = PriorityEncoder(channelValids)
+
+  // Route the data from the selected channel to the output
+  io.out.bits := io.in(selectedChannel).bits
+
+  // Set ready signals for input channels
+  // Only the selected channel is ready when the output is ready
+  for (i <- 0 until numChannels) {
+    io.in(i).ready := io.out.ready && (i.U === selectedChannel)
   }
-
-  // Task 5: Integration & Final Wiring
-  // No extra logic is required here as the design is modular and flows as specified.
-
 }
-

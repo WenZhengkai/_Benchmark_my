@@ -3,27 +3,25 @@ import chisel3.util._
 
 class dut(numChannels: Int) extends Module {
   val io = IO(new Bundle {
-    val in = Flipped(Vec(numChannels, Decoupled(UInt(8.W)))) // Input channels
-    val out = Decoupled(UInt(8.W)) // Output channel
+    val in = Vec(numChannels, Flipped(Decoupled(UInt(8.W))))
+    val out = Decoupled(UInt(8.W))
   })
 
-  // Task 1: Output Validity Signal Generation
-  val validSignals = io.in.map(_.valid) // Extract validity signals from input channels
-  io.out.valid := validSignals.reduce(_ || _) // OR-aggregation for output validity
+  // Output validity: output is valid if at least one input is valid
+  io.out.valid := io.in.map(_.valid).reduce(_ || _)
 
-  // Task 2: Priority Channel Selection Logic
-  // Create pairs of (valid, index) and map them for PriorityMux
-  val validIndices = io.in.zipWithIndex.map { case (input, index) => input.valid -> index.U }
-  val selectedChannel = PriorityMux(validIndices) // Select index of the highest priority valid input
+  // Priority selection: choose the first valid input channel (lowest index)
+  val selectedChannel = PriorityMux(
+    io.in.zipWithIndex.map { case (channel, index) => 
+      (channel.valid, index.U)
+    }
+  )
 
-  // Task 3: Output Data Routing Implementation
-  // Use the selectedChannel index to route the corresponding input data
+  // Data routing: connect the selected input channel's data to the output
   io.out.bits := io.in(selectedChannel).bits
 
-  // Task 4: Input Ready Signal Generation
-  // Generate per-channel ready signals based on selected channel
-  io.in.zipWithIndex.foreach { case (input, index) =>
-    input.ready := (selectedChannel === index.U) && io.out.ready // Only the selected channel has its ready signal asserted
+  // Input readiness: only the selected channel is ready when output is ready
+  for (i <- 0 until numChannels) {
+    io.in(i).ready := io.out.ready && (i.U === selectedChannel)
   }
 }
-

@@ -6,12 +6,12 @@ Please act as a professional Verilog designer.
 ---
 
 ## Module Name:
-`DCSerializer`
+`dut`
 
 ---
 
 ## Overview:
-The `DCSerializer` module is designed to serialize an arbitrary data structure (`D <: Data`) into a sequence of output words of fixed width (`width` bits). The module operates in a streaming fashion - the input data is serialized and transmitted across the output channel one word at a time. The input transaction is deemed complete and acknowledged once the entire serialized stream has been sent.
+The `dut` module is designed to serialize an arbitrary data structure (`D <: Data`) into a sequence of output words of fixed width (`width` bits). The module operates in a streaming fashion - the input data is serialized and transmitted across the output channel one word at a time. The input transaction is deemed complete and acknowledged once the entire serialized stream has been sent.
 ---
 
 
@@ -61,12 +61,12 @@ Please act as a professional Chisel designer.
 ---
 
 #### Module Name:
-`DCSerializer`
+`dut`
 
 ---
 
 #### Overview:
-The `DCSerializer` module is designed to serialize an arbitrary data structure (`D <: Data`) into a sequence of output words of fixed width (`width` bits). The module operates in a streaming fashion - the input data is serialized and transmitted across the output channel one word at a time. The input transaction is deemed complete and acknowledged once the entire serialized stream has been sent.
+The `dut` module is designed to serialize an arbitrary data structure (`D <: Data`) into a sequence of output words of fixed width (`width` bits). The module operates in a streaming fashion - the input data is serialized and transmitted across the output channel one word at a time. The input transaction is deemed complete and acknowledged once the entire serialized stream has been sent.
 ---
 
 #### Parameters:
@@ -130,12 +130,12 @@ Please act as a professional Chisel designer. Slice the `Internal logic` into se
 ---
 
 #### Module Name:
-`DCSerializer`
+`dut`
 
 ---
 
 #### Overview:
-The `DCSerializer` module is designed to serialize an arbitrary data structure (`D <: Data`) into a sequence of output words of fixed width (`width` bits). The module operates in a streaming fashion - the input data is serialized and transmitted across the output channel one word at a time. The input transaction is deemed complete and acknowledged once the entire serialized stream has been sent.
+The `dut` module is designed to serialize an arbitrary data structure (`D <: Data`) into a sequence of output words of fixed width (`width` bits). The module operates in a streaming fashion - the input data is serialized and transmitted across the output channel one word at a time. The input transaction is deemed complete and acknowledged once the entire serialized stream has been sent.
 ---
 
 #### Parameters:
@@ -203,12 +203,12 @@ Please act as a professional Chisel designer.
 ---
 
 #### Module Name:
-`DCSerializer`
+`dut`
 
 ---
 
 #### Overview:
-The `DCSerializer` module is designed to serialize an arbitrary data structure (`D <: Data`) into a sequence of output words of fixed width (`width` bits). The module operates in a streaming fashion - the input data is serialized and transmitted across the output channel one word at a time. The input transaction is deemed complete and acknowledged once the entire serialized stream has been sent.
+The `dut` module is designed to serialize an arbitrary data structure (`D <: Data`) into a sequence of output words of fixed width (`width` bits). The module operates in a streaming fashion - the input data is serialized and transmitted across the output channel one word at a time. The input transaction is deemed complete and acknowledged once the entire serialized stream has been sent.
 ---
 
 #### Parameters:
@@ -270,7 +270,7 @@ The `DCSerializer` module is designed to serialize an arbitrary data structure (
 2. Manage the transition between valid and invalid states according to the handshaking requirements.
 
 ### Task 6: Combine and Integrate Logic
-**Objective:** Integrate all tasks into the `DCSerializer` module’s internal logic.
+**Objective:** Integrate all tasks into the `dut` module’s internal logic.
 **Step:**
 1. Combine logic from each task.
 ```
@@ -289,12 +289,12 @@ Please act as a professional Chisel designer.
 ---
 
 #### Module Name:
-`DCSerializer`
+`dut`
 
 ---
 
 #### Overview:
-The `DCSerializer` module is designed to serialize an arbitrary data structure (`D <: Data`) into a sequence of output words of fixed width (`width` bits). The module operates in a streaming fashion - the input data is serialized and transmitted across the output channel one word at a time. The input transaction is deemed complete and acknowledged once the entire serialized stream has been sent.
+The `dut` module is designed to serialize an arbitrary data structure (`D <: Data`) into a sequence of output words of fixed width (`width` bits). The module operates in a streaming fashion - the input data is serialized and transmitted across the output channel one word at a time. The input transaction is deemed complete and acknowledged once the entire serialized stream has been sent.
 ---
 
 #### Parameters:

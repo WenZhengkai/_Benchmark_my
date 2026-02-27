@@ -3,57 +3,51 @@ import chisel3.util._
 
 class dut extends Module {
   val io = IO(new Bundle {
-    val mul_en_in  = Input(Bool())    // Input enable signal
-    val mul_a      = Input(UInt(8.W)) // 8-bit multiplicand
-    val mul_b      = Input(UInt(8.W)) // 8-bit multiplier
-    val mul_en_out = Output(Bool())   // Output enable signal
-    val mul_out    = Output(UInt(16.W)) // 16-bit product output
+    // Input ports
+    val mul_en_in = Input(Bool())
+    val mul_a = Input(UInt(8.W))
+    val mul_b = Input(UInt(8.W))
+    
+    // Output ports
+    val mul_en_out = Output(Bool())
+    val mul_out = Output(UInt(16.W))
   })
 
-  // Task 1: Input Control Logic
-  val mul_en_out_reg = RegInit(0.U(5.W)) // 5-bit shift register for enable signal
-  when(io.mul_en_in) {
-    mul_en_out_reg := Cat(mul_en_out_reg(3, 0), io.mul_en_in) // Shift in the enable signal
+  // Pipeline registers for control signal
+  val mul_en_out_reg = RegInit(VecInit(Seq.fill(5)(false.B)))
+  
+  // Pipeline the enable signal
+  mul_en_out_reg(0) := io.mul_en_in
+  for (i <- 1 until 5) {
+    mul_en_out_reg(i) := mul_en_out_reg(i-1)
   }
   
-  val mul_en_out = mul_en_out_reg(4) // Extract the MSB of the shift register as output enable
-  io.mul_en_out := mul_en_out
+  // Connect output enable signal to the last pipeline stage
+  io.mul_en_out := mul_en_out_reg(4)
 
-  // Task 2: Input Registers for A and B
-  val mul_a_reg = RegInit(0.U(8.W)) // Register to store multiplicand
-  val mul_b_reg = RegInit(0.U(8.W)) // Register to store multiplier
+  // Input registers
+  val mul_a_reg = RegEnable(io.mul_a, 0.U(8.W), io.mul_en_in)
+  val mul_b_reg = RegEnable(io.mul_b, 0.U(8.W), io.mul_en_in)
 
-  when(io.mul_en_in) {
-    mul_a_reg := io.mul_a
-    mul_b_reg := io.mul_b
-  }
-
-  // Task 3: Generate Partial Products
-  val temp = Wire(Vec(8, UInt(16.W))) // Wires to store 8 partial products
+  // Partial product generation
+  val temp = Wire(Vec(8, UInt(8.W)))
   for (i <- 0 until 8) {
-    temp(i) := Mux(mul_b_reg(i), mul_a_reg << i, 0.U) // Generate partial product
+    temp(i) := Mux(mul_b_reg(i), mul_a_reg, 0.U) << i
   }
 
-  // Task 4: Implement Partial Sum Calculations
-  val sum1 = RegInit(0.U(16.W))
-  val sum2 = RegInit(0.U(16.W))
-  val sum3 = RegInit(0.U(16.W))
-  val sum4 = RegInit(0.U(16.W))
+  // Pipeline stage 1: First level partial sum calculation
+  val sum1_0 = RegNext(temp(0) + temp(1))
+  val sum1_1 = RegNext(temp(2) + temp(3))
+  val sum1_2 = RegNext(temp(4) + temp(5))
+  val sum1_3 = RegNext(temp(6) + temp(7))
 
-  when(io.mul_en_in) {
-    sum1 := temp(0) + temp(1)
-    sum2 := temp(2) + temp(3)
-    sum3 := temp(4) + temp(5)
-    sum4 := temp(6) + temp(7)
-  }
+  // Pipeline stage 2: Second level partial sum calculation
+  val sum2_0 = RegNext(sum1_0 + sum1_1)
+  val sum2_1 = RegNext(sum1_2 + sum1_3)
 
-  // Task 5: Calculate Final Product
-  val mul_out_reg = RegInit(0.U(16.W)) // Register to store the final product
-  when(io.mul_en_in) {
-    mul_out_reg := sum1 + sum2 + sum3 + sum4
-  }
+  // Pipeline stage 3: Final product calculation
+  val mul_out_reg = RegNext(sum2_0 + sum2_1)
 
-  // Task 6: Output Assignment
-  io.mul_out := Mux(mul_en_out, mul_out_reg, 0.U) // Output final product or 0
+  // Output assignment
+  io.mul_out := Mux(io.mul_en_out, mul_out_reg, 0.U)
 }
-

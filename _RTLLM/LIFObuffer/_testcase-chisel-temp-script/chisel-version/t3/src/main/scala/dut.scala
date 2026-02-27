@@ -1,57 +1,74 @@
+// package lifo
+
 import chisel3._
 import chisel3.util._
 
-/**
- * A 4-bit wide, 4-entry deep Last-In-First-Out (LIFO) buffer with push and pop operations.
- */
-class dut extends Module {
+class LIFO extends Module {
   val io = IO(new Bundle {
-    val dataIn = Input(UInt(4.W))   // 4-bit input data
-    val RW = Input(Bool())         // Read/Write (1 = read, 0 = write)
-    val EN = Input(Bool())         // Enable signal
-    val EMPTY = Output(Bool())     // Empty flag
-    val FULL = Output(Bool())      // Full flag
-    val dataOut = Output(UInt(4.W)) // 4-bit output data
+    val dataIn = Input(UInt(4.W))
+    val RW = Input(Bool())  // 1 for read, 0 for write
+    val EN = Input(Bool())  // Enable signal
+    
+    val EMPTY = Output(Bool())
+    val FULL = Output(Bool())
+    val dataOut = Output(UInt(4.W))
   })
-
-  // Stack memory: 4 entries, each 4-bit wide
+  
+  // Stack memory to store data (4 entries, each 4 bits wide)
   val stack_mem = RegInit(VecInit(Seq.fill(4)(0.U(4.W))))
   
-  // Stack pointer (SP) to navigate the stack: 3 bits (0 to 4)
-  val SP = RegInit(4.U(3.W)) // Starts at 4 (empty buffer)
-
-  // Initialize EMPTY and FULL flags
-  io.EMPTY := (SP === 4.U)
-  io.FULL := (SP === 0.U)
+  // Stack pointer (pointing to the next available position)
+  val SP = RegInit(4.U(3.W))  // Using 3 bits to represent 0-4
   
-  // Default dataOut value is 0 (nothing to output)
+  // Define EMPTY and FULL conditions
+  io.EMPTY := SP === 4.U
+  io.FULL := SP === 0.U
+  
+  // Default output
   io.dataOut := 0.U
-
-  // Clock-based operation
-  when (io.EN) { // Enable signal gates operations
-    when (!reset.asBool) { // Ensure reset logic is prioritized
-      when (io.RW === false.B && !io.FULL) { // Write (push) operation
-        stack_mem(SP - 1.U) := io.dataIn   // Push data to the stack
-        SP := SP - 1.U                     // Decrement stack pointer
-      } .elsewhen (io.RW === true.B && !io.EMPTY) { // Read (pop) operation
-        io.dataOut := stack_mem(SP)       // Read data from the stack
-        stack_mem(SP) := 0.U              // Optional: clear popped data
-        SP := SP + 1.U                    // Increment stack pointer
+  
+  when(io.EN) {
+    when(reset.asBool) {
+      // Reset condition
+      SP := 4.U
+      for(i <- 0 until 4) {
+        stack_mem(i) := 0.U
+      }
+    }.otherwise {
+      when(!io.RW && !io.FULL) {
+        // Write operation (push)
+        stack_mem(SP - 1.U) := io.dataIn
+        SP := SP - 1.U
+      }.elsewhen(io.RW && !io.EMPTY) {
+        // Read operation (pop)
+        io.dataOut := stack_mem(SP)
+        stack_mem(SP) := 0.U
+        SP := SP + 1.U
       }
     }
   }
-
-  // Reset logic to reinitialize the stack and stack pointer
-  when (reset.asBool) { // Active high reset
-    stack_mem := VecInit(Seq.fill(4)(0.U(4.W))) // Clear stack entries
-    SP := 4.U                                 // Reset stack pointer to empty
-  }
 }
 
-// Generate the Verilog code
-/*
-object dutMain extends App {
-  println("Generating the dut Verilog code...")
-  (new chisel3.stage.ChiselStage).emitVerilog(new dut, Array("--target-dir", "generated"))
+class dut extends Module {
+  val io = IO(new Bundle {
+    val dataIn = Input(UInt(4.W))
+    val RW = Input(Bool())
+    val EN = Input(Bool())
+    
+    val EMPTY = Output(Bool())
+    val FULL = Output(Bool())
+    val dataOut = Output(UInt(4.W))
+  })
+  
+  val lifo = Module(new LIFO())
+  
+  // Connect input ports
+  lifo.io.dataIn := io.dataIn
+  lifo.io.RW := io.RW
+  lifo.io.EN := io.EN
+  
+  // Connect output ports
+  io.EMPTY := lifo.io.EMPTY
+  io.FULL := lifo.io.FULL
+  io.dataOut := lifo.io.dataOut
 }
-*/

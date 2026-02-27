@@ -1,0 +1,47 @@
+Please act as a professional Chisel designer. Give me the complete Chisel code.
+
+```
+# Specification
+
+## **Module: BusyTable**
+
+## **Functionality**
+The `BusyTable` module is used to track the busy status of registers in a system that supports register renaming and speculative execution. The module receives wake-up signals for registers that have completed execution, rebusy requests for newly allocated registers, and provides a busy table to indicate which registers are currently in use.
+
+The main operations of this module are:
+1. **Unbusy** registers that have completed execution and are no longer needed.
+2. **Rebusy** registers that are newly allocated or need to be marked busy due to rebusy requests.
+3. **Track** speculative execution by masking certain registers and updating the busy table based on the speculative state.
+
+## **Parameters**
+- `numPregs` (Int): The number of physical registers being managed by the busy table. This parameter determines the width of the busy table and various input/output vectors.
+
+## **IO Ports**
+
+| Port Name          | Direction | Width                     | Description |
+|--------------------|-----------|---------------------------|-------------|
+| `wakeups`          | Input     | Vec(numPregs, Valid(new Wakeup)) | Vector of wakeup signals for registers, each containing information about the register (e.g., `pdst`, `speculative_mask`, and `rebusy` flag). |
+| `ren_uops`         | Input     | Vec(numPregs, Bundle{ pdst: UInt(8.W) }) | Vector of destination registers for newly allocated registers. |
+| `rebusy_reqs`      | Input     | Vec(numPregs, Bool())     | Vector of rebusy requests indicating which registers should be marked busy. |
+| `child_rebusys`    | Input     | UInt(numPregs.W)          | Bitmask representing speculative rebusy state for child registers. |
+| `busy_table`       | Output    | UInt(numPregs.W)          | Bitmask representing the current busy state of all registers. |
+
+## **Function Introduction of Sub-Modules**
+
+1. **Wakeup Bundle**: The `Wakeup` bundle represents the wakeup signal for a single register. It contains:
+   - `uop`: A bundle with `pdst` as the destination register identifier.
+   - `speculative_mask`: A mask to handle speculative execution.
+   - `rebusy`: A flag indicating whether the register needs to be re-marked as busy.
+
+2. **Busy Table Update Logic**:
+   - **Wakeup Pipeline**: Wakeups are registered through pipeline registers to synchronize with the child rebusy mask.
+   - **Busy Table Calculation**:
+     - **Unbusy Step**: Registers that are no longer required are marked unbusy by clearing corresponding bits in `busy_table`.
+     - **Rebusy Step**: Newly allocated registers and those that need rebusy due to rebusy requests or speculative states are marked in the `busy_table`.
+   - **Output Busy Table**: The resulting busy state is output through `io.busy_table`.
+
+3. **BusyTableIO**: This IO bundle organizes the input and output ports, allowing external connections to interact with the busy state of the register set managed by the `BusyTable`.
+
+
+```
+Give me the complete Chisel code.

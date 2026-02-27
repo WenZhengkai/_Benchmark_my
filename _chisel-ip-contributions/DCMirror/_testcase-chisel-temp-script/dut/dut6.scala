@@ -1,45 +1,56 @@
 import chisel3._
 import chisel3.util._
 
+/**
+ * Token Distributor module that sends data to multiple destinations based on a bit vector.
+ *
+ * @param data The data type to be distributed
+ * @param n The number of output destinations
+ */
 class dut[D <: Data](data: D, n: Int) extends Module {
   val io = IO(new Bundle {
-    val dst  = Input(UInt(n.W)) // Bit vector for active output channels
-    val c    = Flipped(DecoupledIO(data)) // Input channel for incoming data
-    val p    = Vec(n, DecoupledIO(data))  // Output channels
+    // Bit vector indicating active output channels
+    val dst = Input(UInt(n.W))
+    // Input channel carrying the data payload
+    val c = Flipped(new DecoupledIO(data.cloneType))
+    // Vector of output channels
+    val p = Vec(n, new DecoupledIO(data.cloneType))
   })
 
-  // Task 1: Define Registers and Signals
-  val pData = Reg(data.cloneType) // Register to hold the payload data
-  val pValid = RegInit(0.U(n.W))  // Register to indicate valid output channels
-  val pReady = Wire(Vec(n, Bool())) // Wire vector to represent output readiness
-  val nxtAccept = Wire(Bool()) // Signal to indicate when new data can be accepted
-
-  // Task 2: Implement Data Register (`pData`)
-  when(nxtAccept) {
-    pData := io.c.bits
-  }
-
-  // Task 3: Implement Valid Register (`pValid`)
-  when(nxtAccept) {
-    pValid := io.dst & Fill(n, io.c.valid) // Set valid bits based on dst and c.valid
-  }.otherwise {
-    pValid := pValid & ~pReady.asUInt // Mask out bits for outputs that are ready
-  }
-
-  // Task 4: Compute the Next Accept Signal (`nxtAccept`)
-  nxtAccept := (pValid === 0.U) || (pValid & ~pReady.asUInt) === 0.U
-
-  // Task 5: Assign Outputs
-  for (i <- 0 until n) {
-    // Drive `valid` signal
-    io.p(i).valid := pValid(i)
-    // Assign the data payload (same for all active outputs)
-    io.p(i).bits := pData
-    // Connect the `ready` signal to pReady
-    pReady(i) := io.p(i).ready
-  }
-
-  // Task 6: Integrate Flow Control
-  // Drive the input channel's `ready` signal
+  // Data register to store the incoming payload
+  val pData = Reg(data.cloneType)
+  
+  // Valid register to track which outputs have valid data
+  val pValid = RegInit(0.U(n.W))
+  
+  // Concatenate ready signals from all output channels
+  val pReady = Cat(io.p.map(_.ready).reverse)
+  
+  // Next accept signal - true when no data is valid or all valid data has been accepted
+  val nxtAccept = (pValid === 0.U) || ((pValid & pReady) === pValid)
+  
+  // Input ready when we can accept new data
   io.c.ready := nxtAccept
+  
+  // Logic to update data and valid signals
+  when(nxtAccept) {
+    // Update data register with incoming data (regardless of validity)
+    pData := io.c.bits
+    
+    // Update valid register based on dst and incoming valid signal
+    when(io.c.valid) {
+      pValid := io.dst
+    }.otherwise {
+      pValid := 0.U
+    }
+  }.otherwise {
+    // Clear valid bits for outputs that are ready, keep others
+    pValid := pValid & ~pReady
+  }
+  
+  // Connect data and valid signals to outputs
+  for (i <- 0 until n) {
+    io.p(i).valid := pValid(i)
+    io.p(i).bits := pData
+  }
 }

@@ -3,55 +3,40 @@ import chisel3.util._
 
 class dut[D <: Data](data: D) extends Module {
   val io = IO(new Bundle {
-    val enq = Flipped(Decoupled(data)) // Input interface for incoming data
-    val deq = Decoupled(data)         // Output interface for processed data
+    val enq = Flipped(DecoupledIO(data.cloneType))
+    val deq = DecoupledIO(data.cloneType)
   })
 
-  // Task 1: Register and Wire Declaration
-  val ready_r   = RegInit(true.B)       // Register to track input readiness
-  val occupied  = RegInit(false.B)      // Register to track buffer status
-  val hold      = Reg(data.cloneType)   // Register to act as temporary data buffer
-  val load      = Wire(Bool())          // Wire to control loading new data
-  val drain     = Wire(Bool())          // Wire to control draining data to output
-
-  // Task 2: Load/Drain Condition Logic
-  drain := occupied && io.deq.ready // Drain when buffer is full and consumer is ready
-  load := io.enq.valid && ready_r && (!io.deq.ready || drain) 
-  // Load when input is valid, ready, and output path available
-
-  // Task 3: Data Buffer Management
-  when(load) {
-    hold := io.enq.bits // Capture incoming data into the buffer
-  }
-
-  // Task 4: Occupied State Control
-  when(drain) {
-    occupied := false.B // Clear the buffer when data is drained
-  }.elsewhen(load) {
-    occupied := true.B  // Mark buffer as occupied when new data is loaded
-  }
-
-  // Task 5: Readiness Flag Update
-  ready_r := (!occupied && !load) || (drain && !load)
-  // Update readiness based on buffer state
-
-  // Task 6: Output Data Multiplexing
-  io.deq.bits := Mux(occupied, hold, io.enq.bits) // Select between stored or incoming data
-  io.deq.valid := occupied || (io.enq.valid && ready_r) // Output is valid if buffer is occupied or input is valid and ready
-
-  // Task 7: Interface Signal Binding
-  io.enq.ready := ready_r // Connect the internal readiness signal to the input ready output
-
-  // Task 8: Concurrency Validation
-  assert(!(load && drain), "Simultaneous load-drain undefined behavior") 
-  // Ensure no simultaneous load and drain events
+  // Internal registers and wires
+  val ready_r = RegInit(true.B)
+  val occupied = RegInit(false.B)
+  val hold = Reg(data.cloneType)
   
-  // Optional: Additional simulation-only debug prints
-  when(load) {
-    printf(p"[INFO] Load: Data = ${io.enq.bits}\n")
+  val drain = Wire(Bool())
+  val load = Wire(Bool())
+  
+  // Drain logic: we can drain data when we have data and downstream is ready
+  drain := occupied && io.deq.ready
+  
+  // Load logic: we load data when valid input arrives, we're ready, and either 
+  // downstream isn't ready or we're draining data simultaneously
+  load := io.enq.valid && ready_r && (!io.deq.ready || drain)
+  
+  // Data handling
+  when (load) {
+    hold := io.enq.bits
+    occupied := true.B
+  } .elsewhen (drain) {
+    occupied := false.B
   }
-  when(drain) {
-    printf(p"[INFO] Drain: Data = ${io.deq.bits}\n")
-  }
+  
+  // When occupied, output the stored data, otherwise pass through input data
+  io.deq.bits := Mux(occupied, hold, io.enq.bits)
+  
+  // Output is valid when either we have stored data or input is valid
+  io.deq.valid := occupied || io.enq.valid
+  
+  // Ready signal logic: we're ready when we're not occupied or we're draining data
+  ready_r := !occupied || drain
+  io.enq.ready := ready_r
 }
-

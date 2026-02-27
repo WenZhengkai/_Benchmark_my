@@ -1,0 +1,52 @@
+circuit dut :
+  module dut :
+    input clock : Clock
+    input reset : UInt<1>
+    output io : { flip bump_left : UInt<1>, flip bump_right : UInt<1>, flip ground : UInt<1>, walk_left : UInt<1>, walk_right : UInt<1>, aaah : UInt<1>}
+
+    reg state : UInt<2>, clock with :
+      reset => (reset, UInt<2>("h0")) @[dut.scala 19:22]
+    node _T = eq(UInt<2>("h0"), state) @[dut.scala 22:17]
+    when _T : @[dut.scala 22:17]
+      node _T_1 = eq(io.ground, UInt<1>("h0")) @[dut.scala 24:22]
+      when _T_1 : @[dut.scala 24:35]
+        state <= UInt<2>("h2") @[dut.scala 25:15]
+      else :
+        node _T_2 = or(io.bump_left, io.bump_right) @[dut.scala 26:31]
+        when _T_2 : @[dut.scala 26:49]
+          state <= UInt<2>("h1") @[dut.scala 27:15]
+    else :
+      node _T_3 = eq(UInt<2>("h1"), state) @[dut.scala 22:17]
+      when _T_3 : @[dut.scala 22:17]
+        node _T_4 = eq(io.ground, UInt<1>("h0")) @[dut.scala 31:22]
+        when _T_4 : @[dut.scala 31:35]
+          state <= UInt<2>("h3") @[dut.scala 32:15]
+        else :
+          node _T_5 = or(io.bump_left, io.bump_right) @[dut.scala 33:31]
+          when _T_5 : @[dut.scala 33:49]
+            state <= UInt<2>("h0") @[dut.scala 34:15]
+      else :
+        node _T_6 = eq(UInt<2>("h2"), state) @[dut.scala 22:17]
+        when _T_6 : @[dut.scala 22:17]
+          node _T_7 = eq(io.ground, UInt<1>("h1")) @[dut.scala 38:22]
+          when _T_7 : @[dut.scala 38:34]
+            state <= UInt<2>("h0") @[dut.scala 39:15]
+        else :
+          node _T_8 = eq(UInt<2>("h3"), state) @[dut.scala 22:17]
+          when _T_8 : @[dut.scala 22:17]
+            node _T_9 = eq(io.ground, UInt<1>("h1")) @[dut.scala 43:22]
+            when _T_9 : @[dut.scala 43:34]
+              state <= UInt<2>("h1") @[dut.scala 44:15]
+    node _io_walk_left_T = eq(state, UInt<2>("h0")) @[dut.scala 50:26]
+    io.walk_left <= _io_walk_left_T @[dut.scala 50:16]
+    node _io_walk_right_T = eq(state, UInt<2>("h1")) @[dut.scala 51:27]
+    io.walk_right <= _io_walk_right_T @[dut.scala 51:17]
+    node _io_aaah_T = eq(state, UInt<2>("h2")) @[dut.scala 52:21]
+    node _io_aaah_T_1 = eq(state, UInt<2>("h3")) @[dut.scala 52:44]
+    node _io_aaah_T_2 = or(_io_aaah_T, _io_aaah_T_1) @[dut.scala 52:35]
+    io.aaah <= _io_aaah_T_2 @[dut.scala 52:11]
+    node _T_10 = bits(reset, 0, 0) @[dut.scala 55:20]
+    when _T_10 : @[dut.scala 55:24]
+      state <= UInt<2>("h0") @[dut.scala 56:11]
+
+
