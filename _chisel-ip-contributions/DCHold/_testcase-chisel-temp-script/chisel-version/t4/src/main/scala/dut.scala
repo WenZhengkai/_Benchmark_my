@@ -3,28 +3,28 @@ import chisel3.util._
 
 class dut[D <: Data](data: D) extends Module {
   val io = IO(new Bundle {
-    val enq = Flipped(DecoupledIO(chiselTypeOf(data)))
-    val deq = DecoupledIO(chiselTypeOf(data))
+    val enq = Flipped(Decoupled(data.cloneType))
+    val deq = Decoupled(data.cloneType)
   })
 
-  // Internal registers
   val pValid = RegInit(false.B)
-  val pData = Reg(chiselTypeOf(data))
+  val pData  = Reg(data.cloneType)
 
-  // Input interface logic - only ready when not holding valid data
+  // Accept input only when the holding register is empty.
   io.enq.ready := !pValid
 
-  // Output interface logic - valid when holding valid data
+  // Present held data to output.
   io.deq.valid := pValid
-  io.deq.bits := pData
+  io.deq.bits  := pData
 
-  // State and data management
-  when(io.enq.fire) {
-    // When enqueuing new data
-    pValid := true.B
+  // Capture input data.
+  when(io.enq.valid && io.enq.ready) {
     pData := io.enq.bits
-  }.elsewhen(io.deq.fire) {
-    // When dequeuing data
+    pValid := true.B
+  }
+
+  // Release held data after successful dequeue handshake.
+  when(io.deq.valid && io.deq.ready) {
     pValid := false.B
   }
 }

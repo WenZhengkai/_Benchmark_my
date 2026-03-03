@@ -1,36 +1,29 @@
-// package readyvalidreg
-
 import chisel3._
 import chisel3.util._
 
-/**
- * A holding register with ready/valid interfaces
- * Holds a data word until it is successfully unloaded via the deq interface
- * No combinational paths through this module
- * Can accept data at most every other cycle
- *
- * @param data The data type for the payload
- */
 class dut[D <: Data](data: D) extends Module {
   val io = IO(new Bundle {
-    val enq = Flipped(DecoupledIO(data.cloneType))
-    val deq = DecoupledIO(data.cloneType)
+    val enq = Flipped(Decoupled(chiselTypeOf(data)))
+    val deq = Decoupled(chiselTypeOf(data))
   })
 
-  // State registers
+  // Holding registers
   val pValid = RegInit(false.B)
-  val pData = Reg(data.cloneType)
+  val pData  = Reg(chiselTypeOf(data))
 
-  // Ready/valid logic
-  io.enq.ready := !pValid
+  // Interface outputs
   io.deq.valid := pValid
-  io.deq.bits := pData
+  io.deq.bits  := pData
+  io.enq.ready := !pValid
 
-  // Update internal state based on handshake signals
-  when(io.enq.valid && io.enq.ready) {
-    pValid := true.B
+  // Capture input when empty
+  when(!pValid && io.enq.valid) {
     pData := io.enq.bits
-  }.elsewhen(io.deq.valid && io.deq.ready) {
+    pValid := true.B
+  }
+
+  // Release held data on dequeue handshake
+  when(pValid && io.deq.ready) {
     pValid := false.B
   }
 }

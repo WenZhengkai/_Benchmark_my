@@ -2,34 +2,26 @@ import chisel3._
 import chisel3.util._
 import scala.math.pow
 
-class dut(bitwidth: Int) extends Module {
+class dut(val bitwidth: Int) extends Module {
+  require(bitwidth > 0, "bitwidth must be greater than 0")
+
   val io = IO(new Bundle {
-    val in = Input(UInt(bitwidth.W))
+    val in     = Input(UInt(bitwidth.W))
     val encode = Input(Bool())
-    val out = Output(UInt(bitwidth.W))
+    val out    = Output(UInt(bitwidth.W))
   })
 
-  // Logic for encoding and decoding
-  when(io.encode) {
-    // Binary to Gray code encoding: output = input XOR (input >> 1)
-    io.out := io.in ^ (io.in >> 1.U)
-  }.otherwise {
-    // Gray code to Binary decoding
-    // This uses an iterative approach where we perform XOR operations
-    // with shifted versions of intermediate results
-    
-    // Initialize the first intermediate value with the input
-    val iterations = log2Ceil(bitwidth)
-    val decodeSteps = Wire(Vec(iterations + 1, UInt(bitwidth.W)))
-    decodeSteps(0) := io.in
-    
-    // Perform the iterative XOR operations
-    for (i <- 0 until iterations) {
-      val shiftAmount = pow(2, i).toInt
-      decodeSteps(i + 1) := decodeSteps(i) ^ (decodeSteps(i) >> shiftAmount.U)
-    }
-    
-    // The final result is the last intermediate value
-    io.out := decodeSteps(iterations)
+  // Binary -> Gray
+  val encoded = io.in ^ (io.in >> 1)
+
+  // Gray -> Binary (iterative prefix XOR using shifts of powers of two)
+  val stages = log2Ceil(bitwidth)
+  val decodeVec = Wire(Vec(stages + 1, UInt(bitwidth.W)))
+  decodeVec(0) := io.in
+  for (i <- 0 until stages) {
+    decodeVec(i + 1) := decodeVec(i) ^ (decodeVec(i) >> (1 << i))
   }
+  val decoded = decodeVec(stages)
+
+  io.out := Mux(io.encode, encoded, decoded)
 }

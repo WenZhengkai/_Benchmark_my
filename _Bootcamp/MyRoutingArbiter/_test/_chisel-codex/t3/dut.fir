@@ -1,0 +1,33 @@
+circuit dut :
+  module dut :
+    input clock : Clock
+    input reset : UInt<1>
+    output io : { flip in : { flip ready : UInt<1>, valid : UInt<1>, bits : UInt<8>}[4], out : { flip ready : UInt<1>, valid : UInt<1>, bits : UInt<8>}}
+
+    node _io_out_valid_T = or(io.in[0].valid, io.in[1].valid) @[dut.scala 13:47]
+    node _io_out_valid_T_1 = or(_io_out_valid_T, io.in[2].valid) @[dut.scala 13:47]
+    node _io_out_valid_T_2 = or(_io_out_valid_T_1, io.in[3].valid) @[dut.scala 13:47]
+    io.out.valid <= _io_out_valid_T_2 @[dut.scala 13:16]
+    node _chosen_T = mux(io.in[2].valid, UInt<2>("h2"), UInt<2>("h3")) @[Mux.scala 47:70]
+    node _chosen_T_1 = mux(io.in[1].valid, UInt<2>("h1"), _chosen_T) @[Mux.scala 47:70]
+    node chosen = mux(io.in[0].valid, UInt<2>("h0"), _chosen_T_1) @[Mux.scala 47:70]
+    io.out.bits <= UInt<1>("h0") @[dut.scala 22:15]
+    when io.out.valid : @[dut.scala 23:22]
+      io.out.bits <= io.in[chosen].bits @[dut.scala 24:17]
+    node _io_in_0_ready_T = and(io.out.ready, io.out.valid) @[dut.scala 29:30]
+    node _io_in_0_ready_T_1 = eq(chosen, UInt<2>("h0")) @[dut.scala 29:57]
+    node _io_in_0_ready_T_2 = and(_io_in_0_ready_T, _io_in_0_ready_T_1) @[dut.scala 29:46]
+    io.in[0].ready <= _io_in_0_ready_T_2 @[dut.scala 29:14]
+    node _io_in_1_ready_T = and(io.out.ready, io.out.valid) @[dut.scala 29:30]
+    node _io_in_1_ready_T_1 = eq(chosen, UInt<2>("h1")) @[dut.scala 29:57]
+    node _io_in_1_ready_T_2 = and(_io_in_1_ready_T, _io_in_1_ready_T_1) @[dut.scala 29:46]
+    io.in[1].ready <= _io_in_1_ready_T_2 @[dut.scala 29:14]
+    node _io_in_2_ready_T = and(io.out.ready, io.out.valid) @[dut.scala 29:30]
+    node _io_in_2_ready_T_1 = eq(chosen, UInt<2>("h2")) @[dut.scala 29:57]
+    node _io_in_2_ready_T_2 = and(_io_in_2_ready_T, _io_in_2_ready_T_1) @[dut.scala 29:46]
+    io.in[2].ready <= _io_in_2_ready_T_2 @[dut.scala 29:14]
+    node _io_in_3_ready_T = and(io.out.ready, io.out.valid) @[dut.scala 29:30]
+    node _io_in_3_ready_T_1 = eq(chosen, UInt<2>("h3")) @[dut.scala 29:57]
+    node _io_in_3_ready_T_2 = and(_io_in_3_ready_T, _io_in_3_ready_T_1) @[dut.scala 29:46]
+    io.in[3].ready <= _io_in_3_ready_T_2 @[dut.scala 29:14]
+

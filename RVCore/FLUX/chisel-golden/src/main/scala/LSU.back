@@ -1,0 +1,123 @@
+import chisel3._
+import chisel3.util._
+
+object LSUOpType { 
+  def lb   = "b0000000".U
+  def lh   = "b0000001".U
+  def lw   = "b0000010".U
+  def ld   = "b0000011".U
+  def lbu  = "b0000100".U
+  def lhu  = "b0000101".U
+  def lwu  = "b0000110".U
+  def sb   = "b0001000".U
+  def sh   = "b0001001".U
+  def sw   = "b0001010".U
+  def sd   = "b0001011".U
+
+  def lr      = "b0100000".U
+  def sc      = "b0100001".U
+  def amoswap = "b0100010".U
+  def amoadd  = "b1100011".U
+  def amoxor  = "b0100100".U
+  def amoand  = "b0100101".U
+  def amoor   = "b0100110".U
+  def amomin  = "b0110111".U
+  def amomax  = "b0110000".U
+  def amominu = "b0110001".U
+  def amomaxu = "b0110010".U
+
+  def isAdd(func: UInt) = func(6)
+  def isAtom(func: UInt): Bool = func(5)
+  def isStore(func: UInt): Bool = func(3)
+  def isLoad(func: UInt): Bool = !isStore(func) & !isAtom(func)
+  def isLR(func: UInt): Bool = func === lr
+  def isSC(func: UInt): Bool = func === sc
+  def isAMO(func: UInt): Bool = isAtom(func) && !isLR(func) && !isSC(func)
+
+  def needMemRead(func: UInt): Bool = isLoad(func) || isAMO(func) || isLR(func)
+  def needMemWrite(func: UInt): Bool = isStore(func) || isAMO(func) || isSC(func)
+
+  def atomW = "010".U
+  def atomD = "011".U
+  
+}
+
+
+
+
+class LsuToWbuIO extends NPCBundle {
+    val data_from_mem = Output(UInt(XLen.W))
+
+    val cf = new CtrlFlow
+    val ctrl = new CtrlSignal
+    val data = new DataSrc
+
+}
+
+class LSUIO extends FunctionUnitIO {
+    // val to_mem = new ToMem
+    // val from_mem = new FromMem
+    val dmem = new SimpleBusUC
+    val ctrl    = Input(new CtrlSignal)
+    val data  = Input(new DataSrc)
+}
+
+class LSU extends NPCModule 
+with HasNPCParameter {
+    /*
+    val io = IO(new Bundle{
+        val from_exu = Flipped(Decoupled(new ExuToLsuIO))
+        val to_wbu = Decoupled(new LsuToWbuIO)
+        val to_mem = new ToMem
+        val from_mem = new FromMem
+    })
+    */
+    val io = IO(new LSUIO)
+    // io
+    //>>> ready/valid
+    io.out.valid := io.dmem.resp.valid     // TODO: add memory response
+    io.in.ready := io.dmem.req.ready && io.out.ready
+    io.dmem.resp.ready := io.out.ready
+    //<<< ready/valid
+
+    // val req = io.dmem.req
+
+    io.dmem.req.valid := io.in.valid
+ 
+    io.dmem.req.bits.wdata := io.data.rfSrc2
+
+    io.dmem.req.bits.addr := io.in.bits.srca + io.in.bits.srcb
+    io.dmem.req.bits.wmask := MuxLookup(io.ctrl.fuOpType, "h00".U, Array(
+        LSUOpType.sb    -> "h01".U,
+        LSUOpType.sh    -> "h03".U,
+        LSUOpType.sw    -> "h0f".U,
+        LSUOpType.sd    -> "hff".U
+    ))
+
+    io.dmem.req.bits.wen := io.ctrl.MemWrite && io.in.valid // TODO: add handshake with DataMem
+
+
+    // signals used in LSU
+
+
+    // signals transport
+    val from_mem_data = io.dmem.resp.bits.rdata
+
+    io.dmem.resp.ready := true.B        // TODO
+
+    io.out.bits := MuxLookup(io.ctrl.fuOpType, 0.U, Array(
+        LSUOpType.lb    -> SignExt(from_mem_data(7,0), XLen),
+        LSUOpType.lh    -> SignExt(from_mem_data(15,0), XLen),
+        LSUOpType.lw    -> SignExt(from_mem_data(31,0), XLen),
+        //LSUOpType.ld    -> SignExt(from_mem_data(63,0), XLen),
+
+        LSUOpType.lbu    -> ZeroExt(from_mem_data(7,0), XLen),
+        LSUOpType.lhu    -> ZeroExt(from_mem_data(15,0), XLen),
+        LSUOpType.lwu    -> ZeroExt(from_mem_data(31,0), XLen)    
+    ))
+  
+  
+
+    // io
+
+}

@@ -2,41 +2,27 @@ import chisel3._
 import chisel3.util._
 import scala.math.pow
 
-class dut(bitwidth: Int) extends Module {
+class dut(val bitwidth: Int) extends Module {
+  require(bitwidth > 0, "bitwidth must be > 0")
+
   val io = IO(new Bundle {
-    val in = Input(UInt(bitwidth.W))
+    val in     = Input(UInt(bitwidth.W))
     val encode = Input(Bool())
-    val out = Output(UInt(bitwidth.W))
+    val out    = Output(UInt(bitwidth.W))
   })
 
-  // When encode is true, convert binary to Gray code
-  // When encode is false, convert Gray code to binary
-  when(io.encode) {
-    // Binary to Gray code conversion: g = b ^ (b >> 1)
-    io.out := io.in ^ (io.in >> 1.U)
-  }.otherwise {
-    // Gray code to Binary conversion
-    // This is more complex and requires an iterative approach
-    
-    // Initialize the first value with the input Gray code
-    val iterations = log2Ceil(bitwidth)
-    val intermediateValues = Wire(Vec(iterations + 1, UInt(bitwidth.W)))
-    intermediateValues(0) := io.in
-    
-    // Perform the iterative XOR operations
-    for (i <- 0 until iterations) {
-      val shiftAmount = pow(2, i).toInt
-      intermediateValues(i + 1) := intermediateValues(i) ^ (intermediateValues(i) >> shiftAmount.U)
-    }
-    
-    // Set the output to the final computed value
-    io.out := intermediateValues(iterations)
-  }
-}
+  // Binary -> Gray
+  val grayEncoded = io.in ^ (io.in >> 1)
 
-// Optional: Object to make the module instantiable from the command line
-/*
-object dutGenerator extends App {
-  chisel3.Driver.execute(args, () => new dut(8)) // Default 8-bit width
+  // Gray -> Binary (iterative XOR with shifted versions)
+  val stages = log2Ceil(bitwidth)
+  val decodeVec = Wire(Vec(stages + 1, UInt(bitwidth.W)))
+  decodeVec(0) := io.in
+  for (i <- 0 until stages) {
+    val shiftAmount = 1 << i
+    decodeVec(i + 1) := decodeVec(i) ^ (decodeVec(i) >> shiftAmount)
+  }
+  val grayDecoded = decodeVec(stages)
+
+  io.out := Mux(io.encode, grayEncoded, grayDecoded)
 }
-*/

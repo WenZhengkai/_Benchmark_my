@@ -1,0 +1,82 @@
+import chisel3._
+import chisel3.util._
+
+class dut extends Module {
+  val io = IO(new Bundle {
+    val r = Input(UInt(3.W))
+    val g = Output(UInt(3.W))
+  })
+
+  // Define states
+  val sA :: sB :: sC :: sD :: Nil = Enum(4)
+  
+  // State register with synchronous reset to state A
+  val state = RegInit(sA)
+  
+  // Extract individual request signals for readability
+  val r0 = io.r(0)
+  val r1 = io.r(1)
+  val r2 = io.r(2)
+  
+  // Default output
+  io.g := 0.U
+  
+  // FSM state transitions and outputs
+  switch(state) {
+    is(sA) {
+      // State A: No grants
+      io.g := 0.U
+      
+      // Priority-based state transitions
+      when(r0) {
+        state := sB
+      }.elsewhen(r1) {
+        state := sC
+      }.elsewhen(r2) {
+        state := sD
+      }.otherwise {
+        state := sA
+      }
+    }
+    
+    is(sB) {
+      // State B: Grant to device 0
+      io.g := "b001".U
+      
+      when(r0) {
+        state := sB
+      }.otherwise {
+        state := sA
+      }
+    }
+    
+    is(sC) {
+      // State C: Grant to device 1
+      io.g := "b010".U
+      
+      when(r1) {
+        state := sC
+      }.otherwise {
+        state := sA
+      }
+    }
+    
+    is(sD) {
+      // State D: Grant to device 2
+      io.g := "b100".U
+      
+      when(r2) {
+        state := sD
+      }.otherwise {
+        state := sA
+      }
+    }
+  }
+}
+
+// Generate Verilog
+/*
+object dut extends App {
+  (new chisel3.stage.ChiselStage).emitVerilog(new dut(), Array("--target-dir", "generated"))
+}
+*/

@@ -1,0 +1,104 @@
+[0m[[0m[0mdebug[0m] [0m[0m[zinc] IncrementalCompile -----------[0m
+[0m[[0m[0mdebug[0m] [0m[0mIncrementalCompile.incrementalCompile[0m
+[0m[[0m[0mdebug[0m] [0m[0mprevious = Stamps for: 22 products, 2 sources, 4 libraries[0m
+[0m[[0m[0mdebug[0m] [0m[0mcurrent source = Set(${BASE}/src/main/scala/dut.scala, ${BASE}/src/main/scala/driver.scala)[0m
+[0m[[0m[0mdebug[0m] [0m[0m> initialChanges = InitialChanges(Changes(added = Set(), removed = Set(), changed = Set(${BASE}/src/main/scala/dut.scala), unmodified = ...),Set(),Set(),API Changes: Set())[0m
+[0m[[0m[0mdebug[0m] [0m[0m[0m
+[0m[[0m[0mdebug[0m] [0m[0mInitial source changes:[0m
+[0m[[0m[0mdebug[0m] [0m[0m	removed: Set()[0m
+[0m[[0m[0mdebug[0m] [0m[0m	added: Set()[0m
+[0m[[0m[0mdebug[0m] [0m[0m	modified: Set(${BASE}/src/main/scala/dut.scala)[0m
+[0m[[0m[0mdebug[0m] [0m[0mInvalidated products: Set()[0m
+[0m[[0m[0mdebug[0m] [0m[0mExternal API changes: API Changes: Set()[0m
+[0m[[0m[0mdebug[0m] [0m[0mModified binary dependencies: Set()[0m
+[0m[[0m[0mdebug[0m] [0m[0mInitial directly invalidated classes: Set(ScoreBoard, FuOpType, CtrlSignal, HandShakeDeal, WbuToRegIO, CtrlFlow, DataSrc, FuType, dut, DecodeIO, NPCBundle, HasNPCParameter, FuSrcType)[0m
+[0m[[0m[0mdebug[0m] [0m[0mSources indirectly invalidated by:[0m
+[0m[[0m[0mdebug[0m] [0m[0m	product: Set()[0m
+[0m[[0m[0mdebug[0m] [0m[0m	binary dep: Set()[0m
+[0m[[0m[0mdebug[0m] [0m[0m	external source: Set()[0m
+[0m[[0m[0mdebug[0m] [0m[0mAll initially invalidated classes: Set(ScoreBoard, FuOpType, CtrlSignal, HandShakeDeal, WbuToRegIO, CtrlFlow, DataSrc, FuType, dut, DecodeIO, NPCBundle, HasNPCParameter, FuSrcType)[0m
+[0m[[0m[0mdebug[0m] [0m[0mAll initially invalidated sources:Set(${BASE}/src/main/scala/dut.scala)[0m
+[0m[[0m[0mdebug[0m] [0m[0mInitial set of included nodes: ScoreBoard, FuOpType, CtrlSignal, HandShakeDeal, WbuToRegIO, CtrlFlow, DataSrc, FuType, dut, DecodeIO, NPCBundle, HasNPCParameter, FuSrcType[0m
+[0m[[0m[0mdebug[0m] [0m[0mcompilation cycle 1[0m
+[0m[[0m[0minfo[0m] [0m[0mcompiling 1 Scala source to /home/kai/ChiselProject/Benchmarks/_Benchmark_my/RVCore/issue/chisel-version/t9/target/scala-2.12/classes ...[0m
+[0m[[0m[0mdebug[0m] [0m[0mGetting org.scala-sbt:compiler-bridge_2.12:1.10.1:compile for Scala 2.12.13[0m
+[0m[[0m[0mdebug[0m] [0m[0m[zinc] Running cached compiler 5e54397b for Scala compiler version 2.12.13[0m
+[0m[[0m[0mdebug[0m] [0m[0m[zinc] The Scala compiler is invoked with:[0m
+[0m[[0m[0mdebug[0m] [0m[0m	-feature[0m
+[0m[[0m[0mdebug[0m] [0m[0m	-language:reflectiveCalls[0m
+[0m[[0m[0mdebug[0m] [0m[0m	-Xplugin:/home/kai/.cache/coursier/v1/https/repo1.maven.org/maven2/edu/berkeley/cs/chisel3-plugin_2.12.13/3.5.6/chisel3-plugin_2.12.13-3.5.6.jar[0m
+[0m[[0m[0mdebug[0m] [0m[0m	-bootclasspath[0m
+[0m[[0m[0mdebug[0m] [0m[0m	/usr/lib/jvm/java-8-openjdk-amd64/jre/lib/resources.jar:/usr/lib/jvm/java-8-openjdk-amd64/jre/lib/rt.jar:/usr/lib/jvm/java-8-openjdk-amd64/jre/lib/sunrsasign.jar:/usr/lib/jvm/java-8-openjdk-amd64/jre/lib/jsse.jar:/usr/lib/jvm/java-8-openjdk-amd64/jre/lib/jce.jar:/usr/lib/jvm/java-8-openjdk-amd64/jre/lib/charsets.jar:/usr/lib/jvm/java-8-openjdk-amd64/jre/lib/jfr.jar:/usr/lib/jvm/java-8-openjdk-amd64/jre/classes:/home/kai/.cache/coursier/v1/https/repo1.maven.org/maven2/org/scala-lang/scala-library/2.12.13/scala-library-2.12.13.jar[0m
+[0m[[0m[0mdebug[0m] [0m[0m	-classpath[0m
+[0m[[0m[0mdebug[0m] [0m[0m	/home/kai/ChiselProject/Benchmarks/_Benchmark_my/RVCore/issue/chisel-version/t9/target/scala-2.12/classes:/home/kai/.cache/coursier/v1/https/repo1.maven.org/maven2/edu/berkeley/cs/chisel3_2.12/3.5.6/chisel3_2.12-3.5.6.jar:/home/kai/.cache/coursier/v1/https/repo1.maven.org/maven2/edu/berkeley/cs/chiseltest_2.12/0.5.6/chiseltest_2.12-0.5.6.jar:/home/kai/.cache/coursier/v1/https/repo1.maven.org/maven2/edu/berkeley/cs/chisel3-macros_2.12/3.5.6/chisel3-macros_2.12-3.5.6.jar:/home/kai/.cache/coursier/v1/https/repo1.maven.org/maven2/edu/berkeley/cs/chisel3-core_2.12/3.5.6/chisel3-core_2.12-3.5.6.jar:/home/kai/.cache/coursier/v1/https/repo1.maven.org/maven2/org/scala-lang/scala-reflect/2.12.13/scala-reflect-2.12.13.jar:/home/kai/.cache/coursier/v1/https/repo1.maven.org/maven2/com/lihaoyi/os-lib_2.12/0.8.0/os-lib_2.12-0.8.0.jar:/home/kai/.cache/coursier/v1/https/repo1.maven.org/maven2/edu/berkeley/cs/treadle_2.12/1.5.6/treadle_2.12-1.5.6.jar:/home/kai/.cache/coursier/v1/https/repo1.maven.org/maven2/org/scalatest/scalatest_2.12/3.1.4/scalatest_2.12-3.1.4.jar:/home/kai/.cache/coursier/v1/https/repo1.maven.org/maven2/com/lihaoyi/utest_2.12/0.7.9/utest_2.12-0.7.9.jar:/home/kai/.cache/coursier/v1/https/repo1.maven.org/maven2/net/java/dev/jna/jna/5.10.0/jna-5.10.0.jar:/home/kai/.cache/coursier/v1/https/repo1.maven.org/maven2/edu/berkeley/cs/firrtl_2.12/1.5.6/firrtl_2.12-1.5.6.jar:/home/kai/.cache/coursier/v1/https/repo1.maven.org/maven2/com/lihaoyi/geny_2.12/0.7.0/geny_2.12-0.7.0.jar:/home/kai/.cache/coursier/v1/https/repo1.maven.org/maven2/org/scala-lang/modules/scala-jline/2.12.1/scala-jline-2.12.1.jar:/home/kai/.cache/coursier/v1/https/repo1.maven.org/maven2/org/scalactic/scalactic_2.12/3.1.4/scalactic_2.12-3.1.4.jar:/home/kai/.cache/coursier/v1/https/repo1.maven.org/maven2/org/scala-lang/modules/scala-xml_2.12/1.2.0/scala-xml_2.12-1.2.0.jar:/home/kai/.cache/coursier/v1/https/repo1.maven.org/maven2/org/scala-sbt/test-interface/1.0/test-interface-1.0.jar:/home/kai/.cache/coursier/v1/https/repo1.maven.org/maven2/org/portable-scala/portable-scala-reflect_2.12/0.1.1/portable-scala-reflect_2.12-0.1.1.jar:/home/kai/.cache/coursier/v1/https/repo1.maven.org/maven2/org/antlr/antlr4-runtime/4.9.3/antlr4-runtime-4.9.3.jar:/home/kai/.cache/coursier/v1/https/repo1.maven.org/maven2/com/google/protobuf/protobuf-java/3.18.2/protobuf-java-3.18.2.jar:/home/kai/.cache/coursier/v1/https/repo1.maven.org/maven2/com/github/scopt/scopt_2.12/3.7.1/scopt_2.12-3.7.1.jar:/home/kai/.cache/coursier/v1/https/repo1.maven.org/maven2/net/jcazevedo/moultingyaml_2.12/0.4.2/moultingyaml_2.12-0.4.2.jar:/home/kai/.cache/coursier/v1/https/repo1.maven.org/maven2/org/json4s/json4s-native_2.12/3.6.12/json4s-native_2.12-3.6.12.jar:/home/kai/.cache/coursier/v1/https/repo1.maven.org/maven2/org/apache/commons/commons-text/1.9/commons-text-1.9.jar:/home/kai/.cache/coursier/v1/https/repo1.maven.org/maven2/io/github/alexarchambault/data-class_2.12/0.2.5/data-class_2.12-0.2.5.jar:/home/kai/.cache/coursier/v1/https/repo1.maven.org/maven2/org/fusesource/jansi/jansi/1.11/jansi-1.11.jar:/home/kai/.cache/coursier/v1/https/repo1.maven.org/maven2/com/github/nscala-time/nscala-time_2.12/2.22.0/nscala-time_2.12-2.22.0.jar:/home/kai/.cache/coursier/v1/https/repo1.maven.org/maven2/org/yaml/snakeyaml/1.26/snakeyaml-1.26.jar:/home/kai/.cache/coursier/v1/https/repo1.maven.org/maven2/org/json4s/json4s-core_2.12/3.6.12/json4s-core_2.12-3.6.12.jar:/home/kai/.cache/coursier/v1/https/repo1.maven.org/maven2/org/apache/commons/commons-lang3/3.11/commons-lang3-3.11.jar:/home/kai/.cache/coursier/v1/https/repo1.maven.org/maven2/joda-time/joda-time/2.10.1/joda-time-2.10.1.jar:/home/kai/.cache/coursier/v1/https/repo1.maven.org/maven2/org/joda/joda-convert/2.2.0/joda-convert-2.2.0.jar:/home/kai/.cache/coursier/v1/https/repo1.maven.org/maven2/org/json4s/json4s-ast_2.12/3.6.12/json4s-ast_2.12-3.6.12.jar:/home/kai/.cache/coursier/v1/https/repo1.maven.org/maven2/org/json4s/json4s-scalap_2.12/3.6.12/json4s-scalap_2.12-3.6.12.jar:/home/kai/.cache/coursier/v1/https/repo1.maven.org/maven2/com/thoughtworks/paranamer/paranamer/2.8/paranamer-2.8.jar[0m
+[0m[[0m[0mdebug[0m] [0m[0mScala compilation took 8.112433504 s[0m
+[0m[[0m[0mdebug[0m] [0m[0mdone compiling[0m
+[0m[[0m[0mdebug[0m] [0m[0mInvalidating (transitively) by inheritance from CtrlSignal...[0m
+[0m[[0m[0mdebug[0m] [0m[0mInitial set of included nodes: CtrlSignal[0m
+[0m[[0m[0mdebug[0m] [0m[0mInvalidated by transitive inheritance dependency: Set(CtrlSignal)[0m
+[0m[[0m[0mdebug[0m] [0m[0mChange NamesChange(CtrlSignal,ModifiedNames(changes = UsedName(fuOpType,[Default]), UsedName(fuType,[Default]))) invalidates 1 classes due to The CtrlSignal has the following regular definitions changed:[0m
+[0m[[0m[0mdebug[0m] [0m[0m	UsedName(fuOpType,[Default]), UsedName(fuType,[Default]).[0m
+[0m[[0m[0mdebug[0m] [0m[0m  > by transitive inheritance: Set(CtrlSignal)[0m
+[0m[[0m[0mdebug[0m] [0m[0m  > [0m
+[0m[[0m[0mdebug[0m] [0m[0m  > [0m
+[0m[[0m[0mdebug[0m] [0m[0m  > [0m
+[0m[[0m[0mdebug[0m] [0m[0m        [0m
+[0m[[0m[0mdebug[0m] [0m[0mInvalidating (transitively) by inheritance from dut...[0m
+[0m[[0m[0mdebug[0m] [0m[0mInitial set of included nodes: dut[0m
+[0m[[0m[0mdebug[0m] [0m[0mInvalidated by transitive inheritance dependency: Set(dut)[0m
+[0m[[0m[0mdebug[0m] [0m[0mNone of the modified names appears in source file of Driver. This dependency is not being considered for invalidation.[0m
+[0m[[0m[0mdebug[0m] [0m[0mChange NamesChange(dut,ModifiedNames(changes = UsedName(rf1,[Default]), UsedName(HandShakeDeal,[Default]), UsedName(outBits,[Default]), UsedName(rs1Hazard,[Default]), UsedName(rs1Busy,[Default]), UsedName(rs2Busy,[Default]), UsedName(rs2Hazard,[Default]), UsedName(fuSrc1Sel,[Default]), UsedName(fuSrc2Sel,[Default]), UsedName(rf2,[Default]), UsedName(src2,[Default]), UsedName(rs1Val,[Default]), UsedName(src1,[Default]), UsedName(rs2Val,[Default]))) invalidates 1 classes due to The dut has the following regular definitions changed:[0m
+[0m[[0m[0mdebug[0m] [0m[0m	UsedName(rf1,[Default]), UsedName(HandShakeDeal,[Default]), UsedName(outBits,[Default]), UsedName(rs1Hazard,[Default]), UsedName(rs1Busy,[Default]), UsedName(rs2Busy,[Default]), UsedName(rs2Hazard,[Default]), UsedName(fuSrc1Sel,[Default]), UsedName(fuSrc2Sel,[Default]), UsedName(rf2,[Default]), UsedName(src2,[Default]), UsedName(rs1Val,[Default]), UsedName(src1,[Default]), UsedName(rs2Val,[Default]).[0m
+[0m[[0m[0mdebug[0m] [0m[0m  > by transitive inheritance: Set(dut)[0m
+[0m[[0m[0mdebug[0m] [0m[0m  > [0m
+[0m[[0m[0mdebug[0m] [0m[0m  > [0m
+[0m[[0m[0mdebug[0m] [0m[0m  > [0m
+[0m[[0m[0mdebug[0m] [0m[0m        [0m
+[0m[[0m[0mdebug[0m] [0m[0mInvalidating (transitively) by inheritance from FuType...[0m
+[0m[[0m[0mdebug[0m] [0m[0mInitial set of included nodes: FuType[0m
+[0m[[0m[0mdebug[0m] [0m[0mInvalidated by transitive inheritance dependency: Set(FuType)[0m
+[0m[[0m[0mdebug[0m] [0m[0mChange NamesChange(FuType,ModifiedNames(changes = UsedName(width,[Default]), UsedName(lsu,[Default]), UsedName(allNames,[Default]), UsedName(div,[Default]), UsedName(nameOfValue,[Default]), UsedName(getWidth,[Default]), UsedName(isTotal,[Default]), UsedName(Type,[Default]), UsedName(enumTypeName,[Default]), UsedName(FuType,[Default]), UsedName(all,[Default]), UsedName(mul,[Default]), UsedName(do_Value,[Default]), UsedName(csr,[Default]), UsedName(alu,[Default]), UsedName(none,[Default]), UsedName(safe,[Default]), UsedName(Value,[Default]), UsedName(globalAnnotation,[Default]), UsedName(apply,[Default]), UsedName(br,[Default]))) invalidates 1 classes due to The FuType has the following regular definitions changed:[0m
+[0m[[0m[0mdebug[0m] [0m[0m	UsedName(width,[Default]), UsedName(lsu,[Default]), UsedName(allNames,[Default]), UsedName(div,[Default]), UsedName(nameOfValue,[Default]), UsedName(getWidth,[Default]), UsedName(isTotal,[Default]), UsedName(Type,[Default]), UsedName(enumTypeName,[Default]), UsedName(FuType,[Default]), UsedName(all,[Default]), UsedName(mul,[Default]), UsedName(do_Value,[Default]), UsedName(csr,[Default]), UsedName(alu,[Default]), UsedName(none,[Default]), UsedName(safe,[Default]), UsedName(Value,[Default]), UsedName(globalAnnotation,[Default]), UsedName(apply,[Default]), UsedName(br,[Default]).[0m
+[0m[[0m[0mdebug[0m] [0m[0m  > by transitive inheritance: Set(FuType)[0m
+[0m[[0m[0mdebug[0m] [0m[0m  > [0m
+[0m[[0m[0mdebug[0m] [0m[0m  > [0m
+[0m[[0m[0mdebug[0m] [0m[0m  > [0m
+[0m[[0m[0mdebug[0m] [0m[0m        [0m
+[0m[[0m[0mdebug[0m] [0m[0mInvalidating (transitively) by inheritance from FuOpType...[0m
+[0m[[0m[0mdebug[0m] [0m[0mInitial set of included nodes: FuOpType[0m
+[0m[[0m[0mdebug[0m] [0m[0mInvalidated by transitive inheritance dependency: Set(FuOpType)[0m
+[0m[[0m[0mdebug[0m] [0m[0mChange NamesChange(FuOpType,ModifiedNames(changes = UsedName(FuOpType,[Default]), UsedName(sltu,[Default]), UsedName(width,[Default]), UsedName(slt,[Default]), UsedName(sll,[Default]), UsedName(allNames,[Default]), UsedName(xor,[Default]), UsedName(nameOfValue,[Default]), UsedName(getWidth,[Default]), UsedName(sub,[Default]), UsedName(isTotal,[Default]), UsedName(Type,[Default]), UsedName(sra,[Default]), UsedName(enumTypeName,[Default]), UsedName(all,[Default]), UsedName(do_Value,[Default]), UsedName(or,[Default]), UsedName(and,[Default]), UsedName(add,[Default]), UsedName(none,[Default]), UsedName(srl,[Default]), UsedName(safe,[Default]), UsedName(Value,[Default]), UsedName(globalAnnotation,[Default]), UsedName(apply,[Default]))) invalidates 1 classes due to The FuOpType has the following regular definitions changed:[0m
+[0m[[0m[0mdebug[0m] [0m[0m	UsedName(FuOpType,[Default]), UsedName(sltu,[Default]), UsedName(width,[Default]), UsedName(slt,[Default]), UsedName(sll,[Default]), UsedName(allNames,[Default]), UsedName(xor,[Default]), UsedName(nameOfValue,[Default]), UsedName(getWidth,[Default]), UsedName(sub,[Default]), UsedName(isTotal,[Default]), UsedName(Type,[Default]), UsedName(sra,[Default]), UsedName(enumTypeName,[Default]), UsedName(all,[Default]), UsedName(do_Value,[Default]), UsedName(or,[Default]), UsedName(and,[Default]), UsedName(add,[Default]), UsedName(none,[Default]), UsedName(srl,[Default]), UsedName(safe,[Default]), UsedName(Value,[Default]), UsedName(globalAnnotation,[Default]), UsedName(apply,[Default]).[0m
+[0m[[0m[0mdebug[0m] [0m[0m  > by transitive inheritance: Set(FuOpType)[0m
+[0m[[0m[0mdebug[0m] [0m[0m  > [0m
+[0m[[0m[0mdebug[0m] [0m[0m  > [0m
+[0m[[0m[0mdebug[0m] [0m[0m  > [0m
+[0m[[0m[0mdebug[0m] [0m[0m        [0m
+[0m[[0m[0mdebug[0m] [0m[0mInvalidating (transitively) by inheritance from ScoreBoard...[0m
+[0m[[0m[0mdebug[0m] [0m[0mInitial set of included nodes: ScoreBoard[0m
+[0m[[0m[0mdebug[0m] [0m[0mInvalidated by transitive inheritance dependency: Set(ScoreBoard)[0m
+[0m[[0m[0mdebug[0m] [0m[0mChange NamesChange(ScoreBoard,ModifiedNames(changes = UsedName(busy,[Default]))) invalidates 1 classes due to The ScoreBoard has the following regular definitions changed:[0m
+[0m[[0m[0mdebug[0m] [0m[0m	UsedName(busy,[Default]).[0m
+[0m[[0m[0mdebug[0m] [0m[0m  > by transitive inheritance: Set(ScoreBoard)[0m
+[0m[[0m[0mdebug[0m] [0m[0m  > [0m
+[0m[[0m[0mdebug[0m] [0m[0m  > [0m
+[0m[[0m[0mdebug[0m] [0m[0m  > [0m
+[0m[[0m[0mdebug[0m] [0m[0m        [0m
+[0m[[0m[0mdebug[0m] [0m[0mInvalidating (transitively) by inheritance from HandShakeDeal...[0m
+[0m[[0m[0mdebug[0m] [0m[0mInitial set of included nodes: HandShakeDeal[0m
+[0m[[0m[0mdebug[0m] [0m[0mInvalidated by transitive inheritance dependency: Set(HandShakeDeal)[0m
+[0m[[0m[0mdebug[0m] [0m[0mChange NamesChange(HandShakeDeal,ModifiedNames(changes = UsedName(HandShakeDeal,[Default]), UsedName(toString,[Default]), UsedName(getClass,[Default]), UsedName(equals,[Default]), UsedName(clone,[Default]), UsedName(asInstanceOf,[Default]), UsedName(wait,[Default]), UsedName(notify,[Default]), UsedName(isInstanceOf,[Default]), UsedName(synchronized,[Default]), UsedName(eq,[Default]), UsedName(!=,[Default]), UsedName(apply,[Default]), UsedName(finalize,[Default]), UsedName(ne,[Default]), UsedName(notifyAll,[Default]), UsedName(hashCode,[Default]), UsedName(==,[Default]), UsedName(##,[Default]))) invalidates 1 classes due to The HandShakeDeal has the following regular definitions changed:[0m
+[0m[[0m[0mdebug[0m] [0m[0m	UsedName(HandShakeDeal,[Default]), UsedName(toString,[Default]), UsedName(getClass,[Default]), UsedName(equals,[Default]), UsedName(clone,[Default]), UsedName(asInstanceOf,[Default]), UsedName(wait,[Default]), UsedName(notify,[Default]), UsedName(isInstanceOf,[Default]), UsedName(synchronized,[Default]), UsedName(eq,[Default]), UsedName(!=,[Default]), UsedName(apply,[Default]), UsedName(finalize,[Default]), UsedName(ne,[Default]), UsedName(notifyAll,[Default]), UsedName(hashCode,[Default]), UsedName(==,[Default]), UsedName(##,[Default]).[0m
+[0m[[0m[0mdebug[0m] [0m[0m  > by transitive inheritance: Set(HandShakeDeal)[0m
+[0m[[0m[0mdebug[0m] [0m[0m  > [0m
+[0m[[0m[0mdebug[0m] [0m[0m  > [0m
+[0m[[0m[0mdebug[0m] [0m[0m  > [0m
+[0m[[0m[0mdebug[0m] [0m[0m        [0m
+[0m[[0m[0mdebug[0m] [0m[0mNew invalidations:[0m
+[0m[[0m[0mdebug[0m] [0m[0mInitial set of included nodes: [0m
+[0m[[0m[0mdebug[0m] [0m[0mPreviously invalidated, but (transitively) depend on new invalidations:[0m
+[0m[[0m[0mdebug[0m] [0m[0mFinal step, transitive dependencies:[0m
+[0m[[0m[0mdebug[0m] [0m[0m	Set()[0m
+[0m[[0m[0mdebug[0m] [0m[0mInitial set of included nodes: ScoreBoard, FuOpType, CtrlSignal, HandShakeDeal, WbuToRegIO, CtrlFlow, DataSrc, FuType, dut, DecodeIO, NPCBundle, HasNPCParameter, FuSrcType[0m
+[0m[[0m[0mdebug[0m] [0m[0mIncluding Driver by dut[0m
+[0m[[0m[0mdebug[0m] [0m[0mNo classes were invalidated.[0m

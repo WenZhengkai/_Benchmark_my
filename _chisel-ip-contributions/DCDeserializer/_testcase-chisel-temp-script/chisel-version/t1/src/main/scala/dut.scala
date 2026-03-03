@@ -1,53 +1,42 @@
-// package deserializer
-
 import chisel3._
 import chisel3.util._
 
-class SerialToParallelConverter[D <: Data](data: D, width: Int) extends Module {
+class dut[D <: Data](data: D, width: Int) extends Module {
+  require(width > 0, "width must be > 0")
+  require(data.getWidth > 0, "data width must be known and > 0")
+
+  private val dataBits = data.getWidth
+  private val cycles   = (dataBits + width - 1) / width
+
   val io = IO(new Bundle {
-    val dataIn = Flipped(Decoupled(UInt(width.W)))
-    val dataOut = Decoupled(data.cloneType)
+    val dataIn  = Flipped(Decoupled(UInt(width.W)))
+    val dataOut = Decoupled(chiselTypeOf(data))
   })
 
-  // Calculate total number of cycles needed for deserialization
-  val totalBits = data.getWidth
-  val cycles = (totalBits + width - 1) / width  // Ceiling division
+  private val cycleCountW = math.max(1, log2Ceil(cycles))
+  private val cycleCount  = RegInit(0.U(cycleCountW.W))
+  private val dataSelect  = RegInit(VecInit(Seq.fill(cycles)(0.U(width.W))))
+  private val dataValid   = RegInit(false.B)
 
-  // Internal registers
-  val cycleCount = RegInit(0.U(log2Ceil(cycles).W))
-  val dataSelect = RegInit(0.U(totalBits.W))
-  val dataValid = RegInit(false.B)
-
-  // Default values
+  // Can accept new serial data when not holding a completed output,
+  // or in the same cycle that output is consumed.
   io.dataIn.ready := !dataValid || io.dataOut.ready
   io.dataOut.valid := dataValid
-  io.dataOut.bits := dataSelect.asTypeOf(data.cloneType)
 
-  // Process incoming data
+  val packed = dataSelect.asUInt // element 0 is least-significant chunk
+  io.dataOut.bits := packed(dataBits - 1, 0).asTypeOf(chiselTypeOf(data))
+
+  when(io.dataOut.fire) {
+    dataValid := false.B
+  }
+
   when(io.dataIn.fire) {
-    // Store the incoming data segment at the appropriate position in dataSelect
-    val shiftAmount = cycleCount * width.U
-    dataSelect := dataSelect | (io.dataIn.bits << shiftAmount)
-    
+    dataSelect(cycleCount) := io.dataIn.bits
     when(cycleCount === (cycles - 1).U) {
-      // Last segment received, mark as valid and reset cycle counter
-      dataValid := true.B
       cycleCount := 0.U
+      dataValid := true.B
     }.otherwise {
-      // Increment cycle counter for next segment
       cycleCount := cycleCount + 1.U
     }
   }
-
-  // Reset data valid when output is consumed
-  when(io.dataOut.fire) {
-    dataValid := false.B
-    dataSelect := 0.U  // Clear data register for next transaction
-  }
-}
-
-// Optional companion object for easier instantiation
-object SerialToParallelConverter {
-  def apply[D <: Data](data: D, width: Int): SerialToParallelConverter[D] = 
-    new SerialToParallelConverter(data, width)
 }

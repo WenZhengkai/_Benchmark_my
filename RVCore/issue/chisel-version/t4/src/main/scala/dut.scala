@@ -1,96 +1,89 @@
-// ScoreBoard implementation
+import chisel3._
+import chisel3.util._
+
+// Assumes these are already defined in your project:
+// - HasNPCParameter, NPCBundle
+// - DecodeIO, WbuToRegIO
+// - FuSrcType / FuType / FuOpType enums and related constants
+
 class ScoreBoard(maxScore: Int) extends HasNPCParameter {
-  private val busy = RegInit(VecInit(Seq.fill(NR_GPR)(0.U(log2Ceil(maxScore + 1).W))))
+  private val cntW = math.max(1, log2Ceil(maxScore + 1))
+  private val busy = RegInit(VecInit(Seq.fill(NR_GPR)(0.U(cntW.W))))
 
-  def isBusy(idx: UInt): Bool = {
-    busy(idx) =/= 0.U
-  }
+  def isBusy(idx: UInt): Bool = busy(idx) =/= 0.U
 
-  def mask(idx: UInt): UInt = {
-    UIntToOH(idx)(NR_GPR - 1, 0)
-  }
+  def mask(idx: UInt): UInt = UIntToOH(idx, NR_GPR)
 
   def update(setMask: UInt, clearMask: UInt): Unit = {
-    for (i <- 0 until NR_GPR) {
-      if (i == 0) {
-        busy(i) := 0.U // x0 is always 0
-      } else {
-        val set = setMask(i).asBool
-        val clear = clearMask(i).asBool
-        
-        when (set && clear) {
-          // Keep the original value when both set and clear
-        }.elsewhen (set) {
-          busy(i) := Mux(busy(i) === maxScore.U, maxScore.U, busy(i) + 1.U)
-        }.elsewhen (clear) {
-          busy(i) := Mux(busy(i) === 0.U, 0.U, busy(i) - 1.U)
-        }
+    busy(0) := 0.U
+    for (i <- 1 until NR_GPR) {
+      when(setMask(i) && clearMask(i)) {
+        busy(i) := busy(i)
+      }.elsewhen(setMask(i)) {
+        when(busy(i) =/= maxScore.U) { busy(i) := busy(i) + 1.U }
+      }.elsewhen(clearMask(i)) {
+        when(busy(i) =/= 0.U) { busy(i) := busy(i) - 1.U }
+      }.otherwise {
+        busy(i) := busy(i)
       }
     }
   }
 }
 
-// Instruction Issue Unit (ISU) implementation
-class ISU extends NPCModule {
+class dut extends Module with HasNPCParameter {
   val io = IO(new Bundle {
     val from_idu = Flipped(Decoupled(new DecodeIO))
-    val to_exu = Decoupled(new DecodeIO))
-    val wb = Input(new WbuToRegIO)
+    val to_exu   = Decoupled(new DecodeIO)
+    val wb       = Input(new WbuToRegIO)
     val from_reg = new Bundle {
       val rfSrc1 = Input(UInt(XLen.W))
       val rfSrc2 = Input(UInt(XLen.W))
     }
   })
 
-  // Create ScoreBoard with maximum count 3
   val sb = new ScoreBoard(3)
-  
-  // Connect signals from IDU to EXU by default, will override some fields later
-  io.to_exu.bits := io.from_idu.bits
-  
-  // Data hazard detection
   val inBits = io.from_idu.bits
-  val rs1Busy = sb.isBusy(inBits.ctrl.rs1) && (inBits.ctrl.rs1 =/= 0.U) && 
-                (inBits.ctrl.fuSrc1Type === FuSrcType.rfSrc1)
-  val rs2Busy = sb.isBusy(inBits.ctrl.rs2) && (inBits.ctrl.rs2 =/= 0.U) && 
-                (inBits.ctrl.fuSrc2Type === FuSrcType.rfSrc2)
-  
-  // Instruction issue control
-  val AnyInvalidCondition = rs1Busy || rs2Busy
-  
-  // Handle handshake signal
-  val out = io.to_exu
-  val in = io.from_idu
-  
-  // HandShakeDeal function inline implementation
-  out.valid := in.valid && !AnyInvalidCondition
-  in.ready := out.ready && !AnyInvalidCondition
-  
-  // Register file connection function
+
+  def HandShakeDeal(in: DecoupledIO[DecodeIO], out: DecoupledIO[DecodeIO], anyInvalidCondition: Bool): Unit = {
+    out.valid := in.valid && !anyInvalidCondition
+    in.ready  := out.ready && !anyInvalidCondition
+  }
+
   def rs1_rs2(rfSrc1: UInt, rfSrc2: UInt): (UInt, UInt) = {
     io.to_exu.bits.data.rfSrc1 := rfSrc1
     io.to_exu.bits.data.rfSrc2 := rfSrc2
     (rfSrc1, rfSrc2)
   }
-  
-  // Get operand values from register file
-  val (rfSrc1, rfSrc2) = rs1_rs2(io.from_reg.rfSrc1, io.from_reg.rfSrc2)
-  
-  // Operand source selection
-  io.to_exu.bits.data.fuSrc1 := MuxLookup(inBits.ctrl.fuSrc1Type, 0.U, Seq(
-    FuSrcType.rfSrc1 -> rfSrc1,
-    FuSrcType.pc -> inBits.cf.pc,
-    FuSrcType.zero -> 0.U
+
+  // Default pass-through
+  io.to_exu.bits := inBits
+
+  // Regfile source hookup
+  val (rs1Val, rs2Val) = rs1_rs2(io.from_reg.rfSrc1, io.from_reg.rfSrc2)
+
+  // Operand select
+  io.to_exu.bits.data.fuSrc1 := MuxLookup(io.to_exu.bits.ctrl.fuSrc1Type.asUInt, 0.U(XLen.W), Seq(
+    FuSrcType.rfSrc1.asUInt -> rs1Val,
+    FuSrcType.pc.asUInt     -> io.from_idu.bits.cf.pc,
+    FuSrcType.zero.asUInt   -> 0.U(XLen.W)
   ))
-  
-  io.to_exu.bits.data.fuSrc2 := MuxLookup(inBits.ctrl.fuSrc2Type, 0.U, Seq(
-    FuSrcType.rfSrc2 -> rfSrc2,
-    FuSrcType.imm -> inBits.data.imm,
-    FuSrcType.four -> 4.U
+
+  io.to_exu.bits.data.fuSrc2 := MuxLookup(io.to_exu.bits.ctrl.fuSrc2Type.asUInt, 0.U(XLen.W), Seq(
+    FuSrcType.rfSrc2.asUInt -> rs2Val,
+    FuSrcType.imm.asUInt    -> io.from_idu.bits.data.imm,
+    FuSrcType.four.asUInt   -> 4.U(XLen.W)
   ))
-  
-  // ScoreBoard update
-  val wbuClearMask = Mux(io.wb.RegWrite, sb.mask(io.wb.rd), 0.U)
-  val isFireSetMask = Mux(inBits.ctrl.rfWen && out.fire, sb.mask(inBits.ctrl.rd), 0.U)
+
+  // Hazard detect (only check busy for register-based operands)
+  val rs1Hazard = (inBits.ctrl.fuSrc1Type === FuSrcType.rfSrc1) && sb.isBusy(inBits.ctrl.rs1)
+  val rs2Hazard = (inBits.ctrl.fuSrc2Type === FuSrcType.rfSrc2) && sb.isBusy(inBits.ctrl.rs2)
+  val AnyInvalidCondition = rs1Hazard || rs2Hazard
+
+  // Handshake control
+  HandShakeDeal(io.from_idu, io.to_exu, AnyInvalidCondition)
+
+  // Scoreboard update
+  val wbuClearMask = Mux(io.wb.RegWrite, sb.mask(io.wb.rd), 0.U(NR_GPR.W))
+  val isFireSetMask = Mux(inBits.ctrl.rfWen && io.to_exu.fire, sb.mask(inBits.ctrl.rd), 0.U(NR_GPR.W))
   sb.update(isFireSetMask, wbuClearMask)
 }

@@ -3,24 +3,28 @@ import chisel3.util._
 
 class dut[D <: Data](data: D) extends Module {
   val io = IO(new Bundle {
-    val enq = Flipped(DecoupledIO(data.cloneType))
-    val deq = DecoupledIO(data.cloneType)
+    val enq = Flipped(Decoupled(data.cloneType))
+    val deq = Decoupled(data.cloneType)
   })
-  
-  // Internal registers for valid status and data storage
+
   val pValid = RegInit(false.B)
-  val pData = Reg(data.cloneType)
-  
-  // Default assignments
-  io.enq.ready := !pValid
-  io.deq.valid := pValid
-  io.deq.bits := pData
-  
-  // State transition logic
-  when(io.enq.valid && io.enq.ready) {
+  val pData  = Reg(data.cloneType)
+
+  when(!pValid && io.enq.valid) {
+    pData  := io.enq.bits
     pValid := true.B
-    pData := io.enq.bits
-  }.elsewhen(io.deq.valid && io.deq.ready) {
+  }.elsewhen(pValid && io.deq.ready) {
     pValid := false.B
   }
+
+  io.enq.ready := !pValid
+  io.deq.valid := pValid
+  io.deq.bits  := pData
 }
+
+// Optional elaboration entry point
+/*
+object dutMain extends App {
+  emitVerilog(new dut(UInt(32.W)))
+}
+*/

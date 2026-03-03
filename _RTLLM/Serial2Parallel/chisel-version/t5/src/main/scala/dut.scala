@@ -3,42 +3,39 @@ import chisel3.util._
 
 class dut extends Module {
   val io = IO(new Bundle {
-    val din_serial = Input(Bool())
-    val din_valid = Input(Bool())
+    val din_serial    = Input(Bool())
+    val din_valid     = Input(Bool())
     val dout_parallel = Output(UInt(8.W))
-    val dout_valid = Output(Bool())
+    val dout_valid    = Output(Bool())
   })
 
-  // Counter to track the number of serial bits received
-  val cnt = RegInit(0.U(4.W))
-  
-  // Register to accumulate the serial input data
+  // Shift register to collect 8 serial bits (first bit received becomes MSB).
   val shiftReg = RegInit(0.U(8.W))
-  
-  // Default output values
-  io.dout_parallel := shiftReg
-  io.dout_valid := false.B
+  // 4-bit counter as requested, counts valid serial bits received (0 to 7).
+  val cnt      = RegInit(0.U(4.W))
+
+  // Output registers
+  val doutParallelReg = RegInit(0.U(8.W))
+  val doutValidReg    = RegInit(false.B)
+
+  // Default: output not valid unless the 8th valid bit arrives this cycle.
+  doutValidReg := false.B
 
   when(io.din_valid) {
-    // When input is valid, shift in the new bit to MSB and shift everything else right
-    shiftReg := Cat(io.din_serial, shiftReg(7, 1))
-    
-    // Increment counter
-    cnt := cnt + 1.U
-    
-    // When counter reaches 8, we've received all 8 bits
-    when(cnt === 7.U) {
-      // Reset counter
-      cnt := 0.U
-      // Set output valid signal
-      io.dout_valid := true.B
-    }
-  }
-}
+    val nextShift = Cat(shiftReg(6, 0), io.din_serial)
 
-// Optional: Object to generate Verilog
-/*
-object dutDriver extends App {
-  chisel3.Driver.execute(args, () => new dut)
+    when(cnt === 7.U) {
+      // 8th bit received: latch full byte and assert valid.
+      doutParallelReg := nextShift
+      doutValidReg := true.B
+      cnt := 0.U
+    }.otherwise {
+      cnt := cnt + 1.U
+    }
+
+    shiftReg := nextShift
+  }
+
+  io.dout_parallel := doutParallelReg
+  io.dout_valid := doutValidReg
 }
-*/

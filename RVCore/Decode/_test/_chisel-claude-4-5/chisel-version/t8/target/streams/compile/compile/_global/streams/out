@@ -1,0 +1,52 @@
+[0m[[0m[31merror[0m] [0m[0m/home/kai/ChiselProject/Benchmarks/_Benchmark_my/RVCore/Decode/chisel-version/t8/src/main/scala/dut.scala:149:63: type mismatch;[0m
+[0m[[0m[31merror[0m] [0m[0m found   : Seq[(chisel3.util.BitPat, List[chisel3.UInt])][0m
+[0m[[0m[31merror[0m] [0m[0m required: Array[(chisel3.util.BitPat, List[?])][0m
+[0m[[0m[31merror[0m] [0m[0m    ListLookup(inst, Instructions.DecodeDefault, Instructions.DecodeTable)[0m
+[0m[[0m[31merror[0m] [0m[0m                                                              ^[0m
+[0m[[0m[31merror[0m] [0m[0m/home/kai/ChiselProject/Benchmarks/_Benchmark_my/RVCore/Decode/chisel-version/t8/src/main/scala/dut.scala:155:28: type mismatch;[0m
+[0m[[0m[31merror[0m] [0m[0m found   : Any[0m
+[0m[[0m[31merror[0m] [0m[0m required: chisel3.UInt[0m
+[0m[[0m[31merror[0m] [0m[0m  ctrl.rfWen := isRegWrite(instType)[0m
+[0m[[0m[31merror[0m] [0m[0m                           ^[0m
+[0m[[0m[31merror[0m] [0m[0m/home/kai/ChiselProject/Benchmarks/_Benchmark_my/RVCore/Decode/chisel-version/t8/src/main/scala/dut.scala:163:30: value === is not a member of Any[0m
+[0m[[0m[31merror[0m] [0m[0m  ctrl.MemWrite := (instType === TYPE_S)[0m
+[0m[[0m[31merror[0m] [0m[0m                             ^[0m
+[0m[[0m[31merror[0m] [0m[0m/home/kai/ChiselProject/Benchmarks/_Benchmark_my/RVCore/Decode/chisel-version/t8/src/main/scala/dut.scala:172:22: type mismatch;[0m
+[0m[[0m[31merror[0m] [0m[0m found   : Any[0m
+[0m[[0m[31merror[0m] [0m[0m required: chisel3.Data[0m
+[0m[[0m[31merror[0m] [0m[0m  ctrl.fuSrc1Type := fuSrc1Type[0m
+[0m[[0m[31merror[0m] [0m[0m                     ^[0m
+[0m[[0m[31merror[0m] [0m[0m/home/kai/ChiselProject/Benchmarks/_Benchmark_my/RVCore/Decode/chisel-version/t8/src/main/scala/dut.scala:173:22: type mismatch;[0m
+[0m[[0m[31merror[0m] [0m[0m found   : Any[0m
+[0m[[0m[31merror[0m] [0m[0m required: chisel3.Data[0m
+[0m[[0m[31merror[0m] [0m[0m  ctrl.fuSrc2Type := fuSrc2Type[0m
+[0m[[0m[31merror[0m] [0m[0m                     ^[0m
+[0m[[0m[31merror[0m] [0m[0m/home/kai/ChiselProject/Benchmarks/_Benchmark_my/RVCore/Decode/chisel-version/t8/src/main/scala/dut.scala:174:18: type mismatch;[0m
+[0m[[0m[31merror[0m] [0m[0m found   : Any[0m
+[0m[[0m[31merror[0m] [0m[0m required: chisel3.Data[0m
+[0m[[0m[31merror[0m] [0m[0m  ctrl.fuType := fuType[0m
+[0m[[0m[31merror[0m] [0m[0m                 ^[0m
+[0m[[0m[31merror[0m] [0m[0m/home/kai/ChiselProject/Benchmarks/_Benchmark_my/RVCore/Decode/chisel-version/t8/src/main/scala/dut.scala:175:20: type mismatch;[0m
+[0m[[0m[31merror[0m] [0m[0m found   : Any[0m
+[0m[[0m[31merror[0m] [0m[0m required: chisel3.Data[0m
+[0m[[0m[31merror[0m] [0m[0m  ctrl.fuOpType := fuOpType[0m
+[0m[[0m[31merror[0m] [0m[0m                   ^[0m
+[0m[[0m[31merror[0m] [0m[0m/home/kai/ChiselProject/Benchmarks/_Benchmark_my/RVCore/Decode/chisel-version/t8/src/main/scala/dut.scala:184:13: inferred type arguments [Any,chisel3.UInt] do not conform to method apply's type parameter bounds [S <: chisel3.UInt,T <: chisel3.Data][0m
+[0m[[0m[31merror[0m] [0m[0m  val imm = MuxLookup(instType, 0.U, Seq([0m
+[0m[[0m[31merror[0m] [0m[0m            ^[0m
+[0m[[0m[31merror[0m] [0m[0m/home/kai/ChiselProject/Benchmarks/_Benchmark_my/RVCore/Decode/chisel-version/t8/src/main/scala/dut.scala:184:23: type mismatch;[0m
+[0m[[0m[31merror[0m] [0m[0m found   : Any[0m
+[0m[[0m[31merror[0m] [0m[0m required: S[0m
+[0m[[0m[31merror[0m] [0m[0m  val imm = MuxLookup(instType, 0.U, Seq([0m
+[0m[[0m[31merror[0m] [0m[0m                      ^[0m
+[0m[[0m[31merror[0m] [0m[0m/home/kai/ChiselProject/Benchmarks/_Benchmark_my/RVCore/Decode/chisel-version/t8/src/main/scala/dut.scala:184:35: type mismatch;[0m
+[0m[[0m[31merror[0m] [0m[0m found   : chisel3.UInt[0m
+[0m[[0m[31merror[0m] [0m[0m required: T[0m
+[0m[[0m[31merror[0m] [0m[0m  val imm = MuxLookup(instType, 0.U, Seq([0m
+[0m[[0m[31merror[0m] [0m[0m                                  ^[0m
+[0m[[0m[31merror[0m] [0m[0m/home/kai/ChiselProject/Benchmarks/_Benchmark_my/RVCore/Decode/chisel-version/t8/src/main/scala/dut.scala:184:41: type mismatch;[0m
+[0m[[0m[31merror[0m] [0m[0m found   : Seq[(chisel3.UInt, chisel3.UInt)][0m
+[0m[[0m[31merror[0m] [0m[0m required: Seq[(S, T)][0m
+[0m[[0m[31merror[0m] [0m[0m  val imm = MuxLookup(instType, 0.U, Seq([0m
+[0m[[0m[31merror[0m] [0m[0m                                        ^[0m
+[0m[[0m[31merror[0m] [0m[0m11 errors found[0m

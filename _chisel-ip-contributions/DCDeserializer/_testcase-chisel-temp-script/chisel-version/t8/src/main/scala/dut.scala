@@ -1,50 +1,44 @@
 import chisel3._
 import chisel3.util._
 
-class Deserializer[D <: Data](data: D, width: Int) extends Module {
+class dut[D <: Data](data: D, width: Int) extends Module {
+  require(width > 0, "width must be > 0")
+  require(data.getWidth > 0, "data width must be > 0")
+
+  private val totalBits = data.getWidth
+  private val cycles    = (totalBits + width - 1) / width
+  private val cntWidth  = math.max(1, log2Ceil(cycles))
+
   val io = IO(new Bundle {
-    val dataIn = Flipped(Decoupled(UInt(width.W)))
+    val dataIn  = Flipped(Decoupled(UInt(width.W)))
     val dataOut = Decoupled(data.cloneType)
   })
 
-  // Calculate the total number of bits in the data type
-  val totalBits = data.getWidth
+  val cycleCount = RegInit(0.U(cntWidth.W))
+  val dataSelect = RegInit(VecInit(Seq.fill(cycles)(0.U(width.W))))
+  val dataValid  = RegInit(false.B)
 
-  // Calculate the number of cycles needed to deserialize the data
-  val cycles = (totalBits + width - 1) / width  // Ceiling division
+  val lastCycle = (cycles - 1).U(cntWidth.W)
 
-  // Cycle counter
-  val cycleCount = RegInit(0.U(log2Ceil(cycles).W))
-  
-  // Data collection register
-  val dataSelect = RegInit(0.U(totalBits.W))
-  
-  // Valid flag for output data
-  val dataValid = RegInit(false.B)
-
-  // Default values
-  io.dataIn.ready := !dataValid || io.dataOut.ready
   io.dataOut.valid := dataValid
-  io.dataOut.bits := dataSelect.asTypeOf(data.cloneType)
+  io.dataOut.bits  := dataSelect.asUInt()(totalBits - 1, 0).asTypeOf(data)
 
-  // Deserialization process
-  when(io.dataIn.fire) {
-    // Shift in the incoming data at the appropriate position
-    dataSelect := dataSelect | (io.dataIn.bits << (cycleCount * width.U)).asUInt
-    
-    when(cycleCount === (cycles - 1).U) {
-      // When we've received the last segment
-      cycleCount := 0.U
-      dataValid := true.B
-    }.otherwise {
-      // Move to the next cycle
-      cycleCount := cycleCount + 1.U
-    }
-  }
+  // Ready is controlled by data-valid state and downstream readiness.
+  io.dataIn.ready := !dataValid || io.dataOut.ready
 
-  // Reset the data valid flag when data is accepted
+  // If current output is consumed, clear valid unless overwritten below by a new completed word.
   when(io.dataOut.fire) {
     dataValid := false.B
-    dataSelect := 0.U  // Clear the data for the next transaction
+  }
+
+  when(io.dataIn.fire) {
+    dataSelect(cycleCount) := io.dataIn.bits
+
+    when(cycleCount === lastCycle) {
+      cycleCount := 0.U
+      dataValid  := true.B
+    }.otherwise {
+      cycleCount := cycleCount + 1.U
+    }
   }
 }

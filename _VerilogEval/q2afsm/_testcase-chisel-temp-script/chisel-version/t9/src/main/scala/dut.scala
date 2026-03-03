@@ -3,72 +3,58 @@ import chisel3.util._
 
 class dut extends Module {
   val io = IO(new Bundle {
-    val r = Input(UInt(3.W))
-    val g = Output(UInt(3.W))
+    val r = Input(UInt(3.W)) // r(0)=device0, r(1)=device1, r(2)=device2
+    val g = Output(UInt(3.W)) // g(0), g(1), g(2)
   })
 
-  // Define states
-  object State extends ChiselEnum {
-    val A, B, C, D = Value
-  }
-  import State._
+  // States: A (idle), B (grant 0), C (grant 1), D (grant 2)
+  val sA :: sB :: sC :: sD :: Nil = Enum(4)
 
-  // State register
-  val state = RegInit(A)
-  
-  // Default output value
-  io.g := 0.U
-  
-  // Extract individual request bits for clarity
-  val r0 = io.r(0)
-  val r1 = io.r(1)
-  val r2 = io.r(2)
+  // Synchronous reset to state A
+  val state = RegInit(sA)
+  val nextState = WireDefault(state)
 
-  // FSM logic
+  // Next-state logic
   switch(state) {
-    is(A) {
-      when(r0) {
-        state := B
-      }.elsewhen(r1) {
-        state := C
-      }.elsewhen(r2) {
-        state := D
+    is(sA) {
+      when(io.r(0)) {
+        nextState := sB // highest priority
+      }.elsewhen(io.r(1)) {
+        nextState := sC
+      }.elsewhen(io.r(2)) {
+        nextState := sD
       }.otherwise {
-        state := A
+        nextState := sA
       }
     }
-    
-    is(B) {
-      // Output for state B
-      io.g := "b001".U  // g0 = 1
-      
-      when(r0) {
-        state := B
-      }.otherwise {
-        state := A
-      }
+    is(sB) {
+      when(io.r(0)) { nextState := sB }
+        .otherwise { nextState := sA }
     }
-    
-    is(C) {
-      // Output for state C
-      io.g := "b010".U  // g1 = 1
-      
-      when(r1) {
-        state := C
-      }.otherwise {
-        state := A
-      }
+    is(sC) {
+      when(io.r(1)) { nextState := sC }
+        .otherwise { nextState := sA }
     }
-    
-    is(D) {
-      // Output for state D
-      io.g := "b100".U  // g2 = 1
-      
-      when(r2) {
-        state := D
-      }.otherwise {
-        state := A
-      }
+    is(sD) {
+      when(io.r(2)) { nextState := sD }
+        .otherwise { nextState := sA }
     }
+  }
+
+  state := nextState
+
+  // Output logic (Moore FSM)
+  io.g := 0.U
+  switch(state) {
+    is(sB) { io.g := "b001".U } // g0=1
+    is(sC) { io.g := "b010".U } // g1=1
+    is(sD) { io.g := "b100".U } // g2=1
   }
 }
+
+// Optional: Verilog generation entry point
+/*
+object dut extends App {
+  (new chisel3.stage.ChiselStage).emitVerilog(new dut)
+}
+*/

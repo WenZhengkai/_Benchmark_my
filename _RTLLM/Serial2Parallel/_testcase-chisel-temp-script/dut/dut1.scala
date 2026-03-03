@@ -1,42 +1,33 @@
-// package dut
-
 import chisel3._
-import chisel3.util._
 
 class dut extends Module {
+  override def desiredName: String = "dut"
+
   val io = IO(new Bundle {
-    // Input ports
-    val din_serial = Input(Bool())
-    val din_valid = Input(Bool())
-    
-    // Output ports
-    val dout_parallel = Output(UInt(8.W))
-    val dout_valid = Output(Bool())
+    val din_serial    = Input(Bool())   // Serial input data (1 bit)
+    val din_valid     = Input(Bool())   // Input valid
+    val dout_parallel = Output(UInt(8.W)) // Parallel output data (8 bits)
+    val dout_valid    = Output(Bool())  // Output valid
   })
-  
-  // Internal registers
-  val cnt = RegInit(0.U(4.W))         // Counter to track number of bits received
-  val shiftReg = RegInit(0.U(8.W))    // Shift register to store incoming bits
-  val validOut = RegInit(false.B)     // Register for output validity
-  
-  // Default output values
-  io.dout_valid := validOut
+
+  val shiftReg = RegInit(0.U(8.W))
+  val cnt      = RegInit(0.U(4.W)) // Counts valid bits received: 0 to 7
+
   io.dout_parallel := shiftReg
-  
+  io.dout_valid    := false.B
+
   when(io.din_valid) {
-    // When input is valid, shift in the serial bit and increment counter
-    shiftReg := Cat(shiftReg(6, 0), io.din_serial)
-    cnt := cnt + 1.U
-    
-    // When we've received 8 bits, set output valid and reset counter
+    val nextShift = Cat(shiftReg(6, 0), io.din_serial)
+
     when(cnt === 7.U) {
-      validOut := true.B
-      cnt := 0.U
+      // 8th valid bit received: output complete byte (MSB first, LSB last)
+      shiftReg          := nextShift
+      io.dout_parallel  := nextShift
+      io.dout_valid     := true.B
+      cnt               := 0.U
     }.otherwise {
-      validOut := false.B
+      shiftReg := nextShift
+      cnt      := cnt + 1.U
     }
-  }.otherwise {
-    // When input is not valid, keep the same state
-    validOut := false.B
   }
 }

@@ -3,64 +3,61 @@ import chisel3.util._
 
 class dut extends Module {
   val io = IO(new Bundle {
-    val s = Input(UInt(3.W))
-    val reset = Input(Bool())
-    val fr3 = Output(Bool())
-    val fr2 = Output(Bool())
-    val fr1 = Output(Bool())
-    val dfr = Output(Bool())
+    val rst  = Input(Bool())      // active-high synchronous reset
+    val s    = Input(UInt(3.W))   // s(2)=s[3], s(1)=s[2], s(0)=s[1]
+
+    val fr3  = Output(Bool())
+    val fr2  = Output(Bool())
+    val fr1  = Output(Bool())
+    val dfr  = Output(Bool())
   })
 
-  // Define the water level states
-  val ABOVE_S3 = 3.U
-  val BETWEEN_S3_S2 = 2.U
-  val BETWEEN_S2_S1 = 1.U
-  val BELOW_S1 = 0.U
+  // Level encoding:
+  // 0: below s[1]      -> 000
+  // 1: between s[2],s[1] -> 100
+  // 2: between s[3],s[2] -> 110
+  // 3: above s[3]      -> 111
+  def decodeLevel(s: UInt): UInt = {
+    MuxLookup(
+      s,
+      0.U(2.W), // default for illegal patterns
+      Seq(
+        "b000".U -> 0.U(2.W),
+        "b100".U -> 1.U(2.W),
+        "b110".U -> 2.U(2.W),
+        "b111".U -> 3.U(2.W)
+      )
+    )
+  }
 
-  // Register to store the current water level state
-  val currentState = RegInit(BELOW_S1)
-  
-  // Register to store the previous state (used to determine direction of level change)
-  val previousState = RegInit(BELOW_S1)
-  
-  // Determine the current water level based on sensor inputs
-  val waterLevel = Wire(UInt(2.W))
-  when(io.s(3-1) && io.s(2-1) && io.s(1-1)) {
-    waterLevel := ABOVE_S3
-  }.elsewhen(io.s(2-1) && io.s(1-1)) {
-    waterLevel := BETWEEN_S3_S2
-  }.elsewhen(io.s(1-1)) {
-    waterLevel := BETWEEN_S2_S1
+  val sensorLevel = decodeLevel(io.s)
+
+  // Track current level and level before the most recent sensor change
+  val currLevel = RegInit(0.U(2.W))
+  val prevLevel = RegInit(0.U(2.W))
+
+  when(io.rst) {
+    // Reset to "low for a long time":
+    // no sensors asserted (level 0), all outputs asserted
+    currLevel := 0.U
+    prevLevel := 0.U
   }.otherwise {
-    waterLevel := BELOW_S1
+    when(sensorLevel =/= currLevel) {
+      prevLevel := currLevel
+      currLevel := sensorLevel
+    }
   }
 
-  // Update state registers
-  when(io.reset) {
-    currentState := BELOW_S1
-    previousState := BELOW_S1
-  }.elsewhen(waterLevel =/= currentState) {
-    previousState := currentState
-    currentState := waterLevel
-  }
+  // Nominal flow outputs from current level
+  io.fr1 := (currLevel <= 2.U)
+  io.fr2 := (currLevel <= 1.U)
+  io.fr3 := (currLevel === 0.U)
 
-  // Determine if the water level is rising
-  val isRising = currentState > previousState
-
-  // Set the output flow rates based on the current state and direction
-  when(io.reset) {
-    // Reset state: equivalent to water level being low for a long time
-    io.fr3 := true.B
-    io.fr2 := true.B
-    io.fr1 := true.B
-    io.dfr := true.B
-  }.otherwise {
-    // Set nominal flow rate based on water level
-    io.fr3 := currentState === BELOW_S1
-    io.fr2 := currentState === BELOW_S1 || currentState === BETWEEN_S2_S1
-    io.fr1 := currentState === BELOW_S1 || currentState === BETWEEN_S2_S1 || currentState === BETWEEN_S3_S2
-    
-    // Set supplemental flow rate if water level is rising
-    io.dfr := isRising
-  }
+  // Supplemental flow:
+  // - always on at lowest level (maximum flow)
+  // - always off at highest level
+  // - in middle levels, on if level rose since last sensor change
+  val roseSinceLastChange = prevLevel < currLevel
+  io.dfr := Mux(currLevel === 0.U, true.B,
+            Mux(currLevel === 3.U, false.B, roseSinceLastChange))
 }

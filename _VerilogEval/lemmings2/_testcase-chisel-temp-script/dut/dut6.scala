@@ -1,102 +1,59 @@
-// package lemmings
-
 import chisel3._
 import chisel3.util._
+import chisel3.experimental.ChiselEnum
 
-class dut extends Module {
-  val io = IO(new Bundle {
-    val bump_left = Input(Bool())
-    val bump_right = Input(Bool())
-    val ground = Input(Bool())
-    val walk_left = Output(Bool())
-    val walk_right = Output(Bool())
-    val aaah = Output(Bool())
-  })
+class dut extends RawModule {
+  val clock = IO(Input(Clock()))
+  val reset = IO(Input(AsyncReset()))
 
-  // Define states for the Lemming
-  object LemmingState extends ChiselEnum {
-    val WALK_LEFT, WALK_RIGHT, FALL_LEFT, FALL_RIGHT = Value
-  }
-  import LemmingState._
+  val bump_left  = IO(Input(Bool()))
+  val bump_right = IO(Input(Bool()))
+  val ground     = IO(Input(Bool()))
 
-  // State register with asynchronous reset to WALK_LEFT
-  val state = RegInit(WALK_LEFT)
+  val walk_left  = IO(Output(Bool()))
+  val walk_right = IO(Output(Bool()))
+  val aaah       = IO(Output(Bool()))
 
-  // Default output values
-  io.walk_left := false.B
-  io.walk_right := false.B
-  io.aaah := false.B
-
-  // State transition logic
-  switch(state) {
-    is(WALK_LEFT) {
-      when(!io.ground) {
-        // Start falling if no ground
-        state := FALL_LEFT
-      }.elsewhen(io.bump_left) {
-        // Change direction if bumped on the left
-        state := WALK_RIGHT
-      }.otherwise {
-        // Continue walking left
-        state := WALK_LEFT
-      }
-    }
-
-    is(WALK_RIGHT) {
-      when(!io.ground) {
-        // Start falling if no ground
-        state := FALL_RIGHT
-      }.elsewhen(io.bump_right) {
-        // Change direction if bumped on the right
-        state := WALK_LEFT
-      }.otherwise {
-        // Continue walking right
-        state := WALK_RIGHT
-      }
-    }
-
-    is(FALL_LEFT) {
-      when(io.ground) {
-        // Resume walking left when ground reappears
-        state := WALK_LEFT
-      }.otherwise {
-        // Continue falling
-        state := FALL_LEFT
-      }
-    }
-
-    is(FALL_RIGHT) {
-      when(io.ground) {
-        // Resume walking right when ground reappears
-        state := WALK_RIGHT
-      }.otherwise {
-        // Continue falling
-        state := FALL_RIGHT
-      }
-    }
+  object State extends ChiselEnum {
+    val WalkLeft, WalkRight, FallLeft, FallRight = Value
   }
 
-  // Output logic (Moore machine - outputs depend only on current state)
-  switch(state) {
-    is(WALK_LEFT) {
-      io.walk_left := true.B
-      io.walk_right := false.B
-      io.aaah := false.B
+  withClockAndReset(clock, reset) {
+    val state = RegInit(State.WalkLeft)
+
+    switch(state) {
+      is(State.WalkLeft) {
+        when(!ground) {
+          state := State.FallLeft // ground disappears: start falling, keep direction memory
+        }.otherwise {
+          // While walking left: switch only if bumped on left (both bumps also switches)
+          when(bump_left) { state := State.WalkRight }
+            .otherwise    { state := State.WalkLeft }
+        }
+      }
+
+      is(State.WalkRight) {
+        when(!ground) {
+          state := State.FallRight
+        }.otherwise {
+          // While walking right: switch only if bumped on right (both bumps also switches)
+          when(bump_right) { state := State.WalkLeft }
+            .otherwise     { state := State.WalkRight }
+        }
+      }
+
+      is(State.FallLeft) {
+        // Ignore bumps while falling and when ground reappears
+        when(ground) { state := State.WalkLeft }
+      }
+
+      is(State.FallRight) {
+        when(ground) { state := State.WalkRight }
+      }
     }
-    is(WALK_RIGHT) {
-      io.walk_left := false.B
-      io.walk_right := true.B
-      io.aaah := false.B
-    }
-    is(FALL_LEFT) {
-      io.walk_left := false.B
-      io.walk_right := false.B
-      io.aaah := true.B
-    }
-    is(FALL_RIGHT) {
-      io.walk_left := false.B
-      io.walk_right := false.B
-      io.aaah := true.B
-    }
+
+    walk_left  := (state === State.WalkLeft)
+    walk_right := (state === State.WalkRight)
+    aaah       := (state === State.FallLeft) || (state === State.FallRight)
   }
 }

@@ -1,0 +1,90 @@
+Command: vcs -cpp /usr/bin/g++-4.4 -cc /usr/bin/gcc-4.4 -sverilog +v2k -timescale=1ns/1ns \
+-debug_all -l compile.log +plusarg_save +libext+.v+.V+.sv+.svh -sverilog +memcbk \
+-P /home/kai/synopsys_tools/Verdi_2018/verdi/Verdi_O-2018.09-SP2/share/PLI/VCS/LINUX64/novas.tab \
+/home/kai/synopsys_tools/Verdi_2018/verdi/Verdi_O-2018.09-SP2/share/PLI/VCS/LINUX64/pli.a \
+-kdb -lca dut.v testbench.sv
+*** Using c compiler /usr/bin/gcc-4.4 instead of cc ...
+                         Chronologic VCS (TM)
+       Version O-2018.09-SP2_Full64 -- Tue Mar  3 16:14:22 2026
+               Copyright (c) 1991-2018 by Synopsys Inc.
+                         ALL RIGHTS RESERVED
+
+This program is proprietary and confidential information of Synopsys Inc.
+and may be used and disclosed only as authorized in a license agreement
+controlling such use and disclosure.
+
+
+Warning-[LCA_FEATURES_ENABLED] Usage warning
+  LCA features enabled by '-lca' argument on the command line.  For more 
+  information regarding list of LCA features please refer to Chapter "LCA 
+  features" in the VCS/VCS-MX Release Notes
+
+
+Warning-[DEBUG_DEP] Option will be deprecated
+  The option '-debug_all' will be deprecated in a future release.  Please use 
+  '-debug_acc+all -debug_region+cell+encrypt' instead.
+
+Parsing design file 'dut.v'
+Parsing design file 'testbench.sv'
+Top Level Modules:
+       tb
+TimeScale is 1 ps / 1 ps
+
+Error-[UPIMI-E] Undefined port in module instantiation
+testbench.sv, 148
+  Port "io_bump_left" is not defined in module 'dut' defined in "dut.v", 1
+  Module instance: dut top_module1( .clock (clk),  .reset (areset),  
+  .io_bump_left (bump_left),  .io_bump_right (bump_right),  .io_ground 
+  (ground),  .io_walk_left (walk_left_dut ...
+
+
+Error-[UPIMI-E] Undefined port in module instantiation
+testbench.sv, 148
+  Port "io_bump_right" is not defined in module 'dut' defined in "dut.v", 1
+  Module instance: dut top_module1( .clock (clk),  .reset (areset),  
+  .io_bump_left (bump_left),  .io_bump_right (bump_right),  .io_ground 
+  (ground),  .io_walk_left (walk_left_dut ...
+
+
+Error-[UPIMI-E] Undefined port in module instantiation
+testbench.sv, 148
+  Port "io_ground" is not defined in module 'dut' defined in "dut.v", 1
+  Module instance: dut top_module1( .clock (clk),  .reset (areset),  
+  .io_bump_left (bump_left),  .io_bump_right (bump_right),  .io_ground 
+  (ground),  .io_walk_left (walk_left_dut ...
+
+
+Error-[UPIMI-E] Undefined port in module instantiation
+testbench.sv, 148
+  Port "io_walk_left" is not defined in module 'dut' defined in "dut.v", 1
+  Module instance: dut top_module1( .clock (clk),  .reset (areset),  
+  .io_bump_left (bump_left),  .io_bump_right (bump_right),  .io_ground 
+  (ground),  .io_walk_left (walk_left_dut ...
+
+
+Error-[UPIMI-E] Undefined port in module instantiation
+testbench.sv, 148
+  Port "io_walk_right" is not defined in module 'dut' defined in "dut.v", 1
+  Module instance: dut top_module1( .clock (clk),  .reset (areset),  
+  .io_bump_left (bump_left),  .io_bump_right (bump_right),  .io_ground 
+  (ground),  .io_walk_left (walk_left_dut ...
+
+
+Error-[UPIMI-E] Undefined port in module instantiation
+testbench.sv, 148
+  Port "io_aaah" is not defined in module 'dut' defined in "dut.v", 1
+  Module instance: dut top_module1( .clock (clk),  .reset (areset),  
+  .io_bump_left (bump_left),  .io_bump_right (bump_right),  .io_ground 
+  (ground),  .io_walk_left (walk_left_dut ...
+
+
+Warning-[TFIPC] Too few instance port connections
+testbench.sv, 148
+tb, "dut top_module1( .clock (clk),  .reset (areset),  .io_bump_left (bump_left),  .io_bump_right (bump_right),  .io_ground (ground),  .io_walk_left (walk_left_dut),  .io_walk_right (walk_right_dut),  .io_aaah (aaah_dut));"
+  The above instance has fewer port connections than the module definition.
+  Please use '+lint=TFIPC-L' to print out detailed information of unconnected 
+  ports.
+
+3 warnings
+6 errors
+CPU time: .128 seconds to compile

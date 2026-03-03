@@ -1,0 +1,100 @@
+[0m[[0m[31merror[0m] [0m[0m/home/kai/ChiselProject/Benchmarks/_Benchmark_my/RVCore/Decode/chisel-version/t9/src/main/scala/dut.scala:16:23: not found: type HasNPCParameter[0m
+[0m[[0m[31merror[0m] [0m[0mobject FuType extends HasNPCParameter { // functional unit selector[0m
+[0m[[0m[31merror[0m] [0m[0m                      ^[0m
+[0m[[0m[31merror[0m] [0m[0m/home/kai/ChiselProject/Benchmarks/_Benchmark_my/RVCore/Decode/chisel-version/t9/src/main/scala/dut.scala:23:17: not found: value IndependentBru[0m
+[0m[[0m[31merror[0m] [0m[0m  def bru = if (IndependentBru) "b101".U else alu[0m
+[0m[[0m[31merror[0m] [0m[0m                ^[0m
+[0m[[0m[31merror[0m] [0m[0m/home/kai/ChiselProject/Benchmarks/_Benchmark_my/RVCore/Decode/chisel-version/t9/src/main/scala/dut.scala:41:44: not found: type HasNPCParameter[0m
+[0m[[0m[31merror[0m] [0m[0mobject Instructions extends TYPE_INST with HasNPCParameter {[0m
+[0m[[0m[31merror[0m] [0m[0m                                           ^[0m
+[0m[[0m[31merror[0m] [0m[0m/home/kai/ChiselProject/Benchmarks/_Benchmark_my/RVCore/Decode/chisel-version/t9/src/main/scala/dut.scala:43:48: not found: value ALUOpType[0m
+[0m[[0m[31merror[0m] [0m[0m  val DecodeDefault = List(TYPE_N, FuType.alu, ALUOpType.sll, FuSrcType.zero, FuSrcType.zero)[0m
+[0m[[0m[31merror[0m] [0m[0m                                               ^[0m
+[0m[[0m[31merror[0m] [0m[0m/home/kai/ChiselProject/Benchmarks/_Benchmark_my/RVCore/Decode/chisel-version/t9/src/main/scala/dut.scala:44:21: not found: value RVI_Inst[0m
+[0m[[0m[31merror[0m] [0m[0m  def DecodeTable = RVI_Inst.table[0m
+[0m[[0m[31merror[0m] [0m[0m                    ^[0m
+[0m[[0m[31merror[0m] [0m[0m/home/kai/ChiselProject/Benchmarks/_Benchmark_my/RVCore/Decode/chisel-version/t9/src/main/scala/dut.scala:47:24: not found: type NPCBundle[0m
+[0m[[0m[31merror[0m] [0m[0mclass DecodeIO extends NPCBundle {[0m
+[0m[[0m[31merror[0m] [0m[0m                       ^[0m
+[0m[[0m[31merror[0m] [0m[0m/home/kai/ChiselProject/Benchmarks/_Benchmark_my/RVCore/Decode/chisel-version/t9/src/main/scala/dut.scala:48:18: not found: type CtrlFlow[0m
+[0m[[0m[31merror[0m] [0m[0m  val cf   = new CtrlFlow[0m
+[0m[[0m[31merror[0m] [0m[0m                 ^[0m
+[0m[[0m[31merror[0m] [0m[0m/home/kai/ChiselProject/Benchmarks/_Benchmark_my/RVCore/Decode/chisel-version/t9/src/main/scala/dut.scala:49:18: not found: type CtrlSignal[0m
+[0m[[0m[31merror[0m] [0m[0m  val ctrl = new CtrlSignal[0m
+[0m[[0m[31merror[0m] [0m[0m                 ^[0m
+[0m[[0m[31merror[0m] [0m[0m/home/kai/ChiselProject/Benchmarks/_Benchmark_my/RVCore/Decode/chisel-version/t9/src/main/scala/dut.scala:50:18: not found: type DataSrc[0m
+[0m[[0m[31merror[0m] [0m[0m  val data = new DataSrc[0m
+[0m[[0m[31merror[0m] [0m[0m                 ^[0m
+[0m[[0m[31merror[0m] [0m[0m/home/kai/ChiselProject/Benchmarks/_Benchmark_my/RVCore/Decode/chisel-version/t9/src/main/scala/dut.scala:53:19: not found: type NPCModule[0m
+[0m[[0m[31merror[0m] [0m[0mclass dut extends NPCModule with TYPE_INST {[0m
+[0m[[0m[31merror[0m] [0m[0m                  ^[0m
+[0m[[0m[31merror[0m] [0m[0m/home/kai/ChiselProject/Benchmarks/_Benchmark_my/RVCore/Decode/chisel-version/t9/src/main/scala/dut.scala:54:19: not found: type NPCBundle[0m
+[0m[[0m[31merror[0m] [0m[0m  val io = IO(new NPCBundle {[0m
+[0m[[0m[31merror[0m] [0m[0m                  ^[0m
+[0m[[0m[31merror[0m] [0m[0m/home/kai/ChiselProject/Benchmarks/_Benchmark_my/RVCore/Decode/chisel-version/t9/src/main/scala/dut.scala:55:42: not found: type CtrlFlow[0m
+[0m[[0m[31merror[0m] [0m[0m    val from_ifu = Flipped(Decoupled(new CtrlFlow))[0m
+[0m[[0m[31merror[0m] [0m[0m                                         ^[0m
+[0m[[0m[31merror[0m] [0m[0m/home/kai/ChiselProject/Benchmarks/_Benchmark_my/RVCore/Decode/chisel-version/t9/src/main/scala/dut.scala:56:20: overloaded method value apply with alternatives:[0m
+[0m[[0m[31merror[0m] [0m[0m  [T <: chisel3.Data](irr: chisel3.util.IrrevocableIO[T])chisel3.util.DecoupledIO[T] <and>[0m
+[0m[[0m[31merror[0m] [0m[0m  [T <: chisel3.Data](gen: T)chisel3.util.DecoupledIO[T][0m
+[0m[[0m[31merror[0m] [0m[0m cannot be applied to (DecodeIO)[0m
+[0m[[0m[31merror[0m] [0m[0m    val to_isu   = Decoupled(new DecodeIO)[0m
+[0m[[0m[31merror[0m] [0m[0m                   ^[0m
+[0m[[0m[31merror[0m] [0m[0m/home/kai/ChiselProject/Benchmarks/_Benchmark_my/RVCore/Decode/chisel-version/t9/src/main/scala/dut.scala:61:3: not found: value HandShakeDeal[0m
+[0m[[0m[31merror[0m] [0m[0m  HandShakeDeal(io.from_ifu, io.to_isu, AnyInvalidCondition)[0m
+[0m[[0m[31merror[0m] [0m[0m  ^[0m
+[0m[[0m[31merror[0m] [0m[0m/home/kai/ChiselProject/Benchmarks/_Benchmark_my/RVCore/Decode/chisel-version/t9/src/main/scala/dut.scala:69:23: not found: type CtrlSignal[0m
+[0m[[0m[31merror[0m] [0m[0m  val ctrl = Wire(new CtrlSignal)[0m
+[0m[[0m[31merror[0m] [0m[0m                      ^[0m
+[0m[[0m[31merror[0m] [0m[0m/home/kai/ChiselProject/Benchmarks/_Benchmark_my/RVCore/Decode/chisel-version/t9/src/main/scala/dut.scala:85:14: not found: value SignExt[0m
+[0m[[0m[31merror[0m] [0m[0m  val immI = SignExt(inst(31, 20), XLen)[0m
+[0m[[0m[31merror[0m] [0m[0m             ^[0m
+[0m[[0m[31merror[0m] [0m[0m/home/kai/ChiselProject/Benchmarks/_Benchmark_my/RVCore/Decode/chisel-version/t9/src/main/scala/dut.scala:85:36: not found: value XLen[0m
+[0m[[0m[31merror[0m] [0m[0m  val immI = SignExt(inst(31, 20), XLen)[0m
+[0m[[0m[31merror[0m] [0m[0m                                   ^[0m
+[0m[[0m[31merror[0m] [0m[0m/home/kai/ChiselProject/Benchmarks/_Benchmark_my/RVCore/Decode/chisel-version/t9/src/main/scala/dut.scala:86:14: not found: value SignExt[0m
+[0m[[0m[31merror[0m] [0m[0m  val immU = SignExt(Cat(inst(31, 12), 0.U(12.W)), XLen)[0m
+[0m[[0m[31merror[0m] [0m[0m             ^[0m
+[0m[[0m[31merror[0m] [0m[0m/home/kai/ChiselProject/Benchmarks/_Benchmark_my/RVCore/Decode/chisel-version/t9/src/main/scala/dut.scala:86:52: not found: value XLen[0m
+[0m[[0m[31merror[0m] [0m[0m  val immU = SignExt(Cat(inst(31, 12), 0.U(12.W)), XLen)[0m
+[0m[[0m[31merror[0m] [0m[0m                                                   ^[0m
+[0m[[0m[31merror[0m] [0m[0m/home/kai/ChiselProject/Benchmarks/_Benchmark_my/RVCore/Decode/chisel-version/t9/src/main/scala/dut.scala:87:14: not found: value SignExt[0m
+[0m[[0m[31merror[0m] [0m[0m  val immJ = SignExt(Cat(inst(31), inst(19, 12), inst(20), inst(30, 21), 0.U(1.W)), XLen)[0m
+[0m[[0m[31merror[0m] [0m[0m             ^[0m
+[0m[[0m[31merror[0m] [0m[0m/home/kai/ChiselProject/Benchmarks/_Benchmark_my/RVCore/Decode/chisel-version/t9/src/main/scala/dut.scala:87:85: not found: value XLen[0m
+[0m[[0m[31merror[0m] [0m[0m  val immJ = SignExt(Cat(inst(31), inst(19, 12), inst(20), inst(30, 21), 0.U(1.W)), XLen)[0m
+[0m[[0m[31merror[0m] [0m[0m                                                                                    ^[0m
+[0m[[0m[31merror[0m] [0m[0m/home/kai/ChiselProject/Benchmarks/_Benchmark_my/RVCore/Decode/chisel-version/t9/src/main/scala/dut.scala:88:14: not found: value SignExt[0m
+[0m[[0m[31merror[0m] [0m[0m  val immS = SignExt(Cat(inst(31, 25), inst(11, 7)), XLen)[0m
+[0m[[0m[31merror[0m] [0m[0m             ^[0m
+[0m[[0m[31merror[0m] [0m[0m/home/kai/ChiselProject/Benchmarks/_Benchmark_my/RVCore/Decode/chisel-version/t9/src/main/scala/dut.scala:88:54: not found: value XLen[0m
+[0m[[0m[31merror[0m] [0m[0m  val immS = SignExt(Cat(inst(31, 25), inst(11, 7)), XLen)[0m
+[0m[[0m[31merror[0m] [0m[0m                                                     ^[0m
+[0m[[0m[31merror[0m] [0m[0m/home/kai/ChiselProject/Benchmarks/_Benchmark_my/RVCore/Decode/chisel-version/t9/src/main/scala/dut.scala:89:14: not found: value SignExt[0m
+[0m[[0m[31merror[0m] [0m[0m  val immB = SignExt(Cat(inst(31), inst(7), inst(30, 25), inst(11, 8), 0.U(1.W)), XLen)[0m
+[0m[[0m[31merror[0m] [0m[0m             ^[0m
+[0m[[0m[31merror[0m] [0m[0m/home/kai/ChiselProject/Benchmarks/_Benchmark_my/RVCore/Decode/chisel-version/t9/src/main/scala/dut.scala:89:83: not found: value XLen[0m
+[0m[[0m[31merror[0m] [0m[0m  val immB = SignExt(Cat(inst(31), inst(7), inst(30, 25), inst(11, 8), 0.U(1.W)), XLen)[0m
+[0m[[0m[31merror[0m] [0m[0m                                                                                  ^[0m
+[0m[[0m[31merror[0m] [0m[0m/home/kai/ChiselProject/Benchmarks/_Benchmark_my/RVCore/Decode/chisel-version/t9/src/main/scala/dut.scala:91:25: not found: value XLen[0m
+[0m[[0m[31merror[0m] [0m[0m  val imm = MuxCase(0.U(XLen.W), Seq([0m
+[0m[[0m[31merror[0m] [0m[0m                        ^[0m
+[0m[[0m[31merror[0m] [0m[0m/home/kai/ChiselProject/Benchmarks/_Benchmark_my/RVCore/Decode/chisel-version/t9/src/main/scala/dut.scala:92:15: value === is not a member of Any[0m
+[0m[[0m[31merror[0m] [0m[0m    (instType === TYPE_I) -> immI,[0m
+[0m[[0m[31merror[0m] [0m[0m              ^[0m
+[0m[[0m[31merror[0m] [0m[0m/home/kai/ChiselProject/Benchmarks/_Benchmark_my/RVCore/Decode/chisel-version/t9/src/main/scala/dut.scala:93:15: value === is not a member of Any[0m
+[0m[[0m[31merror[0m] [0m[0m    (instType === TYPE_U) -> immU,[0m
+[0m[[0m[31merror[0m] [0m[0m              ^[0m
+[0m[[0m[31merror[0m] [0m[0m/home/kai/ChiselProject/Benchmarks/_Benchmark_my/RVCore/Decode/chisel-version/t9/src/main/scala/dut.scala:94:15: value === is not a member of Any[0m
+[0m[[0m[31merror[0m] [0m[0m    (instType === TYPE_J) -> immJ,[0m
+[0m[[0m[31merror[0m] [0m[0m              ^[0m
+[0m[[0m[31merror[0m] [0m[0m/home/kai/ChiselProject/Benchmarks/_Benchmark_my/RVCore/Decode/chisel-version/t9/src/main/scala/dut.scala:95:15: value === is not a member of Any[0m
+[0m[[0m[31merror[0m] [0m[0m    (instType === TYPE_S) -> immS,[0m
+[0m[[0m[31merror[0m] [0m[0m              ^[0m
+[0m[[0m[31merror[0m] [0m[0m/home/kai/ChiselProject/Benchmarks/_Benchmark_my/RVCore/Decode/chisel-version/t9/src/main/scala/dut.scala:96:15: value === is not a member of Any[0m
+[0m[[0m[31merror[0m] [0m[0m    (instType === TYPE_B) -> immB[0m
+[0m[[0m[31merror[0m] [0m[0m              ^[0m
+[0m[[0m[31merror[0m] [0m[0m/home/kai/ChiselProject/Benchmarks/_Benchmark_my/RVCore/Decode/chisel-version/t9/src/main/scala/dut.scala:100:23: not found: type DataSrc[0m
+[0m[[0m[31merror[0m] [0m[0m  val data = Wire(new DataSrc)[0m
+[0m[[0m[31merror[0m] [0m[0m                      ^[0m
+[0m[[0m[31merror[0m] [0m[0m32 errors found[0m

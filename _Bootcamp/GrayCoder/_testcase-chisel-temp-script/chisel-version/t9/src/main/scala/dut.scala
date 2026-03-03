@@ -1,37 +1,28 @@
-// package graycode
-
 import chisel3._
 import chisel3.util._
 import scala.math.pow
 
-class dut(bitwidth: Int) extends Module {
+class dut(val bitwidth: Int) extends Module {
+  require(bitwidth > 0, "bitwidth must be > 0")
+
   val io = IO(new Bundle {
-    val in = Input(UInt(bitwidth.W))
+    val in     = Input(UInt(bitwidth.W))
     val encode = Input(Bool())
-    val out = Output(UInt(bitwidth.W))
+    val out    = Output(UInt(bitwidth.W))
   })
 
-  // Gray code encoding: binary to Gray code
-  // Gray code = binary XOR (binary right-shifted by 1)
-  val grayEncoded = io.in ^ (io.in >> 1.U)
+  // Encode: binary -> Gray
+  val grayEncoded = io.in ^ (io.in >> 1)
 
-  // Gray code decoding: Gray code to binary
-  // This is done iteratively using a power-of-two approach
-  val numIterations = log2Ceil(bitwidth)
-  
-  // Start with the Gray code input
-  val decodeIterations = Wire(Vec(numIterations + 1, UInt(bitwidth.W)))
-  decodeIterations(0) := io.in
-  
-  // Iteratively decode by XORing with right-shifted versions
-  for (i <- 0 until numIterations) {
-    val shiftAmount = pow(2, i).toInt
-    decodeIterations(i + 1) := decodeIterations(i) ^ (decodeIterations(i) >> shiftAmount.U)
+  // Decode: Gray -> binary using iterative XOR with right shifts by powers of 2
+  val stages = log2Ceil(bitwidth)
+  val decodeSteps = Wire(Vec(stages + 1, UInt(bitwidth.W)))
+  decodeSteps(0) := io.in
+  for (i <- 0 until stages) {
+    val shiftAmt = pow(2, i).toInt
+    decodeSteps(i + 1) := decodeSteps(i) ^ (decodeSteps(i) >> shiftAmt)
   }
-  
-  // Select the final decoded binary output
-  val grayDecoded = decodeIterations(numIterations)
+  val grayDecoded = decodeSteps(stages)
 
-  // Output selection based on the 'encode' control signal
   io.out := Mux(io.encode, grayEncoded, grayDecoded)
 }

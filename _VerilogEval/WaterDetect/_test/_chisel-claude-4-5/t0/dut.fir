@@ -1,0 +1,53 @@
+circuit dut :
+  module dut :
+    input clock : Clock
+    input reset : UInt<1>
+    output io : { flip s : UInt<4>, fr3 : UInt<1>, fr2 : UInt<1>, fr1 : UInt<1>, dfr : UInt<1>}
+
+    node s1 = bits(io.s, 1, 1) @[dut.scala 14:16]
+    node s2 = bits(io.s, 2, 2) @[dut.scala 15:16]
+    node s3 = bits(io.s, 3, 3) @[dut.scala 16:16]
+    node _levelAboveS3_T = and(s1, s2) @[dut.scala 19:25]
+    node levelAboveS3 = and(_levelAboveS3_T, s3) @[dut.scala 19:31]
+    node _levelBetweenS3S2_T = and(s1, s2) @[dut.scala 20:29]
+    node _levelBetweenS3S2_T_1 = eq(s3, UInt<1>("h0")) @[dut.scala 20:38]
+    node levelBetweenS3S2 = and(_levelBetweenS3S2_T, _levelBetweenS3S2_T_1) @[dut.scala 20:35]
+    node _levelBetweenS2S1_T = eq(s2, UInt<1>("h0")) @[dut.scala 21:32]
+    node _levelBetweenS2S1_T_1 = and(s1, _levelBetweenS2S1_T) @[dut.scala 21:29]
+    node _levelBetweenS2S1_T_2 = eq(s3, UInt<1>("h0")) @[dut.scala 21:39]
+    node levelBetweenS2S1 = and(_levelBetweenS2S1_T_1, _levelBetweenS2S1_T_2) @[dut.scala 21:36]
+    node _levelBelowS1_T = eq(s1, UInt<1>("h0")) @[dut.scala 22:22]
+    node _levelBelowS1_T_1 = eq(s2, UInt<1>("h0")) @[dut.scala 22:29]
+    node _levelBelowS1_T_2 = and(_levelBelowS1_T, _levelBelowS1_T_1) @[dut.scala 22:26]
+    node _levelBelowS1_T_3 = eq(s3, UInt<1>("h0")) @[dut.scala 22:36]
+    node levelBelowS1 = and(_levelBelowS1_T_2, _levelBelowS1_T_3) @[dut.scala 22:33]
+    reg prevLevel : UInt<2>, clock with :
+      reset => (reset, UInt<2>("h0")) @[dut.scala 25:26]
+    wire currLevel : UInt<2> @[dut.scala 28:23]
+    node _currLevel_T = mux(levelBelowS1, UInt<1>("h0"), UInt<1>("h0")) @[Mux.scala 101:16]
+    node _currLevel_T_1 = mux(levelBetweenS2S1, UInt<1>("h1"), _currLevel_T) @[Mux.scala 101:16]
+    node _currLevel_T_2 = mux(levelBetweenS3S2, UInt<2>("h2"), _currLevel_T_1) @[Mux.scala 101:16]
+    node _currLevel_T_3 = mux(levelAboveS3, UInt<2>("h3"), _currLevel_T_2) @[Mux.scala 101:16]
+    currLevel <= _currLevel_T_3 @[dut.scala 29:13]
+    node waterRising = gt(currLevel, prevLevel) @[dut.scala 37:31]
+    prevLevel <= currLevel @[dut.scala 40:13]
+    wire nominalFr1 : UInt<1> @[dut.scala 43:24]
+    wire nominalFr2 : UInt<1> @[dut.scala 44:24]
+    wire nominalFr3 : UInt<1> @[dut.scala 45:24]
+    node _nominalFr1_T = or(levelBetweenS3S2, levelBetweenS2S1) @[dut.scala 47:34]
+    node _nominalFr1_T_1 = or(_nominalFr1_T, levelBelowS1) @[dut.scala 47:54]
+    nominalFr1 <= _nominalFr1_T_1 @[dut.scala 47:14]
+    node _nominalFr2_T = or(levelBetweenS2S1, levelBelowS1) @[dut.scala 48:34]
+    nominalFr2 <= _nominalFr2_T @[dut.scala 48:14]
+    nominalFr3 <= levelBelowS1 @[dut.scala 49:14]
+    node _supplementalFlow_T = eq(levelAboveS3, UInt<1>("h0")) @[dut.scala 52:41]
+    node supplementalFlow = and(waterRising, _supplementalFlow_T) @[dut.scala 52:38]
+    io.fr1 <= nominalFr1 @[dut.scala 55:10]
+    io.fr2 <= nominalFr2 @[dut.scala 56:10]
+    io.fr3 <= nominalFr3 @[dut.scala 57:10]
+    io.dfr <= supplementalFlow @[dut.scala 58:10]
+    node _T = bits(reset, 0, 0) @[dut.scala 62:14]
+    when _T : @[dut.scala 62:22]
+      prevLevel <= UInt<1>("h0") @[dut.scala 63:15]
+
+

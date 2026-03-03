@@ -1,57 +1,46 @@
-// package deserializer
-
 import chisel3._
 import chisel3.util._
 
-/**
- * A module that deserializes a stream of data.
- *
- * @param data The data type to deserialize to
- * @param width The width of the input serialized data stream
- */
-class Deserializer[D <: Data](data: D, width: Int) extends Module {
+class dut[D <: Data](data: D, width: Int) extends Module {
+  require(width > 0, s"width must be > 0, got $width")
+  private val dataBits = data.getWidth
+  require(dataBits > 0, s"data type must have known positive width, got $dataBits")
+
   val io = IO(new Bundle {
-    val dataIn = Flipped(Decoupled(UInt(width.W)))
-    val dataOut = Decoupled(data.cloneType)
+    val dataIn  = Flipped(Decoupled(UInt(width.W)))
+    val dataOut = Decoupled(chiselTypeOf(data))
   })
 
-  // Calculate total data width and required cycles
-  val dataWidth = data.getWidth
-  val cycles = (dataWidth + width - 1) / width // Ceiling division
+  private val cycles = (dataBits + width - 1) / width
+  private val cntW   = math.max(1, log2Ceil(cycles))
 
-  // Internal registers
-  val cycleCount = RegInit(0.U(log2Ceil(cycles).W))
-  val dataSelect = RegInit(0.U(dataWidth.W))
-  val dataValid = RegInit(false.B)
+  val cycleCount = RegInit(0.U(cntW.W))
+  val dataSelect = RegInit(VecInit(Seq.fill(cycles)(0.U(width.W))))
+  val dataValid  = RegInit(false.B)
 
-  // Connect output signals
-  io.dataOut.bits := dataSelect.asTypeOf(data.cloneType)
+  // Output reconstruction
+  private val assembled = dataSelect.asUInt
+  io.dataOut.bits  := assembled(dataBits - 1, 0).asTypeOf(chiselTypeOf(data))
   io.dataOut.valid := dataValid
-  
-  // Control input ready signal
+
+  // Backpressure: accept input only when not holding a completed output
+  // or when output is being accepted this cycle.
   io.dataIn.ready := !dataValid || io.dataOut.ready
 
-  // Deserialization logic
+  // If output is consumed, clear valid (unless overwritten below by a new full word in same cycle).
+  when(io.dataOut.fire) {
+    dataValid := false.B
+  }
+
+  // Consume serialized chunks
   when(io.dataIn.fire) {
-    // Shift in the new data bits
-    val shiftAmount = cycleCount * width.U
-    val mask = ((1.U << width.U) - 1.U) << shiftAmount
-    val shiftedData = io.dataIn.bits << shiftAmount
-    
-    dataSelect := (dataSelect & ~mask) | (shiftedData & mask)
-    
+    dataSelect(cycleCount) := io.dataIn.bits
+
     when(cycleCount === (cycles - 1).U) {
-      // Last cycle - data is complete
       cycleCount := 0.U
       dataValid := true.B
     }.otherwise {
-      // Move to next cycle
       cycleCount := cycleCount + 1.U
     }
-  }
-  
-  // Reset dataValid when output is accepted
-  when(io.dataOut.fire) {
-    dataValid := false.B
   }
 }

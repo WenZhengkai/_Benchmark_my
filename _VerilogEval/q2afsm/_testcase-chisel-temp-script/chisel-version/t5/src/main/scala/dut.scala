@@ -1,61 +1,47 @@
-// package arbiter
-
 import chisel3._
 import chisel3.util._
 
-class dut extends Module {
+class dut extends Module with RequireSyncReset {
   val io = IO(new Bundle {
     val r = Input(UInt(3.W))
     val g = Output(UInt(3.W))
   })
-  
-  // Define the states
-  object State extends ChiselEnum {
-    val A, B, C, D = Value
-  }
-  
-  // State register
-  val state = RegInit(State.A)
-  
-  // Default output value
-  io.g := 0.U
-  
-  // State transition logic
+
+  val sA :: sB :: sC :: sD :: Nil = Enum(4)
+  val state = RegInit(sA)
+
+  // Next-state logic
   switch(state) {
-    is(State.A) {
-      when(io.r(0) === 1.U) {
-        state := State.B
-      }.elsewhen(io.r(1) === 1.U) {
-        state := State.C
-      }.elsewhen(io.r(2) === 1.U) {
-        state := State.D
+    is(sA) {
+      when(io.r(0)) {
+        state := sB
+      }.elsewhen(io.r(1)) {
+        state := sC
+      }.elsewhen(io.r(2)) {
+        state := sD
       }.otherwise {
-        state := State.A
+        state := sA
       }
     }
-    is(State.B) {
-      io.g := "b001".U // g0 = 1
-      when(io.r(0) === 0.U) {
-        state := State.A
-      }.otherwise {
-        state := State.B
-      }
+    is(sB) {
+      when(io.r(0)) { state := sB }
+        .otherwise { state := sA }
     }
-    is(State.C) {
-      io.g := "b010".U // g1 = 1
-      when(io.r(1) === 0.U) {
-        state := State.A
-      }.otherwise {
-        state := State.C
-      }
+    is(sC) {
+      when(io.r(1)) { state := sC }
+        .otherwise { state := sA }
     }
-    is(State.D) {
-      io.g := "b100".U // g2 = 1
-      when(io.r(2) === 0.U) {
-        state := State.A
-      }.otherwise {
-        state := State.D
-      }
+    is(sD) {
+      when(io.r(2)) { state := sD }
+        .otherwise { state := sA }
     }
   }
+
+  // Output logic
+  io.g := MuxLookup(state, "b000".U, Seq(
+    sA -> "b000".U,
+    sB -> "b001".U, // g0 = 1
+    sC -> "b010".U, // g1 = 1
+    sD -> "b100".U  // g2 = 1
+  ))
 }

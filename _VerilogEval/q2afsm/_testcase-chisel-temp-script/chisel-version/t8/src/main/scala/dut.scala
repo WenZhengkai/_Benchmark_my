@@ -6,62 +6,43 @@ class dut extends Module {
     val r = Input(UInt(3.W))
     val g = Output(UInt(3.W))
   })
-  
-  // Define states
+
   val sA :: sB :: sC :: sD :: Nil = Enum(4)
-  
-  // State register
-  val state = RegInit(sA)
-  
-  // Default output value
-  io.g := 0.U
-  
-  // FSM logic
+
+  // Use Bool reset (synchronous reset behavior)
+  val state = withClockAndReset(clock, reset.asBool) {
+    RegInit(sA)
+  }
+
+  // Next-state logic
   switch(state) {
     is(sA) {
-      // Priority encoding for next state transitions
-      when(io.r(0) === 1.U) {
+      when(io.r(0)) {
         state := sB
-      }.elsewhen(io.r(1) === 1.U) {
+      }.elsewhen(io.r(1)) {
         state := sC
-      }.elsewhen(io.r(2) === 1.U) {
+      }.elsewhen(io.r(2)) {
         state := sD
       }.otherwise {
         state := sA
       }
     }
-    
     is(sB) {
-      // Device 0 has grant
-      io.g := "b001".U
-      
-      when(io.r(0) === 0.U) {
-        state := sA
-      }.otherwise {
-        state := sB
-      }
+      when(io.r(0)) { state := sB } .otherwise { state := sA }
     }
-    
     is(sC) {
-      // Device 1 has grant
-      io.g := "b010".U
-      
-      when(io.r(1) === 0.U) {
-        state := sA
-      }.otherwise {
-        state := sC
-      }
+      when(io.r(1)) { state := sC } .otherwise { state := sA }
     }
-    
     is(sD) {
-      // Device 2 has grant
-      io.g := "b100".U
-      
-      when(io.r(2) === 0.U) {
-        state := sA
-      }.otherwise {
-        state := sD
-      }
+      when(io.r(2)) { state := sD } .otherwise { state := sA }
     }
+  }
+
+  // Output logic (grant signals)
+  io.g := 0.U
+  switch(state) {
+    is(sB) { io.g := "b001".U } // g0 = 1
+    is(sC) { io.g := "b010".U } // g1 = 1
+    is(sD) { io.g := "b100".U } // g2 = 1
   }
 }

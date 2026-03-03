@@ -1,92 +1,82 @@
-// package watercontroller
-
 import chisel3._
 import chisel3.util._
 
-class WaterReservoirController extends Module {
+class dut extends Module {
   val io = IO(new Bundle {
-    val s = Input(UInt(3.W))  // 3 sensors, s[3] to s[1]
-    val fr3 = Output(Bool())  // Flow rate control signals
+    val s   = Input(UInt(3.W)) // s(2)=s3 (highest), s(1)=s2, s(0)=s1
+    val rst = Input(Bool())    // active-high synchronous reset
+
+    val fr3 = Output(Bool())
     val fr2 = Output(Bool())
     val fr1 = Output(Bool())
-    val dfr = Output(Bool())  // Supplemental flow valve
-    val reset = Input(Bool()) // Active-high synchronous reset
+    val dfr = Output(Bool())
   })
 
-  // Define states for the water level
-  val LEVEL_BELOW_S1 = 0.U
-  val LEVEL_BETWEEN_S1_S2 = 1.U
-  val LEVEL_BETWEEN_S2_S3 = 2.U
-  val LEVEL_ABOVE_S3 = 3.U
-
-  // Register to store the current water level state
-  val currentLevel = RegInit(LEVEL_BELOW_S1)
-  
-  // Register to store the previous level before the last sensor change
-  val previousLevel = RegInit(LEVEL_BELOW_S1)
-  
-  // Determine the current level based on sensors
-  val newLevel = Wire(UInt(2.W))
-  
-  when(io.s(2) && io.s(1) && io.s(0)) {
-    newLevel := LEVEL_ABOVE_S3           // All sensors asserted (s[3], s[2], s[1])
-  }.elsewhen(io.s(1) && io.s(0) && !io.s(2)) {
-    newLevel := LEVEL_BETWEEN_S2_S3      // s[2] and s[1] asserted, s[3] not asserted
-  }.elsewhen(io.s(0) && !io.s(1) && !io.s(2)) {
-    newLevel := LEVEL_BETWEEN_S1_S2      // Only s[1] asserted
+  // Convert sensor pattern to one of 4 water levels:
+  // 3: above s3, 2: between s3/s2, 1: between s2/s1, 0: below s1
+  // This also behaves sensibly for invalid patterns by using highest asserted sensor.
+  val level = Wire(UInt(2.W))
+  when(io.s(2)) {
+    level := 3.U
+  }.elsewhen(io.s(1)) {
+    level := 2.U
+  }.elsewhen(io.s(0)) {
+    level := 1.U
   }.otherwise {
-    newLevel := LEVEL_BELOW_S1           // No sensors asserted
+    level := 0.U
   }
 
-  // Update state registers
-  when(io.reset) {
-    // Reset to state equivalent to water level being low for a long time
-    currentLevel := LEVEL_BELOW_S1
-    previousLevel := LEVEL_BELOW_S1
-  }.elsewhen(newLevel =/= currentLevel) {
-    // If level changed, update previous and current
-    previousLevel := currentLevel
-    currentLevel := newLevel
+  // State: last stable level and direction of the last level change
+  val lastLevel       = RegInit(0.U(2.W))  // equivalent to "no sensors asserted"
+  val lastChangeWasUp = RegInit(false.B)
+
+  // Active-high synchronous reset to "low for a long time" equivalent state
+  when(io.rst) {
+    lastLevel       := 0.U
+    lastChangeWasUp := false.B
+  }.elsewhen(level =/= lastLevel) {
+    lastChangeWasUp := level > lastLevel // previous level lower than current
+    lastLevel       := level
   }
 
-  // Set the flow rate outputs based on current water level
-  when(io.reset || currentLevel === LEVEL_BELOW_S1) {
-    // Below s[1] or reset: maximum flow rate
+  // Defaults
+  io.fr1 := false.B
+  io.fr2 := false.B
+  io.fr3 := false.B
+  io.dfr := false.B
+
+  // Force reset output behavior: all four outputs asserted
+  when(io.rst) {
     io.fr1 := true.B
     io.fr2 := true.B
     io.fr3 := true.B
-  }.elsewhen(currentLevel === LEVEL_BETWEEN_S1_S2) {
-    // Between s[2] and s[1]
-    io.fr1 := true.B
-    io.fr2 := true.B
-    io.fr3 := false.B
-  }.elsewhen(currentLevel === LEVEL_BETWEEN_S2_S3) {
-    // Between s[3] and s[2]
-    io.fr1 := true.B
-    io.fr2 := false.B
-    io.fr3 := false.B
-  }.otherwise {
-    // Above s[3]
-    io.fr1 := false.B
-    io.fr2 := false.B
-    io.fr3 := false.B
-  }
-
-  // Set supplemental flow valve (dfr) based on level change direction
-  when(io.reset) {
-    // During reset, set dfr to active (as if level was low for a long time)
-    io.dfr := true.B
-  }.elsewhen(newLevel =/= currentLevel && previousLevel < currentLevel) {
-    // If water level was previously lower (water is rising), increase flow rate
     io.dfr := true.B
   }.otherwise {
-    io.dfr := false.B
+    switch(level) {
+      is(3.U) { // Above s3: no flow
+        io.fr1 := false.B
+        io.fr2 := false.B
+        io.fr3 := false.B
+        io.dfr := false.B
+      }
+      is(2.U) { // Between s3 and s2: nominal fr1 (+dfr if last change was upward)
+        io.fr1 := true.B
+        io.fr2 := false.B
+        io.fr3 := false.B
+        io.dfr := lastChangeWasUp
+      }
+      is(1.U) { // Between s2 and s1: nominal fr1,fr2 (+dfr if last change was upward)
+        io.fr1 := true.B
+        io.fr2 := true.B
+        io.fr3 := false.B
+        io.dfr := lastChangeWasUp
+      }
+      is(0.U) { // Below s1: maximum flow (all asserted)
+        io.fr1 := true.B
+        io.fr2 := true.B
+        io.fr3 := true.B
+        io.dfr := true.B
+      }
+    }
   }
 }
-
-// Generate Verilog for the module
-/*
-object WaterReservoirControllerDriver extends App {
-  chisel3.emitVerilog(new WaterReservoirController(), Array("--target-dir", "generated"))
-}
-*/

@@ -1,95 +1,85 @@
-// package adder
-
 import chisel3._
 import chisel3.util._
 
-class PipelinedRippleCarryAdder extends Module {
+class dut extends Module {
   val io = IO(new Bundle {
-    val i_en = Input(Bool())
-    val adda = Input(UInt(64.W))
-    val addb = Input(UInt(64.W))
+    val i_en   = Input(Bool())
+    val adda   = Input(UInt(64.W))
+    val addb   = Input(UInt(64.W))
     val result = Output(UInt(65.W))
-    val o_en = Output(Bool())
+    val o_en   = Output(Bool())
   })
 
-  // Pipeline registers for enable signal
-  val en_reg1 = RegInit(false.B)
-  val en_reg2 = RegInit(false.B)
-  val en_reg3 = RegInit(false.B)
-  val en_reg4 = RegInit(false.B)
+  // -----------------------------
+  // Enable pipeline (4 stages)
+  // -----------------------------
+  val en0 = RegInit(false.B)
+  val en1 = RegInit(false.B)
+  val en2 = RegInit(false.B)
+  val en3 = RegInit(false.B)
 
-  // Pipeline registers for input data
-  val adda_reg = RegInit(0.U(64.W))
-  val addb_reg = RegInit(0.U(64.W))
+  en0 := io.i_en
+  en1 := en0
+  en2 := en1
+  en3 := en2
 
-  // Propagate enable signal through pipeline
-  en_reg1 := io.i_en
-  en_reg2 := en_reg1
-  en_reg3 := en_reg2
-  en_reg4 := en_reg3
+  io.o_en := en3
 
-  // Register inputs when enabled
-  when(io.i_en) {
-    adda_reg := io.adda
-    addb_reg := io.addb
-  }
+  // -----------------------------
+  // Delay operands for upper stages
+  // -----------------------------
+  val a_r1 = RegInit(0.U(64.W))
+  val b_r1 = RegInit(0.U(64.W))
+  val a_r2 = RegInit(0.U(64.W))
+  val b_r2 = RegInit(0.U(64.W))
+  val a_r3 = RegInit(0.U(64.W))
+  val b_r3 = RegInit(0.U(64.W))
 
-  // Split inputs into 4 chunks of 16-bit each
-  val adda_chunks = Wire(Vec(4, UInt(16.W)))
-  val addb_chunks = Wire(Vec(4, UInt(16.W)))
+  a_r1 := io.adda
+  b_r1 := io.addb
+  a_r2 := a_r1
+  b_r2 := b_r1
+  a_r3 := a_r2
+  b_r3 := b_r2
 
-  for (i <- 0 until 4) {
-    adda_chunks(i) := adda_reg(16 * (i + 1) - 1, 16 * i)
-    addb_chunks(i) := addb_reg(16 * (i + 1) - 1, 16 * i)
-  }
+  // -----------------------------
+  // Stage 0: bits [15:0]
+  // -----------------------------
+  val sum0_w = io.adda(15, 0) +& io.addb(15, 0) // 17-bit
+  val sum0_r = RegInit(0.U(16.W))
+  val c0_r   = RegInit(0.U(1.W))
 
-  // Pipeline stage 1 - compute first chunk
-  val sum1 = RegInit(0.U(16.W))
-  val carry1 = RegInit(false.B)
-  
-  when(en_reg1) {
-    val result = adda_chunks(0) +& addb_chunks(0)
-    sum1 := result(15, 0)
-    carry1 := result(16)
-  }
+  sum0_r := sum0_w(15, 0)
+  c0_r   := sum0_w(16)
 
-  // Pipeline stage 2 - compute second chunk
-  val sum2 = RegInit(0.U(16.W))
-  val carry2 = RegInit(false.B)
-  
-  when(en_reg2) {
-    val result = adda_chunks(1) +& addb_chunks(1) + carry1
-    sum2 := result(15, 0)
-    carry2 := result(16)
-  }
+  // -----------------------------
+  // Stage 1: bits [31:16]
+  // -----------------------------
+  val sum1_w = a_r1(31, 16) +& b_r1(31, 16) +& c0_r // 17-bit
+  val sum01_r = RegInit(0.U(32.W))
+  val c1_r    = RegInit(0.U(1.W))
 
-  // Pipeline stage 3 - compute third chunk
-  val sum3 = RegInit(0.U(16.W))
-  val carry3 = RegInit(false.B)
-  
-  when(en_reg3) {
-    val result = adda_chunks(2) +& addb_chunks(2) + carry2
-    sum3 := result(15, 0)
-    carry3 := result(16)
-  }
+  sum01_r := Cat(sum1_w(15, 0), sum0_r)
+  c1_r    := sum1_w(16)
 
-  // Pipeline stage 4 - compute fourth chunk and final result
-  val sum4 = RegInit(0.U(16.W))
-  val carry4 = RegInit(false.B)
-  
-  when(en_reg4) {
-    val result = adda_chunks(3) +& addb_chunks(3) + carry3
-    sum4 := result(15, 0)
-    carry4 := result(16)
-  }
+  // -----------------------------
+  // Stage 2: bits [47:32]
+  // -----------------------------
+  val sum2_w = a_r2(47, 32) +& b_r2(47, 32) +& c1_r // 17-bit
+  val sum012_r = RegInit(0.U(48.W))
+  val c2_r     = RegInit(0.U(1.W))
 
-  // Combine results from all stages
-  io.result := Cat(carry4, sum4, sum3, sum2, sum1)
-  io.o_en := en_reg4
+  sum012_r := Cat(sum2_w(15, 0), sum01_r)
+  c2_r     := sum2_w(16)
+
+  // -----------------------------
+  // Stage 3: bits [63:48]
+  // -----------------------------
+  val sum3_w = a_r3(63, 48) +& b_r3(63, 48) +& c2_r // 17-bit
+  val result_r = RegInit(0.U(65.W))
+
+  // Final result = carry_out :: upper16 :: middle48
+  result_r := Cat(sum3_w(16), sum3_w(15, 0), sum012_r)
+
+  io.result := result_r
 }
-
-/*
-object PipelinedRippleCarryAdderMain extends App {
-  chisel3.Driver.execute(args, () => new PipelinedRippleCarryAdder)
-}
-*/

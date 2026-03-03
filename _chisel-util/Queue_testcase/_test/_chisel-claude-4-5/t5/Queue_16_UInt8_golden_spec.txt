@@ -1,0 +1,75 @@
+# Design Specification for `Queue_16_UInt8_golden` Module
+
+## 1. **Module Name**
+   - `Queue_16_UInt8_golden`
+
+## 2. **Module Functions**
+   The `Queue_16_UInt8_golden` module implements a FIFO (First-In-First-Out) queue with a capacity of 16 elements, each 8 bits wide. The primary function of this module is to buffer and manage data flow between a producer and a consumer, ensuring that data is stored and retrieved in the order it was received. This queue is particularly useful in systems that require temporary storage of data streams, such as communication buffers or data processing pipelines.
+
+## 3. **Input and Output Port Descriptions**
+
+### Inputs
+1. **clock**: Clock signal (1-bit input).
+   - Synchronizes all sequential operations within the module.
+2. **reset**: Reset signal (1-bit input).
+   - Resets the internal states and pointers to their initial conditions.
+3. **io_enq_valid**: Enqueue valid signal (1-bit input).
+   - Indicates that new data is available to be enqueued.
+4. **io_enq_bits**: Enqueue data bits (8-bit input).
+   - The data to be stored in the queue.
+5. **io_deq_ready**: Dequeue ready signal (1-bit input).
+   - Indicates that the consumer is ready to receive data from the queue.
+
+### Outputs
+1. **io_enq_ready**: Enqueue ready signal (1-bit output).
+   - Indicates that the queue is ready to accept new data.
+2. **io_deq_valid**: Dequeue valid signal (1-bit output).
+   - Indicates that valid data is available to be dequeued.
+3. **io_deq_bits**: Dequeue data bits (8-bit output).
+   - The data being output from the queue.
+4. **io_count**: Queue count (5-bit output).
+   - The current number of elements stored in the queue.
+
+## 4. **Internal Working Principle**
+The module operates as a circular buffer with separate pointers for enqueue and dequeue operations. The `enq_ptr_value` and `deq_ptr_value` pointers track the positions for the next enqueue and dequeue operations, respectively. The `maybe_full` flag is used to distinguish between full and empty states when the pointers are equal. The queue supports concurrent enqueue and dequeue operations, provided that the queue is not full or empty, respectively.
+
+## 5. **Implementation Logic Explanation**
+The queue's implementation utilizes both combinational and sequential logic:
+- **Combinational Logic**: Determines the status of the queue (full or empty) and manages read/write operations based on the status of input signals.
+  - `io_enq_ready` is asserted when the queue is not full.
+  - `io_deq_valid` is asserted when the queue is not empty.
+  - The `io_count` output is calculated based on the difference between enqueue and dequeue pointers, adjusted for the full condition.
+- **Sequential Logic**: Updates internal states on the rising edge of the clock.
+  - The `ram` array stores the data elements.
+  - The pointers (`enq_ptr_value` and `deq_ptr_value`) are updated based on enqueue and dequeue operations.
+  - The `maybe_full` flag is updated to reflect changes in the queue's occupancy.
+
+## 6. **Internally Defined Signal Descriptions**
+
+1. **ram**: Memory array (16 x 8-bit).
+   - Stores the data elements in the queue.
+2. **enq_ptr_value**: Enqueue pointer (4-bit).
+   - Tracks the position for the next enqueue operation.
+3. **deq_ptr_value**: Dequeue pointer (4-bit).
+   - Tracks the position for the next dequeue operation.
+4. **maybe_full**: Full condition flag (1-bit).
+   - Indicates whether the queue is full when the pointers are equal.
+5. **ptr_match**: Pointer match signal (1-bit).
+   - Indicates whether the enqueue and dequeue pointers are equal.
+6. **empty**: Empty condition signal (1-bit).
+   - Indicates that the queue is empty.
+7. **full**: Full condition signal (1-bit).
+   - Indicates that the queue is full.
+8. **do_enq**: Enqueue operation signal (1-bit).
+   - Indicates that an enqueue operation should be performed.
+9. **do_deq**: Dequeue operation signal (1-bit).
+   - Indicates that a dequeue operation should be performed.
+10. **ptr_diff**: Pointer difference (4-bit).
+    - Represents the difference between enqueue and dequeue pointers.
+11. **_io_count_T_1**: Intermediate count calculation (5-bit).
+    - Calculates the queue count when the queue is full.
+12. **_GEN_11**: Adjusted pointer difference (5-bit).
+    - Represents the queue count when the queue is not full.
+
+These signals coordinate to manage the queue's operations, ensuring efficient data storage and retrieval while maintaining correct FIFO behavior.
+

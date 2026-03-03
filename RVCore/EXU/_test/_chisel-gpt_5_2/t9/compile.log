@@ -1,0 +1,76 @@
+Command: vcs -cpp /usr/bin/g++-4.4 -cc /usr/bin/gcc-4.4 -sverilog +v2k -timescale=1ns/1ns \
+-debug_all -l compile.log +plusarg_save +libext+.v+.V+.sv+.svh -sverilog +memcbk \
+-P /home/kai/synopsys_tools/Verdi_2018/verdi/Verdi_O-2018.09-SP2/share/PLI/VCS/LINUX64/novas.tab \
+/home/kai/synopsys_tools/Verdi_2018/verdi/Verdi_O-2018.09-SP2/share/PLI/VCS/LINUX64/pli.a \
+-kdb -lca dut.v testbench.sv
+*** Using c compiler /usr/bin/gcc-4.4 instead of cc ...
+                         Chronologic VCS (TM)
+       Version O-2018.09-SP2_Full64 -- Sat Feb 28 08:52:13 2026
+               Copyright (c) 1991-2018 by Synopsys Inc.
+                         ALL RIGHTS RESERVED
+
+This program is proprietary and confidential information of Synopsys Inc.
+and may be used and disclosed only as authorized in a license agreement
+controlling such use and disclosure.
+
+
+Warning-[LCA_FEATURES_ENABLED] Usage warning
+  LCA features enabled by '-lca' argument on the command line.  For more 
+  information regarding list of LCA features please refer to Chapter "LCA 
+  features" in the VCS/VCS-MX Release Notes
+
+
+Warning-[DEBUG_DEP] Option will be deprecated
+  The option '-debug_all' will be deprecated in a future release.  Please use 
+  '-debug_acc+all -debug_region+cell+encrypt' instead.
+
+Parsing design file 'dut.v'
+Parsing design file 'testbench.sv'
+Top Level Modules:
+       tb_EXU
+TimeScale is 1 ns / 1 ps
+
+Error-[UPIMI-E] Undefined port in module instantiation
+testbench.sv, 116
+  Port "io_to_mem_data" is not defined in module 'dut' defined in "dut.v", 38
+  Module instance: dut dut( .clock (clock),  .reset (reset),  
+  .io_from_isu_ready (dut_io_from_isu_ready),  .io_from_isu_valid 
+  (io_from_isu_valid),  .io_from_isu_bits_cf_inst (io ...
+
+
+Error-[UPIMI-E] Undefined port in module instantiation
+testbench.sv, 116
+  Port "io_to_mem_Wmask" is not defined in module 'dut' defined in "dut.v", 38
+  Module instance: dut dut( .clock (clock),  .reset (reset),  
+  .io_from_isu_ready (dut_io_from_isu_ready),  .io_from_isu_valid 
+  (io_from_isu_valid),  .io_from_isu_bits_cf_inst (io ...
+
+
+Error-[UPIMI-E] Undefined port in module instantiation
+testbench.sv, 116
+  Port "io_to_mem_MemWrite" is not defined in module 'dut' defined in "dut.v",
+  38
+  Module instance: dut dut( .clock (clock),  .reset (reset),  
+  .io_from_isu_ready (dut_io_from_isu_ready),  .io_from_isu_valid 
+  (io_from_isu_valid),  .io_from_isu_bits_cf_inst (io ...
+
+
+Error-[UPIMI-E] Undefined port in module instantiation
+testbench.sv, 116
+  Port "io_from_mem_data" is not defined in module 'dut' defined in "dut.v", 
+  38
+  Module instance: dut dut( .clock (clock),  .reset (reset),  
+  .io_from_isu_ready (dut_io_from_isu_ready),  .io_from_isu_valid 
+  (io_from_isu_valid),  .io_from_isu_bits_cf_inst (io ...
+
+
+Warning-[TFIPC] Too few instance port connections
+testbench.sv, 116
+tb_EXU, "dut dut( .clock (clock),  .reset (reset),  .io_from_isu_ready (dut_io_from_isu_ready),  .io_from_isu_valid (io_from_isu_valid),  .io_from_isu_bits_cf_inst (io_from_isu_bits_cf_inst),  .io_from_isu_bits_cf_pc (io_from_isu_bits_cf_pc),  .io_from_isu_bits_cf_next_pc (io_from_isu_bits_cf_next_pc),  .io_from_isu_bits_cf_isBranch (io_from_isu_bits_cf_isBranch),  .io_from_isu_bits_ctrl_MemWrite (io_from_isu_bits_ctrl_MemWrite),  .io_from_isu_bits_ctrl_ResSrc (io_from_isu_bits_ctrl_ResSrc),  .io_from_isu_bits_ctrl_fuSrc1Type (io_from_isu_bits_ctrl_fuSrc1Type),  .io_from_isu_bits_ctrl_fuSrc2Type (io_from_isu_bits_ctrl_fuSrc2Type),  .io_from_isu_bits_ctrl_fuType (io_from_isu_bits_ctrl_fuType),  .io_from_isu_bits_ctrl_fuOpType (io_from_isu_bits_ctrl_fuOpType),  .i ... "
+  The above instance has fewer port connections than the module definition.
+  Please use '+lint=TFIPC-L' to print out detailed information of unconnected 
+  ports.
+
+3 warnings
+4 errors
+CPU time: .139 seconds to compile

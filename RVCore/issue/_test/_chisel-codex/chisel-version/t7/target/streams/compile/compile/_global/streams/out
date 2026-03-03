@@ -1,0 +1,67 @@
+[0m[[0m[31merror[0m] [0m[0m/home/kai/ChiselProject/Benchmarks/_Benchmark_my/RVCore/issue/chisel-version/t7/src/main/scala/dut.scala:5:41: not found: type HasNPCParameter[0m
+[0m[[0m[31merror[0m] [0m[0mclass ScoreBoard(maxScore: Int) extends HasNPCParameter {[0m
+[0m[[0m[31merror[0m] [0m[0m                                        ^[0m
+[0m[[0m[31merror[0m] [0m[0m/home/kai/ChiselProject/Benchmarks/_Benchmark_my/RVCore/issue/chisel-version/t7/src/main/scala/dut.scala:12:39: not found: value NR_GPR[0m
+[0m[[0m[31merror[0m] [0m[0m  val busy = RegInit(VecInit(Seq.fill(NR_GPR)(0.U(cntW.W))))[0m
+[0m[[0m[31merror[0m] [0m[0m                                      ^[0m
+[0m[[0m[31merror[0m] [0m[0m/home/kai/ChiselProject/Benchmarks/_Benchmark_my/RVCore/issue/chisel-version/t7/src/main/scala/dut.scala:16:45: not found: value NR_GPR[0m
+[0m[[0m[31merror[0m] [0m[0m  def mask(idx: UInt): UInt = UIntToOH(idx, NR_GPR)[0m
+[0m[[0m[31merror[0m] [0m[0m                                            ^[0m
+[0m[[0m[31merror[0m] [0m[0m/home/kai/ChiselProject/Benchmarks/_Benchmark_my/RVCore/issue/chisel-version/t7/src/main/scala/dut.scala:19:23: not found: value NR_GPR[0m
+[0m[[0m[31merror[0m] [0m[0m    for (i <- 0 until NR_GPR) {[0m
+[0m[[0m[31merror[0m] [0m[0m                      ^[0m
+[0m[[0m[31merror[0m] [0m[0m/home/kai/ChiselProject/Benchmarks/_Benchmark_my/RVCore/issue/chisel-version/t7/src/main/scala/dut.scala:40:19: not found: type NPCModule[0m
+[0m[[0m[31merror[0m] [0m[0mclass dut extends NPCModule {[0m
+[0m[[0m[31merror[0m] [0m[0m                  ^[0m
+[0m[[0m[31merror[0m] [0m[0m/home/kai/ChiselProject/Benchmarks/_Benchmark_my/RVCore/issue/chisel-version/t7/src/main/scala/dut.scala:42:42: not found: type DecodeIO[0m
+[0m[[0m[31merror[0m] [0m[0m    val from_idu = Flipped(Decoupled(new DecodeIO))[0m
+[0m[[0m[31merror[0m] [0m[0m                                         ^[0m
+[0m[[0m[31merror[0m] [0m[0m/home/kai/ChiselProject/Benchmarks/_Benchmark_my/RVCore/issue/chisel-version/t7/src/main/scala/dut.scala:43:34: not found: type DecodeIO[0m
+[0m[[0m[31merror[0m] [0m[0m    val to_exu   = Decoupled(new DecodeIO)[0m
+[0m[[0m[31merror[0m] [0m[0m                                 ^[0m
+[0m[[0m[31merror[0m] [0m[0m/home/kai/ChiselProject/Benchmarks/_Benchmark_my/RVCore/issue/chisel-version/t7/src/main/scala/dut.scala:44:30: not found: type WbuToRegIO[0m
+[0m[[0m[31merror[0m] [0m[0m    val wb       = Input(new WbuToRegIO)[0m
+[0m[[0m[31merror[0m] [0m[0m                             ^[0m
+[0m[[0m[31merror[0m] [0m[0m/home/kai/ChiselProject/Benchmarks/_Benchmark_my/RVCore/issue/chisel-version/t7/src/main/scala/dut.scala:47:31: not found: value XLen[0m
+[0m[[0m[31merror[0m] [0m[0m      val rfSrc1 = Input(UInt(XLen.W))[0m
+[0m[[0m[31merror[0m] [0m[0m                              ^[0m
+[0m[[0m[31merror[0m] [0m[0m/home/kai/ChiselProject/Benchmarks/_Benchmark_my/RVCore/issue/chisel-version/t7/src/main/scala/dut.scala:48:31: not found: value XLen[0m
+[0m[[0m[31merror[0m] [0m[0m      val rfSrc2 = Input(UInt(XLen.W))[0m
+[0m[[0m[31merror[0m] [0m[0m                              ^[0m
+[0m[[0m[31merror[0m] [0m[0m/home/kai/ChiselProject/Benchmarks/_Benchmark_my/RVCore/issue/chisel-version/t7/src/main/scala/dut.scala:83:54: not found: value XLen[0m
+[0m[[0m[31merror[0m] [0m[0m  val fuSrc1 = MuxLookup(inBits.ctrl.fuSrc1Type, 0.U(XLen.W), Seq([0m
+[0m[[0m[31merror[0m] [0m[0m                                                     ^[0m
+[0m[[0m[31merror[0m] [0m[0m/home/kai/ChiselProject/Benchmarks/_Benchmark_my/RVCore/issue/chisel-version/t7/src/main/scala/dut.scala:84:5: not found: value FuSrcType[0m
+[0m[[0m[31merror[0m] [0m[0m    FuSrcType.rfSrc1 -> rf1,[0m
+[0m[[0m[31merror[0m] [0m[0m    ^[0m
+[0m[[0m[31merror[0m] [0m[0m/home/kai/ChiselProject/Benchmarks/_Benchmark_my/RVCore/issue/chisel-version/t7/src/main/scala/dut.scala:85:5: not found: value FuSrcType[0m
+[0m[[0m[31merror[0m] [0m[0m    FuSrcType.pc     -> inBits.cf.pc,[0m
+[0m[[0m[31merror[0m] [0m[0m    ^[0m
+[0m[[0m[31merror[0m] [0m[0m/home/kai/ChiselProject/Benchmarks/_Benchmark_my/RVCore/issue/chisel-version/t7/src/main/scala/dut.scala:86:5: not found: value FuSrcType[0m
+[0m[[0m[31merror[0m] [0m[0m    FuSrcType.zero   -> 0.U(XLen.W)[0m
+[0m[[0m[31merror[0m] [0m[0m    ^[0m
+[0m[[0m[31merror[0m] [0m[0m/home/kai/ChiselProject/Benchmarks/_Benchmark_my/RVCore/issue/chisel-version/t7/src/main/scala/dut.scala:86:29: not found: value XLen[0m
+[0m[[0m[31merror[0m] [0m[0m    FuSrcType.zero   -> 0.U(XLen.W)[0m
+[0m[[0m[31merror[0m] [0m[0m                            ^[0m
+[0m[[0m[31merror[0m] [0m[0m/home/kai/ChiselProject/Benchmarks/_Benchmark_my/RVCore/issue/chisel-version/t7/src/main/scala/dut.scala:89:54: not found: value XLen[0m
+[0m[[0m[31merror[0m] [0m[0m  val fuSrc2 = MuxLookup(inBits.ctrl.fuSrc2Type, 0.U(XLen.W), Seq([0m
+[0m[[0m[31merror[0m] [0m[0m                                                     ^[0m
+[0m[[0m[31merror[0m] [0m[0m/home/kai/ChiselProject/Benchmarks/_Benchmark_my/RVCore/issue/chisel-version/t7/src/main/scala/dut.scala:90:5: not found: value FuSrcType[0m
+[0m[[0m[31merror[0m] [0m[0m    FuSrcType.rfSrc2 -> rf2,[0m
+[0m[[0m[31merror[0m] [0m[0m    ^[0m
+[0m[[0m[31merror[0m] [0m[0m/home/kai/ChiselProject/Benchmarks/_Benchmark_my/RVCore/issue/chisel-version/t7/src/main/scala/dut.scala:91:5: not found: value FuSrcType[0m
+[0m[[0m[31merror[0m] [0m[0m    FuSrcType.imm    -> inBits.data.imm,[0m
+[0m[[0m[31merror[0m] [0m[0m    ^[0m
+[0m[[0m[31merror[0m] [0m[0m/home/kai/ChiselProject/Benchmarks/_Benchmark_my/RVCore/issue/chisel-version/t7/src/main/scala/dut.scala:92:5: not found: value FuSrcType[0m
+[0m[[0m[31merror[0m] [0m[0m    FuSrcType.four   -> 4.U(XLen.W)[0m
+[0m[[0m[31merror[0m] [0m[0m    ^[0m
+[0m[[0m[31merror[0m] [0m[0m/home/kai/ChiselProject/Benchmarks/_Benchmark_my/RVCore/issue/chisel-version/t7/src/main/scala/dut.scala:92:29: not found: value XLen[0m
+[0m[[0m[31merror[0m] [0m[0m    FuSrcType.four   -> 4.U(XLen.W)[0m
+[0m[[0m[31merror[0m] [0m[0m                            ^[0m
+[0m[[0m[31merror[0m] [0m[0m/home/kai/ChiselProject/Benchmarks/_Benchmark_my/RVCore/issue/chisel-version/t7/src/main/scala/dut.scala:99:65: not found: value NR_GPR[0m
+[0m[[0m[31merror[0m] [0m[0m  val wbuClearMask = Mux(io.wb.RegWrite, sb.mask(io.wb.rd), 0.U(NR_GPR.W))[0m
+[0m[[0m[31merror[0m] [0m[0m                                                                ^[0m
+[0m[[0m[31merror[0m] [0m[0m/home/kai/ChiselProject/Benchmarks/_Benchmark_my/RVCore/issue/chisel-version/t7/src/main/scala/dut.scala:100:93: not found: value NR_GPR[0m
+[0m[[0m[31merror[0m] [0m[0m  val isFireSetMask = Mux(inBits.ctrl.rfWen && io.to_exu.fire, sb.mask(inBits.ctrl.rd), 0.U(NR_GPR.W))[0m
+[0m[[0m[31merror[0m] [0m[0m                                                                                            ^[0m
+[0m[[0m[31merror[0m] [0m[0m22 errors found[0m

@@ -1,65 +1,66 @@
 import chisel3._
 import chisel3.util._
+import chisel3.experimental.ChiselEnum
 
 class dut extends Module {
   val io = IO(new Bundle {
-    val bump_left = Input(Bool())
+    val bump_left  = Input(Bool())
     val bump_right = Input(Bool())
-    val ground = Input(Bool())
-    val walk_left = Output(Bool())
+    val ground     = Input(Bool())
+    val walk_left  = Output(Bool())
     val walk_right = Output(Bool())
-    val aaah = Output(Bool())
+    val aaah       = Output(Bool())
   })
 
-  // Define states
   object State extends ChiselEnum {
-    val WALK_LEFT, WALK_RIGHT, FALL_LEFT, FALL_RIGHT = Value
+    val walkLeft, walkRight, fallLeft, fallRight = Value
   }
-  
-  // State register with async reset to WALK_LEFT
-  val state = RegInit(State.WALK_LEFT)
-  
-  // Default output values
-  io.walk_left := false.B
-  io.walk_right := false.B
-  io.aaah := false.B
-  
-  // State transition logic
+
+  // Asynchronous active-high reset to walkLeft
+  val state = withReset(reset.asAsyncReset) {
+    RegInit(State.walkLeft)
+  }
+
+  val nextState = WireDefault(state)
+
   switch(state) {
-    is(State.WALK_LEFT) {
-      io.walk_left := true.B
-      
+    is(State.walkLeft) {
       when(!io.ground) {
-        state := State.FALL_LEFT
+        nextState := State.fallLeft
       }.elsewhen(io.bump_left) {
-        state := State.WALK_RIGHT
+        // Includes bump_left && bump_right: still switch direction
+        nextState := State.walkRight
       }
     }
-    
-    is(State.WALK_RIGHT) {
-      io.walk_right := true.B
-      
+
+    is(State.walkRight) {
       when(!io.ground) {
-        state := State.FALL_RIGHT
+        nextState := State.fallRight
       }.elsewhen(io.bump_right) {
-        state := State.WALK_LEFT
+        // Includes bump_left && bump_right: still switch direction
+        nextState := State.walkLeft
       }
     }
-    
-    is(State.FALL_LEFT) {
-      io.aaah := true.B
-      
+
+    is(State.fallLeft) {
+      // Bumps while falling are ignored
       when(io.ground) {
-        state := State.WALK_LEFT
+        nextState := State.walkLeft
       }
     }
-    
-    is(State.FALL_RIGHT) {
-      io.aaah := true.B
-      
+
+    is(State.fallRight) {
+      // Bumps while falling are ignored
       when(io.ground) {
-        state := State.WALK_RIGHT
+        nextState := State.walkRight
       }
     }
   }
+
+  state := nextState
+
+  // Moore outputs depend only on current state
+  io.walk_left  := (state === State.walkLeft)
+  io.walk_right := (state === State.walkRight)
+  io.aaah       := (state === State.fallLeft) || (state === State.fallRight)
 }

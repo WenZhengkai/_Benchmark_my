@@ -1,0 +1,16 @@
+[
+  {
+    "class":"firrtl.EmitCircuitAnnotation",
+    "emitter":"firrtl.VerilogEmitter"
+  },
+  {
+    "class":"firrtl.transforms.BlackBoxInlineAnno",
+    "target":"RVCore2.ysyx_23060228_RegFile_BlackBox",
+    "name":"ysyx_23060228_RegFile_BlackBox.v",
+    "text":"module ysyx_23060228_RegFile_BlackBox #(DATA_WIDTH = 32, ADDR_WIDTH = 5)(\n\tinput\t\tclk,\n\t/* verilator lint_off UNUSEDSIGNAL */\n\tinput  [ADDR_WIDTH - 1 :0]\trs1,\n\tinput  [ADDR_WIDTH - 1:0]\trs2,\n\tinput  [ADDR_WIDTH - 1:0]\trd,\n\t/* verilator lint_on UNUSEDSIGNAL */\n\tinput  [DATA_WIDTH - 1:0]\tdest,\n\tinput\t\tRegWrite,\n\toutput [DATA_WIDTH - 1:0]\tsrc1,\n\toutput [DATA_WIDTH - 1:0]\tsrc2\n);\n\n`ifdef CONFIG_RVE\nlocalparam NR_GPR = 16;\nlocalparam REG_WIDTH = 4;\n`else\nlocalparam NR_GPR = 32;\nlocalparam REG_WIDTH = 5;\n`endif\n\nreg [DATA_WIDTH - 1 :0] x[NR_GPR - 1:0];\n/* DPI-C */\nimport \"DPI-C\" function void set_gpr_ptr(input logic [DATA_WIDTH - 1 :0] a []);\ninitial set_gpr_ptr(x);  // rf为通用寄存器的二维数组变量\n/* DPI-C END */\nassign src1 = x[rs1[REG_WIDTH - 1 : 0]];\nassign src2 = x[rs2[REG_WIDTH - 1 : 0]];\n\nalways@(posedge clk)begin\n\tif(RegWrite)begin\n\t\tx[rd[REG_WIDTH - 1 : 0]] <= rd == 0? DATA_WIDTH'('b0):  dest;\n\tend\nend\n\n\n\nendmodule\n"
+  },
+  {
+    "class":"firrtl.transforms.BlackBoxTargetDirAnno",
+    "targetDir":"gen-all-llm"
+  }
+]

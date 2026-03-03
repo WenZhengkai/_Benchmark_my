@@ -1,0 +1,61 @@
+# Design Specification for `DCDeserializer` Module
+
+## 1. **Module Name**
+   - `DCDeserializer`
+
+## 2. **Module Functions**
+   The `DCDeserializer` module is designed to deserialize incoming data from a 5-bit input stream into an 8-bit output stream. The primary objective of this module is to collect two consecutive 5-bit inputs and combine them into a single 8-bit output. This deserialization process is crucial in systems where data is transmitted in smaller bit-widths and needs to be reconstructed into a larger bit-width format for further processing or storage.
+
+## 3. **Input and Output Port Descriptions**
+
+### Inputs
+1. **clock**: Clock signal (1-bit input).
+   - Synchronizes all sequential operations within the module.
+2. **reset**: Reset signal (1-bit input).
+   - Resets the internal states and registers to their initial conditions.
+3. **io_dataIn_valid**: Data input valid signal (1-bit input).
+   - Indicates that the data on `io_dataIn_bits` is valid and can be sampled.
+4. **io_dataIn_bits**: Data input bus (5-bit input).
+   - Carries the serialized data bits to be deserialized.
+5. **io_dataOut_ready**: Data output ready signal (1-bit input).
+   - Indicates that the downstream module is ready to accept the deserialized data.
+
+### Outputs
+1. **io_dataIn_ready**: Data input ready signal (1-bit output).
+   - Indicates that the module is ready to accept new data on `io_dataIn_bits`.
+2. **io_dataOut_valid**: Data output valid signal (1-bit output).
+   - Indicates that the data on `io_dataOut_bits` is valid and ready for further processing.
+3. **io_dataOut_bits**: Data output bus (8-bit output).
+   - Carries the deserialized data bits, which are a combination of two 5-bit inputs.
+
+## 4. **Internal Working Principle**
+The `DCDeserializer` operates by capturing two consecutive 5-bit inputs and combining them into a single 8-bit output. The module uses a cycle counter to alternate between capturing the first and second 5-bit inputs. Once both inputs are captured, they are concatenated and presented as an 8-bit output. The module ensures that data is only processed when both input and output handshakes (`valid` and `ready` signals) are confirmed.
+
+## 5. **Implementation Logic Explanation**
+The module employs a combination of sequential logic to manage the deserialization process:
+- **Cycle Management**: A single-bit `cycleCount` register is used to track whether the module is capturing the first or second 5-bit input. It toggles between 0 and 1 with each valid input.
+- **Data Capture**: Two 5-bit registers, `dataSelect_0` and `dataSelect_1`, store the first and second 5-bit inputs, respectively. The data is captured based on the `cycleCount` state.
+- **Data Validity**: A `dataValid` register is used to indicate when the 8-bit output is ready. This is set when both 5-bit inputs have been captured and is reset once the output data is accepted by the downstream module.
+- **Output Construction**: The 8-bit output is constructed by concatenating `dataSelect_1` and `dataSelect_0`, with the former occupying the higher bits.
+
+## 6. **Internally Defined Signal Descriptions**
+
+1. **cycleCount**: Cycle counter (1-bit).
+   - Tracks the current cycle of data capture, toggling between capturing the first and second 5-bit inputs.
+2. **dataSelect_0**: First 5-bit data register (5-bit).
+   - Stores the first 5-bit input during the deserialization cycle.
+3. **dataSelect_1**: Second 5-bit data register (5-bit).
+   - Stores the second 5-bit input during the deserialization cycle.
+4. **dataValid**: Data validity flag (1-bit).
+   - Indicates when the 8-bit output data is valid and ready to be read.
+5. **_io_dataOut_bits_T**: Temporary wire for output construction (10-bit).
+   - Concatenates `dataSelect_1` and `dataSelect_0` to form the 8-bit output, with extra bits for internal processing.
+6. **_T**: Input handshake condition (1-bit).
+   - Logical AND of `io_dataIn_ready` and `io_dataIn_valid`, indicating when the module should capture input data.
+7. **_GEN_2**: Intermediate valid generation (1-bit).
+   - Determines the next state of `dataValid` based on `cycleCount` and current `dataValid`.
+8. **_T_2**: Output handshake condition (1-bit).
+   - Logical AND of `io_dataOut_ready` and `io_dataOut_valid`, indicating when the output data has been successfully transferred.
+
+These internal signals and registers work together to ensure that the module efficiently captures, processes, and outputs the deserialized data while maintaining synchronization with the surrounding system components.
+

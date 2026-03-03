@@ -1,27 +1,31 @@
-// package arbitration
-
 import chisel3._
 import chisel3.util._
 
-class dut(numChannels: Int) extends Module {
+class dut(val numChannels: Int) extends Module {
+  require(numChannels > 0, "numChannels must be greater than 0")
+
   val io = IO(new Bundle {
-    val in = Vec(numChannels, Flipped(Decoupled(UInt(8.W))))
+    val in  = Vec(numChannels, Flipped(Decoupled(UInt(8.W))))
     val out = Decoupled(UInt(8.W))
   })
 
-  // Output valid if at least one input is valid
+  // out.valid is high if any input is valid
   io.out.valid := io.in.map(_.valid).reduce(_ || _)
 
-  // Use PriorityMux to select the first valid channel
-  val validMask = io.in.map(_.valid)
-  val channelIndices = (0 until numChannels).map(_.U)
-  val selectedChannel = PriorityMux(validMask.zip(channelIndices))
+  // Select the first valid channel (lowest index has highest priority)
+  private val selWidth = math.max(1, log2Ceil(numChannels))
+  val chosen = PriorityMux(
+    io.in.zipWithIndex.map { case (ch, i) => ch.valid -> i.U(selWidth.W) }
+  )
 
-  // Route data from the selected channel to the output
-  io.out.bits := io.in(selectedChannel).bits
+  // Route selected input data to output
+  io.out.bits := 0.U
+  when(io.out.valid) {
+    io.out.bits := io.in(chosen).bits
+  }
 
-  // Set ready for the selected channel only
-  for (i <- 0 until numChannels) {
-    io.in(i).ready := io.out.ready && (i.U === selectedChannel)
+  // Only selected channel sees ready when output is ready
+  for ((ch, i) <- io.in.zipWithIndex) {
+    ch.ready := io.out.ready && io.out.valid && (chosen === i.U(selWidth.W))
   }
 }

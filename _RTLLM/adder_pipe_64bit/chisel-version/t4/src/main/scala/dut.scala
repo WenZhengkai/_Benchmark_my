@@ -3,109 +3,108 @@ import chisel3.util._
 
 class dut extends Module {
   val io = IO(new Bundle {
-    // Input ports
-    val i_en = Input(Bool())
-    val adda = Input(UInt(64.W))
-    val addb = Input(UInt(64.W))
-    
-    // Output ports
+    val i_en   = Input(Bool())
+    val adda   = Input(UInt(64.W))
+    val addb   = Input(UInt(64.W))
     val result = Output(UInt(65.W))
-    val o_en = Output(Bool())
+    val o_en   = Output(Bool())
   })
 
-  // Create pipeline registers for enable signal
-  val en_reg1 = RegInit(false.B)
-  val en_reg2 = RegInit(false.B)
-  val en_reg3 = RegInit(false.B)
-  val en_reg4 = RegInit(false.B)
+  // --------------------------------------------------------------------------
+  // Valid pipeline (4 stages total: 16b + 16b + 16b + 16b)
+  // --------------------------------------------------------------------------
+  val v0 = RegInit(false.B)
+  val v1 = RegInit(false.B)
+  val v2 = RegInit(false.B)
+  val v3 = RegInit(false.B)
 
-  // Create pipeline registers for input operands
-  val adda_reg = RegInit(0.U(64.W))
-  val addb_reg = RegInit(0.U(64.W))
+  v0 := io.i_en
+  v1 := v0
+  v2 := v1
+  v3 := v2
 
-  // Pipeline stage 1 - Process first 16 bits
-  val sum1 = Wire(UInt(16.W))
-  val carry1 = Wire(Bool())
-  val adda1 = Wire(UInt(16.W))
-  val addb1 = Wire(UInt(16.W))
-  val stage1_result = Wire(UInt(17.W))
-  
-  // Pipeline stage 2 - Process second 16 bits
-  val sum2 = RegInit(0.U(16.W))
-  val carry2 = RegInit(false.B)
-  val adda2 = RegInit(0.U(16.W))
-  val addb2 = RegInit(0.U(16.W))
-  val stage2_result = Wire(UInt(17.W))
-  
-  // Pipeline stage 3 - Process third 16 bits
-  val sum3 = RegInit(0.U(16.W))
-  val carry3 = RegInit(false.B)
-  val adda3 = RegInit(0.U(16.W))
-  val addb3 = RegInit(0.U(16.W))
-  val stage3_result = Wire(UInt(17.W))
-  
-  // Pipeline stage 4 - Process last 16 bits
-  val sum4 = RegInit(0.U(16.W))
-  val carry4 = RegInit(false.B)
-  val adda4 = RegInit(0.U(16.W))
-  val addb4 = RegInit(0.U(16.W))
-  val stage4_result = Wire(UInt(17.W))
-  
-  // Final result registers
-  val final_sum = RegInit(0.U(65.W))
-  
-  // Update enable registers through the pipeline
-  en_reg1 := io.i_en
-  en_reg2 := en_reg1
-  en_reg3 := en_reg2
-  en_reg4 := en_reg3
+  // --------------------------------------------------------------------------
+  // Stage 0: bits [15:0]
+  // --------------------------------------------------------------------------
+  val s0_sum0  = RegInit(0.U(16.W))
+  val s0_carry = RegInit(0.U(1.W))
+  val s0_a1    = RegInit(0.U(16.W))
+  val s0_b1    = RegInit(0.U(16.W))
+  val s0_a2    = RegInit(0.U(16.W))
+  val s0_b2    = RegInit(0.U(16.W))
+  val s0_a3    = RegInit(0.U(16.W))
+  val s0_b3    = RegInit(0.U(16.W))
 
-  // Register input operands when enabled
-  when (io.i_en) {
-    adda_reg := io.adda
-    addb_reg := io.addb
+  when(io.i_en) {
+    val add0 = io.adda(15, 0) +& io.addb(15, 0)
+    s0_sum0  := add0(15, 0)
+    s0_carry := add0(16)
+
+    s0_a1 := io.adda(31, 16)
+    s0_b1 := io.addb(31, 16)
+    s0_a2 := io.adda(47, 32)
+    s0_b2 := io.addb(47, 32)
+    s0_a3 := io.adda(63, 48)
+    s0_b3 := io.addb(63, 48)
   }
-  
-  // Stage 1: Process first 16 bits
-  adda1 := adda_reg(15, 0)
-  addb1 := addb_reg(15, 0)
-  stage1_result := adda1 +& addb1 // +& for addition with carry
-  sum1 := stage1_result(15, 0)
-  carry1 := stage1_result(16)
-  
-  // Stage 2: Register results from stage 1 and process second 16 bits
-  when (en_reg1) {
-    sum2 := sum1
-    adda2 := adda_reg(31, 16)
-    addb2 := addb_reg(31, 16)
-    carry2 := carry1
+
+  // --------------------------------------------------------------------------
+  // Stage 1: bits [31:16]
+  // --------------------------------------------------------------------------
+  val s1_sum0  = RegInit(0.U(16.W))
+  val s1_sum1  = RegInit(0.U(16.W))
+  val s1_carry = RegInit(0.U(1.W))
+  val s1_a2    = RegInit(0.U(16.W))
+  val s1_b2    = RegInit(0.U(16.W))
+  val s1_a3    = RegInit(0.U(16.W))
+  val s1_b3    = RegInit(0.U(16.W))
+
+  when(v0) {
+    val add1 = s0_a1 +& s0_b1 +& s0_carry
+    s1_sum0  := s0_sum0
+    s1_sum1  := add1(15, 0)
+    s1_carry := add1(16)
+
+    s1_a2 := s0_a2
+    s1_b2 := s0_b2
+    s1_a3 := s0_a3
+    s1_b3 := s0_b3
   }
-  stage2_result := adda2 +& addb2 +& carry2
-  
-  // Stage 3: Register results from stage 2 and process third 16 bits
-  when (en_reg2) {
-    sum3 := stage2_result(15, 0)
-    adda3 := adda_reg(47, 32)
-    addb3 := addb_reg(47, 32)
-    carry3 := stage2_result(16)
+
+  // --------------------------------------------------------------------------
+  // Stage 2: bits [47:32]
+  // --------------------------------------------------------------------------
+  val s2_sum0  = RegInit(0.U(16.W))
+  val s2_sum1  = RegInit(0.U(16.W))
+  val s2_sum2  = RegInit(0.U(16.W))
+  val s2_carry = RegInit(0.U(1.W))
+  val s2_a3    = RegInit(0.U(16.W))
+  val s2_b3    = RegInit(0.U(16.W))
+
+  when(v1) {
+    val add2 = s1_a2 +& s1_b2 +& s1_carry
+    s2_sum0  := s1_sum0
+    s2_sum1  := s1_sum1
+    s2_sum2  := add2(15, 0)
+    s2_carry := add2(16)
+
+    s2_a3 := s1_a3
+    s2_b3 := s1_b3
   }
-  stage3_result := adda3 +& addb3 +& carry3
-  
-  // Stage 4: Register results from stage 3 and process last 16 bits
-  when (en_reg3) {
-    sum4 := stage3_result(15, 0)
-    adda4 := adda_reg(63, 48)
-    addb4 := addb_reg(63, 48)
-    carry4 := stage3_result(16)
+
+  // --------------------------------------------------------------------------
+  // Stage 3: bits [63:48], then pack final 65-bit result
+  // --------------------------------------------------------------------------
+  val resultReg = RegInit(0.U(65.W))
+
+  when(v2) {
+    val add3 = s2_a3 +& s2_b3 +& s2_carry
+    val sum3 = add3(15, 0)
+    val cOut = add3(16)
+
+    resultReg := Cat(cOut, sum3, s2_sum2, s2_sum1, s2_sum0)
   }
-  stage4_result := adda4 +& addb4 +& carry4
-  
-  // Collect the final result
-  when (en_reg4) {
-    final_sum := Cat(stage4_result(16), stage4_result(15, 0), sum4, sum3, sum2)
-  }
-  
-  // Connect outputs
-  io.result := final_sum
-  io.o_en := en_reg4
+
+  io.result := resultReg
+  io.o_en   := v3
 }

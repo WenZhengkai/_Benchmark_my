@@ -1,86 +1,73 @@
-// package fifo
-
 import chisel3._
 import chisel3.util._
 
-class QueueIO[T <: Data](val gen: T, val entries: Int, val hasFlush: Boolean = false) extends Bundle {
-  val enq = Flipped(DecoupledIO(gen.cloneType))
-  val deq = DecoupledIO(gen.cloneType)
+class QueueIO[T <: Data](gen: T, entries: Int, hasFlush: Boolean = false) extends Bundle {
+  val enq   = Flipped(Decoupled(gen))
+  val deq   = Decoupled(gen)
   val count = Output(UInt(log2Ceil(entries + 1).W))
-  
-  val flush = if (hasFlush) Some(Input(Bool())) else None
+  if (hasFlush) {
+    val flush = Input(Bool())
+  }
+
+  override def cloneType: this.type =
+    (new QueueIO(gen, entries, hasFlush)).asInstanceOf[this.type]
 }
 
 class dut[T <: Data](gen: T, entries: Int, hasFlush: Boolean = false) extends Module {
-  require(entries > 0, "Queue entries must be greater than zero")
-  
+  require(entries > 0, "entries must be > 0")
+
   val io = IO(new QueueIO(gen, entries, hasFlush))
-  
-  // Storage for queue elements
+
   val ram = Mem(entries, gen)
-  
-  // Pointers for enqueue and dequeue operations
-  val enq_ptr = RegInit(0.U(log2Ceil(entries).W))
-  val deq_ptr = RegInit(0.U(log2Ceil(entries).W))
+
+  val ptrWidth = math.max(1, log2Ceil(entries))
+  val enq_ptr = RegInit(0.U(ptrWidth.W))
+  val deq_ptr = RegInit(0.U(ptrWidth.W))
   val maybe_full = RegInit(false.B)
-  
+
   val ptr_match = enq_ptr === deq_ptr
   val empty = ptr_match && !maybe_full
-  val full = ptr_match && maybe_full
-  
-  // Connect ready/valid signals
-  io.deq.valid := !empty
+  val full  = ptr_match && maybe_full
+
+  val flush = if (hasFlush) io.flush else false.B
+
   io.enq.ready := !full
-  
-  // Enqueue and dequeue flags
-  val do_enq = io.enq.fire()
-  val do_deq = io.deq.fire()
-  
-  // Enqueue operation
-  when (do_enq) {
-    ram(enq_ptr) := io.enq.bits
-    enq_ptr := Mux(enq_ptr === (entries - 1).U, 0.U, enq_ptr + 1.U)
+  io.deq.valid := !empty
+  io.deq.bits  := ram(deq_ptr)
+
+  val do_enq = io.enq.fire
+  val do_deq = io.deq.fire
+
+  def ptrInc(ptr: UInt): UInt = {
+    if (entries == 1) 0.U
+    else Mux(ptr === (entries - 1).U, 0.U, ptr + 1.U)
   }
-  
-  // Dequeue operation
-  when (do_deq) {
-    deq_ptr := Mux(deq_ptr === (entries - 1).U, 0.U, deq_ptr + 1.U)
-  }
-  
-  // Set maybe_full flag based on operations
-  when (do_enq =/= do_deq) {
-    maybe_full := do_enq
-  }
-  
-  // Flush operation if supported
-  if (hasFlush) {
-    when (io.flush.get) {
-      enq_ptr := 0.U
-      deq_ptr := 0.U
-      maybe_full := false.B
+
+  when(flush) {
+    enq_ptr := 0.U
+    deq_ptr := 0.U
+    maybe_full := false.B
+  }.otherwise {
+    when(do_enq) {
+      ram(enq_ptr) := io.enq.bits
+      enq_ptr := ptrInc(enq_ptr)
+    }
+    when(do_deq) {
+      deq_ptr := ptrInc(deq_ptr)
+    }
+    when(do_enq =/= do_deq) {
+      maybe_full := do_enq
     }
   }
-  
-  // Connect dequeue data
-  io.deq.bits := ram(deq_ptr)
-  
-  // Calculate and output the number of elements in the queue
+
+  val ptr_diff = enq_ptr - deq_ptr
   if (isPow2(entries)) {
-    val ptr_diff = enq_ptr - deq_ptr
-    when (ptr_match) {
-      io.count := Mux(maybe_full, entries.U, 0.U)
-    }.otherwise {
-      io.count := Mux(enq_ptr > deq_ptr, ptr_diff, entries.U + ptr_diff)
-    }
+    io.count := Cat(maybe_full && ptr_match, ptr_diff)
   } else {
-    val ptr_diff = enq_ptr - deq_ptr
-    val reverse_ptr_diff = deq_ptr - enq_ptr
-    when (ptr_match) {
-      io.count := Mux(maybe_full, entries.U, 0.U)
-    }.elsewhen (enq_ptr > deq_ptr) {
-      io.count := ptr_diff
-    }.otherwise {
-      io.count := entries.U - reverse_ptr_diff
-    }
+    io.count := Mux(
+      ptr_match,
+      Mux(maybe_full, entries.U, 0.U),
+      Mux(deq_ptr > enq_ptr, entries.U + ptr_diff, ptr_diff)
+    )
   }
 }

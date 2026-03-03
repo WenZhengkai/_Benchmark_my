@@ -1,28 +1,29 @@
 import chisel3._
 import chisel3.util._
 
-class dut(numChannels: Int) extends Module {
+class dut(val numChannels: Int) extends Module {
+  require(numChannels > 0, "numChannels must be greater than 0")
+
+  private val selWidth = math.max(1, log2Ceil(numChannels))
+
   val io = IO(new Bundle {
-    val in = Vec(numChannels, Flipped(Decoupled(UInt(8.W))))
+    val in  = Vec(numChannels, Flipped(Decoupled(UInt(8.W))))
     val out = Decoupled(UInt(8.W))
   })
-  
-  // Output is valid if at least one input is valid
+
+  // True when any input channel is valid
   io.out.valid := io.in.map(_.valid).reduce(_ || _)
-  
-  // Use PriorityMux to select the first valid channel
-  val selectedChannel = PriorityMux(
-    io.in.zipWithIndex.map { case (channel, index) => 
-      (channel.valid, index.U)
-    }
+
+  // Index of highest-priority valid channel (lowest index wins)
+  val selected = PriorityMux(
+    (0 until numChannels).map(i => io.in(i).valid -> i.U(selWidth.W)) :+ (true.B -> 0.U(selWidth.W))
   )
-  
-  // Forward the data from the selected channel to the output
-  io.out.bits := io.in(selectedChannel).bits
-  
-  // Set ready signal for each input channel
-  // Only the selected channel is ready when the output is ready
+
+  // Route selected channel data to output
+  io.out.bits := io.in(selected).bits
+
+  // Only selected input sees ready when output handshake can occur
   for (i <- 0 until numChannels) {
-    io.in(i).ready := io.out.ready && (selectedChannel === i.U)
+    io.in(i).ready := io.out.ready && io.out.valid && (selected === i.U(selWidth.W))
   }
 }

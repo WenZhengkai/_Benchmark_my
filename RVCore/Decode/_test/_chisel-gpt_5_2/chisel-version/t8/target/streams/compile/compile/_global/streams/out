@@ -1,0 +1,45 @@
+[0m[[0m[31merror[0m] [0m[0m/home/kai/ChiselProject/Benchmarks/_Benchmark_my/RVCore/Decode/chisel-version/t8/src/main/scala/driver.scala:6:15: could not find implicit value for parameter p: HasNPCParameter[0m
+[0m[[0m[31merror[0m] [0m[0m  emitVerilog(new dut(), Array("--target-dir", dir))[0m
+[0m[[0m[31merror[0m] [0m[0m              ^[0m
+[0m[[0m[31merror[0m] [0m[0m/home/kai/ChiselProject/Benchmarks/_Benchmark_my/RVCore/Decode/chisel-version/t8/src/main/scala/dut.scala:166:75: type mismatch;[0m
+[0m[[0m[31merror[0m] [0m[0m found   : Seq[(chisel3.util.BitPat, List[chisel3.UInt])][0m
+[0m[[0m[31merror[0m] [0m[0m required: Array[(chisel3.util.BitPat, List[?])][0m
+[0m[[0m[31merror[0m] [0m[0m  val decoded = ListLookup(inst, Instructions.DecodeDefault, Instructions.DecodeTable)[0m
+[0m[[0m[31merror[0m] [0m[0m                                                                          ^[0m
+[0m[[0m[31merror[0m] [0m[0m/home/kai/ChiselProject/Benchmarks/_Benchmark_my/RVCore/Decode/chisel-version/t8/src/main/scala/dut.scala:174:26: value === is not a member of Any[0m
+[0m[[0m[31merror[0m] [0m[0m  val isStore = instType === Instructions.TYPE_S[0m
+[0m[[0m[31merror[0m] [0m[0m                         ^[0m
+[0m[[0m[31merror[0m] [0m[0m/home/kai/ChiselProject/Benchmarks/_Benchmark_my/RVCore/Decode/chisel-version/t8/src/main/scala/dut.scala:194:3: inferred type arguments [Any] do not conform to macro method apply's type parameter bounds [T <: chisel3.Element][0m
+[0m[[0m[31merror[0m] [0m[0m  switch(instType) {[0m
+[0m[[0m[31merror[0m] [0m[0m  ^[0m
+[0m[[0m[31merror[0m] [0m[0m/home/kai/ChiselProject/Benchmarks/_Benchmark_my/RVCore/Decode/chisel-version/t8/src/main/scala/dut.scala:194:10: type mismatch;[0m
+[0m[[0m[31merror[0m] [0m[0m found   : Any[0m
+[0m[[0m[31merror[0m] [0m[0m required: T[0m
+[0m[[0m[31merror[0m] [0m[0m  switch(instType) {[0m
+[0m[[0m[31merror[0m] [0m[0m         ^[0m
+[0m[[0m[31merror[0m] [0m[0m/home/kai/ChiselProject/Benchmarks/_Benchmark_my/RVCore/Decode/chisel-version/t8/src/main/scala/dut.scala:211:37: type mismatch;[0m
+[0m[[0m[31merror[0m] [0m[0m found   : Any[0m
+[0m[[0m[31merror[0m] [0m[0m required: chisel3.Data[0m
+[0m[[0m[31merror[0m] [0m[0m  io.to_isu.bits.ctrl.fuSrc1Type := fuSrc1Type[0m
+[0m[[0m[31merror[0m] [0m[0m                                    ^[0m
+[0m[[0m[31merror[0m] [0m[0m/home/kai/ChiselProject/Benchmarks/_Benchmark_my/RVCore/Decode/chisel-version/t8/src/main/scala/dut.scala:212:37: type mismatch;[0m
+[0m[[0m[31merror[0m] [0m[0m found   : Any[0m
+[0m[[0m[31merror[0m] [0m[0m required: chisel3.Data[0m
+[0m[[0m[31merror[0m] [0m[0m  io.to_isu.bits.ctrl.fuSrc2Type := fuSrc2Type[0m
+[0m[[0m[31merror[0m] [0m[0m                                    ^[0m
+[0m[[0m[31merror[0m] [0m[0m/home/kai/ChiselProject/Benchmarks/_Benchmark_my/RVCore/Decode/chisel-version/t8/src/main/scala/dut.scala:213:37: type mismatch;[0m
+[0m[[0m[31merror[0m] [0m[0m found   : Any[0m
+[0m[[0m[31merror[0m] [0m[0m required: chisel3.Data[0m
+[0m[[0m[31merror[0m] [0m[0m  io.to_isu.bits.ctrl.fuType     := fuType[0m
+[0m[[0m[31merror[0m] [0m[0m                                    ^[0m
+[0m[[0m[31merror[0m] [0m[0m/home/kai/ChiselProject/Benchmarks/_Benchmark_my/RVCore/Decode/chisel-version/t8/src/main/scala/dut.scala:214:37: type mismatch;[0m
+[0m[[0m[31merror[0m] [0m[0m found   : Any[0m
+[0m[[0m[31merror[0m] [0m[0m required: chisel3.Data[0m
+[0m[[0m[31merror[0m] [0m[0m  io.to_isu.bits.ctrl.fuOpType   := fuOpType[0m
+[0m[[0m[31merror[0m] [0m[0m                                    ^[0m
+[0m[[0m[31merror[0m] [0m[0m/home/kai/ChiselProject/Benchmarks/_Benchmark_my/RVCore/Decode/chisel-version/t8/src/main/scala/dut.scala:219:61: type mismatch;[0m
+[0m[[0m[31merror[0m] [0m[0m found   : Any[0m
+[0m[[0m[31merror[0m] [0m[0m required: chisel3.UInt[0m
+[0m[[0m[31merror[0m] [0m[0m  io.to_isu.bits.ctrl.rfWen      := Instructions.isRegWrite(instType)[0m
+[0m[[0m[31merror[0m] [0m[0m                                                            ^[0m
+[0m[[0m[31merror[0m] [0m[0m10 errors found[0m

@@ -1,42 +1,41 @@
-// package seqpara
-
 import chisel3._
 import chisel3.util._
 
 class dut extends Module {
   val io = IO(new Bundle {
-    val din_serial = Input(Bool())
-    val din_valid = Input(Bool())
+    val din_serial    = Input(Bool())
+    val din_valid     = Input(Bool())
     val dout_parallel = Output(UInt(8.W))
-    val dout_valid = Output(Bool())
+    val dout_valid    = Output(Bool())
   })
 
-  // 4-bit counter to track the number of received bits
-  val cnt = RegInit(0.U(4.W))
-  
-  // 8-bit shift register to accumulate the serial input
+  // Shift register to collect 8 serial bits
   val shiftReg = RegInit(0.U(8.W))
-  
-  // Default value for output valid signal
-  io.dout_valid := false.B
-  
-  // Default connection for output parallel data
-  io.dout_parallel := shiftReg
-  
+  // 4-bit counter as requested
+  val cnt      = RegInit(0.U(4.W))
+
+  val doutParallelReg = RegInit(0.U(8.W))
+  val doutValidReg    = RegInit(false.B)
+
+  // Default: output not valid unless 8th bit arrives this cycle
+  doutValidReg := false.B
+
   when(io.din_valid) {
-    // When input is valid, shift the register and insert the new bit at MSB
-    shiftReg := Cat(io.din_serial, shiftReg(7, 1))
-    
-    // Increment the counter
-    cnt := cnt + 1.U
-    
-    // Check if we've received 8 bits
+    // New shift-register value after receiving current serial bit
+    val nextShift = Cat(shiftReg(6, 0), io.din_serial)
+
     when(cnt === 7.U) {
-      // Reset counter for next sequence
-      cnt := 0.U
-      
-      // Set output valid when we've collected all 8 bits
-      io.dout_valid := true.B
+      // 8 bits received -> publish parallel output and assert valid
+      doutParallelReg := nextShift
+      doutValidReg    := true.B
+      cnt             := 0.U
+      shiftReg        := 0.U
+    }.otherwise {
+      shiftReg := nextShift
+      cnt      := cnt + 1.U
     }
   }
+
+  io.dout_parallel := doutParallelReg
+  io.dout_valid    := doutValidReg
 }

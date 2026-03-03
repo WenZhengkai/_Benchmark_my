@@ -1,0 +1,333 @@
+Command: vcs -cpp /usr/bin/g++-4.4 -cc /usr/bin/gcc-4.4 -sverilog +v2k -timescale=1ns/1ns \
+-debug_all -l compile.log +plusarg_save +libext+.v+.V+.sv+.svh -sverilog +memcbk \
+-P /home/kai/synopsys_tools/Verdi_2018/verdi/Verdi_O-2018.09-SP2/share/PLI/VCS/LINUX64/novas.tab \
+/home/kai/synopsys_tools/Verdi_2018/verdi/Verdi_O-2018.09-SP2/share/PLI/VCS/LINUX64/pli.a \
+-kdb -lca dut.v testbench.sv
+*** Using c compiler /usr/bin/gcc-4.4 instead of cc ...
+                         Chronologic VCS (TM)
+       Version O-2018.09-SP2_Full64 -- Sat Feb 28 08:56:24 2026
+               Copyright (c) 1991-2018 by Synopsys Inc.
+                         ALL RIGHTS RESERVED
+
+This program is proprietary and confidential information of Synopsys Inc.
+and may be used and disclosed only as authorized in a license agreement
+controlling such use and disclosure.
+
+
+Warning-[LCA_FEATURES_ENABLED] Usage warning
+  LCA features enabled by '-lca' argument on the command line.  For more 
+  information regarding list of LCA features please refer to Chapter "LCA 
+  features" in the VCS/VCS-MX Release Notes
+
+
+Warning-[DEBUG_DEP] Option will be deprecated
+  The option '-debug_all' will be deprecated in a future release.  Please use 
+  '-debug_acc+all -debug_region+cell+encrypt' instead.
+
+Parsing design file 'dut.v'
+Parsing design file 'testbench.sv'
+Top Level Modules:
+       tb_issue_golden
+TimeScale is 1 ns / 1 ps
+
+Warning-[PCWM-W] Port connection width mismatch
+testbench.sv, 105
+"dut dut( .clock (clock),  .reset (reset),  .io_from_idu_ready (io_from_idu_ready),  .io_from_idu_valid (io_from_idu_valid),  .io_from_idu_bits_cf_inst (io_from_idu_bits_cf_inst),  .io_from_idu_bits_cf_pc (io_from_idu_bits_cf_pc),  .io_from_idu_bits_cf_next_pc (io_from_idu_bits_cf_next_pc),  .io_from_idu_bits_cf_isBranch (io_from_idu_bits_cf_isBranch),  .io_from_idu_bits_ctrl_MemWrite (io_from_idu_bits_ctrl_MemWrite),  .io_from_idu_bits_ctrl_ResSrc (io_from_idu_bits_ctrl_ResSrc),  .io_from_idu_bits_ctrl_fuSrc1Type (io_from_idu_bits_ctrl_fuSrc1Type),  .io_from_idu_bits_ctrl_fuSrc2Type (io_from_idu_bits_ctrl_fuSrc2Type),  .io_from_idu_bits_ctrl_fuType (io_from_idu_bits_ctrl_fuType),  .io_from_idu_bits_ctrl_fuOpType (io_from_idu_bits_ctrl_fuOpType),  .io_fr ... "
+  The following 32-bit expression is connected to 64-bit port 
+  "io_from_idu_bits_cf_pc" of module "dut", instance "dut".
+  Expression: io_from_idu_bits_cf_pc
+  	use +lint=PCWM for more details
+
+
+Warning-[PCWM-W] Port connection width mismatch
+testbench.sv, 105
+"dut dut( .clock (clock),  .reset (reset),  .io_from_idu_ready (io_from_idu_ready),  .io_from_idu_valid (io_from_idu_valid),  .io_from_idu_bits_cf_inst (io_from_idu_bits_cf_inst),  .io_from_idu_bits_cf_pc (io_from_idu_bits_cf_pc),  .io_from_idu_bits_cf_next_pc (io_from_idu_bits_cf_next_pc),  .io_from_idu_bits_cf_isBranch (io_from_idu_bits_cf_isBranch),  .io_from_idu_bits_ctrl_MemWrite (io_from_idu_bits_ctrl_MemWrite),  .io_from_idu_bits_ctrl_ResSrc (io_from_idu_bits_ctrl_ResSrc),  .io_from_idu_bits_ctrl_fuSrc1Type (io_from_idu_bits_ctrl_fuSrc1Type),  .io_from_idu_bits_ctrl_fuSrc2Type (io_from_idu_bits_ctrl_fuSrc2Type),  .io_from_idu_bits_ctrl_fuType (io_from_idu_bits_ctrl_fuType),  .io_from_idu_bits_ctrl_fuOpType (io_from_idu_bits_ctrl_fuOpType),  .io_fr ... "
+  The following 32-bit expression is connected to 64-bit port 
+  "io_from_idu_bits_cf_next_pc" of module "dut", instance "dut".
+  Expression: io_from_idu_bits_cf_next_pc
+  	use +lint=PCWM for more details
+
+
+Warning-[PCWM-W] Port connection width mismatch
+testbench.sv, 105
+"dut dut( .clock (clock),  .reset (reset),  .io_from_idu_ready (io_from_idu_ready),  .io_from_idu_valid (io_from_idu_valid),  .io_from_idu_bits_cf_inst (io_from_idu_bits_cf_inst),  .io_from_idu_bits_cf_pc (io_from_idu_bits_cf_pc),  .io_from_idu_bits_cf_next_pc (io_from_idu_bits_cf_next_pc),  .io_from_idu_bits_cf_isBranch (io_from_idu_bits_cf_isBranch),  .io_from_idu_bits_ctrl_MemWrite (io_from_idu_bits_ctrl_MemWrite),  .io_from_idu_bits_ctrl_ResSrc (io_from_idu_bits_ctrl_ResSrc),  .io_from_idu_bits_ctrl_fuSrc1Type (io_from_idu_bits_ctrl_fuSrc1Type),  .io_from_idu_bits_ctrl_fuSrc2Type (io_from_idu_bits_ctrl_fuSrc2Type),  .io_from_idu_bits_ctrl_fuType (io_from_idu_bits_ctrl_fuType),  .io_from_idu_bits_ctrl_fuOpType (io_from_idu_bits_ctrl_fuOpType),  .io_fr ... "
+  The following 4-bit expression is connected to 2-bit port 
+  "io_from_idu_bits_ctrl_ResSrc" of module "dut", instance "dut".
+  Expression: io_from_idu_bits_ctrl_ResSrc
+  	use +lint=PCWM for more details
+
+
+Warning-[PCWM-W] Port connection width mismatch
+testbench.sv, 105
+"dut dut( .clock (clock),  .reset (reset),  .io_from_idu_ready (io_from_idu_ready),  .io_from_idu_valid (io_from_idu_valid),  .io_from_idu_bits_cf_inst (io_from_idu_bits_cf_inst),  .io_from_idu_bits_cf_pc (io_from_idu_bits_cf_pc),  .io_from_idu_bits_cf_next_pc (io_from_idu_bits_cf_next_pc),  .io_from_idu_bits_cf_isBranch (io_from_idu_bits_cf_isBranch),  .io_from_idu_bits_ctrl_MemWrite (io_from_idu_bits_ctrl_MemWrite),  .io_from_idu_bits_ctrl_ResSrc (io_from_idu_bits_ctrl_ResSrc),  .io_from_idu_bits_ctrl_fuSrc1Type (io_from_idu_bits_ctrl_fuSrc1Type),  .io_from_idu_bits_ctrl_fuSrc2Type (io_from_idu_bits_ctrl_fuSrc2Type),  .io_from_idu_bits_ctrl_fuType (io_from_idu_bits_ctrl_fuType),  .io_from_idu_bits_ctrl_fuOpType (io_from_idu_bits_ctrl_fuOpType),  .io_fr ... "
+  The following 3-bit expression is connected to 2-bit port 
+  "io_from_idu_bits_ctrl_fuSrc1Type" of module "dut", instance "dut".
+  Expression: io_from_idu_bits_ctrl_fuSrc1Type
+  	use +lint=PCWM for more details
+
+
+Warning-[PCWM-W] Port connection width mismatch
+testbench.sv, 105
+"dut dut( .clock (clock),  .reset (reset),  .io_from_idu_ready (io_from_idu_ready),  .io_from_idu_valid (io_from_idu_valid),  .io_from_idu_bits_cf_inst (io_from_idu_bits_cf_inst),  .io_from_idu_bits_cf_pc (io_from_idu_bits_cf_pc),  .io_from_idu_bits_cf_next_pc (io_from_idu_bits_cf_next_pc),  .io_from_idu_bits_cf_isBranch (io_from_idu_bits_cf_isBranch),  .io_from_idu_bits_ctrl_MemWrite (io_from_idu_bits_ctrl_MemWrite),  .io_from_idu_bits_ctrl_ResSrc (io_from_idu_bits_ctrl_ResSrc),  .io_from_idu_bits_ctrl_fuSrc1Type (io_from_idu_bits_ctrl_fuSrc1Type),  .io_from_idu_bits_ctrl_fuSrc2Type (io_from_idu_bits_ctrl_fuSrc2Type),  .io_from_idu_bits_ctrl_fuType (io_from_idu_bits_ctrl_fuType),  .io_from_idu_bits_ctrl_fuOpType (io_from_idu_bits_ctrl_fuOpType),  .io_fr ... "
+  The following 3-bit expression is connected to 2-bit port 
+  "io_from_idu_bits_ctrl_fuSrc2Type" of module "dut", instance "dut".
+  Expression: io_from_idu_bits_ctrl_fuSrc2Type
+  	use +lint=PCWM for more details
+
+
+Warning-[PCWM-W] Port connection width mismatch
+testbench.sv, 105
+"dut dut( .clock (clock),  .reset (reset),  .io_from_idu_ready (io_from_idu_ready),  .io_from_idu_valid (io_from_idu_valid),  .io_from_idu_bits_cf_inst (io_from_idu_bits_cf_inst),  .io_from_idu_bits_cf_pc (io_from_idu_bits_cf_pc),  .io_from_idu_bits_cf_next_pc (io_from_idu_bits_cf_next_pc),  .io_from_idu_bits_cf_isBranch (io_from_idu_bits_cf_isBranch),  .io_from_idu_bits_ctrl_MemWrite (io_from_idu_bits_ctrl_MemWrite),  .io_from_idu_bits_ctrl_ResSrc (io_from_idu_bits_ctrl_ResSrc),  .io_from_idu_bits_ctrl_fuSrc1Type (io_from_idu_bits_ctrl_fuSrc1Type),  .io_from_idu_bits_ctrl_fuSrc2Type (io_from_idu_bits_ctrl_fuSrc2Type),  .io_from_idu_bits_ctrl_fuType (io_from_idu_bits_ctrl_fuType),  .io_from_idu_bits_ctrl_fuOpType (io_from_idu_bits_ctrl_fuOpType),  .io_fr ... "
+  The following 3-bit expression is connected to 1-bit port 
+  "io_from_idu_bits_ctrl_fuType" of module "dut", instance "dut".
+  Expression: io_from_idu_bits_ctrl_fuType
+  	use +lint=PCWM for more details
+
+
+Warning-[PCWM-W] Port connection width mismatch
+testbench.sv, 105
+"dut dut( .clock (clock),  .reset (reset),  .io_from_idu_ready (io_from_idu_ready),  .io_from_idu_valid (io_from_idu_valid),  .io_from_idu_bits_cf_inst (io_from_idu_bits_cf_inst),  .io_from_idu_bits_cf_pc (io_from_idu_bits_cf_pc),  .io_from_idu_bits_cf_next_pc (io_from_idu_bits_cf_next_pc),  .io_from_idu_bits_cf_isBranch (io_from_idu_bits_cf_isBranch),  .io_from_idu_bits_ctrl_MemWrite (io_from_idu_bits_ctrl_MemWrite),  .io_from_idu_bits_ctrl_ResSrc (io_from_idu_bits_ctrl_ResSrc),  .io_from_idu_bits_ctrl_fuSrc1Type (io_from_idu_bits_ctrl_fuSrc1Type),  .io_from_idu_bits_ctrl_fuSrc2Type (io_from_idu_bits_ctrl_fuSrc2Type),  .io_from_idu_bits_ctrl_fuType (io_from_idu_bits_ctrl_fuType),  .io_from_idu_bits_ctrl_fuOpType (io_from_idu_bits_ctrl_fuOpType),  .io_fr ... "
+  The following 7-bit expression is connected to 1-bit port 
+  "io_from_idu_bits_ctrl_fuOpType" of module "dut", instance "dut".
+  Expression: io_from_idu_bits_ctrl_fuOpType
+  	use +lint=PCWM for more details
+
+
+Warning-[PCWM-W] Port connection width mismatch
+testbench.sv, 105
+"dut dut( .clock (clock),  .reset (reset),  .io_from_idu_ready (io_from_idu_ready),  .io_from_idu_valid (io_from_idu_valid),  .io_from_idu_bits_cf_inst (io_from_idu_bits_cf_inst),  .io_from_idu_bits_cf_pc (io_from_idu_bits_cf_pc),  .io_from_idu_bits_cf_next_pc (io_from_idu_bits_cf_next_pc),  .io_from_idu_bits_cf_isBranch (io_from_idu_bits_cf_isBranch),  .io_from_idu_bits_ctrl_MemWrite (io_from_idu_bits_ctrl_MemWrite),  .io_from_idu_bits_ctrl_ResSrc (io_from_idu_bits_ctrl_ResSrc),  .io_from_idu_bits_ctrl_fuSrc1Type (io_from_idu_bits_ctrl_fuSrc1Type),  .io_from_idu_bits_ctrl_fuSrc2Type (io_from_idu_bits_ctrl_fuSrc2Type),  .io_from_idu_bits_ctrl_fuType (io_from_idu_bits_ctrl_fuType),  .io_from_idu_bits_ctrl_fuOpType (io_from_idu_bits_ctrl_fuOpType),  .io_fr ... "
+  The following 32-bit expression is connected to 64-bit port 
+  "io_from_idu_bits_data_fuSrc1" of module "dut", instance "dut".
+  Expression: io_from_idu_bits_data_fuSrc1
+  	use +lint=PCWM for more details
+
+
+Warning-[PCWM-W] Port connection width mismatch
+testbench.sv, 105
+"dut dut( .clock (clock),  .reset (reset),  .io_from_idu_ready (io_from_idu_ready),  .io_from_idu_valid (io_from_idu_valid),  .io_from_idu_bits_cf_inst (io_from_idu_bits_cf_inst),  .io_from_idu_bits_cf_pc (io_from_idu_bits_cf_pc),  .io_from_idu_bits_cf_next_pc (io_from_idu_bits_cf_next_pc),  .io_from_idu_bits_cf_isBranch (io_from_idu_bits_cf_isBranch),  .io_from_idu_bits_ctrl_MemWrite (io_from_idu_bits_ctrl_MemWrite),  .io_from_idu_bits_ctrl_ResSrc (io_from_idu_bits_ctrl_ResSrc),  .io_from_idu_bits_ctrl_fuSrc1Type (io_from_idu_bits_ctrl_fuSrc1Type),  .io_from_idu_bits_ctrl_fuSrc2Type (io_from_idu_bits_ctrl_fuSrc2Type),  .io_from_idu_bits_ctrl_fuType (io_from_idu_bits_ctrl_fuType),  .io_from_idu_bits_ctrl_fuOpType (io_from_idu_bits_ctrl_fuOpType),  .io_fr ... "
+  The following 32-bit expression is connected to 64-bit port 
+  "io_from_idu_bits_data_fuSrc2" of module "dut", instance "dut".
+  Expression: io_from_idu_bits_data_fuSrc2
+  	use +lint=PCWM for more details
+
+
+Warning-[PCWM-W] Port connection width mismatch
+testbench.sv, 105
+"dut dut( .clock (clock),  .reset (reset),  .io_from_idu_ready (io_from_idu_ready),  .io_from_idu_valid (io_from_idu_valid),  .io_from_idu_bits_cf_inst (io_from_idu_bits_cf_inst),  .io_from_idu_bits_cf_pc (io_from_idu_bits_cf_pc),  .io_from_idu_bits_cf_next_pc (io_from_idu_bits_cf_next_pc),  .io_from_idu_bits_cf_isBranch (io_from_idu_bits_cf_isBranch),  .io_from_idu_bits_ctrl_MemWrite (io_from_idu_bits_ctrl_MemWrite),  .io_from_idu_bits_ctrl_ResSrc (io_from_idu_bits_ctrl_ResSrc),  .io_from_idu_bits_ctrl_fuSrc1Type (io_from_idu_bits_ctrl_fuSrc1Type),  .io_from_idu_bits_ctrl_fuSrc2Type (io_from_idu_bits_ctrl_fuSrc2Type),  .io_from_idu_bits_ctrl_fuType (io_from_idu_bits_ctrl_fuType),  .io_from_idu_bits_ctrl_fuOpType (io_from_idu_bits_ctrl_fuOpType),  .io_fr ... "
+  The following 32-bit expression is connected to 64-bit port 
+  "io_from_idu_bits_data_imm" of module "dut", instance "dut".
+  Expression: io_from_idu_bits_data_imm
+  	use +lint=PCWM for more details
+
+
+Warning-[PCWM-W] Port connection width mismatch
+testbench.sv, 105
+"dut dut( .clock (clock),  .reset (reset),  .io_from_idu_ready (io_from_idu_ready),  .io_from_idu_valid (io_from_idu_valid),  .io_from_idu_bits_cf_inst (io_from_idu_bits_cf_inst),  .io_from_idu_bits_cf_pc (io_from_idu_bits_cf_pc),  .io_from_idu_bits_cf_next_pc (io_from_idu_bits_cf_next_pc),  .io_from_idu_bits_cf_isBranch (io_from_idu_bits_cf_isBranch),  .io_from_idu_bits_ctrl_MemWrite (io_from_idu_bits_ctrl_MemWrite),  .io_from_idu_bits_ctrl_ResSrc (io_from_idu_bits_ctrl_ResSrc),  .io_from_idu_bits_ctrl_fuSrc1Type (io_from_idu_bits_ctrl_fuSrc1Type),  .io_from_idu_bits_ctrl_fuSrc2Type (io_from_idu_bits_ctrl_fuSrc2Type),  .io_from_idu_bits_ctrl_fuType (io_from_idu_bits_ctrl_fuType),  .io_from_idu_bits_ctrl_fuOpType (io_from_idu_bits_ctrl_fuOpType),  .io_fr ... "
+  The following 32-bit expression is connected to 64-bit port 
+  "io_from_idu_bits_data_Alu0Res_bits" of module "dut", instance "dut".
+  Expression: io_from_idu_bits_data_Alu0Res_bits
+  	use +lint=PCWM for more details
+
+
+Warning-[PCWM-W] Port connection width mismatch
+testbench.sv, 105
+"dut dut( .clock (clock),  .reset (reset),  .io_from_idu_ready (io_from_idu_ready),  .io_from_idu_valid (io_from_idu_valid),  .io_from_idu_bits_cf_inst (io_from_idu_bits_cf_inst),  .io_from_idu_bits_cf_pc (io_from_idu_bits_cf_pc),  .io_from_idu_bits_cf_next_pc (io_from_idu_bits_cf_next_pc),  .io_from_idu_bits_cf_isBranch (io_from_idu_bits_cf_isBranch),  .io_from_idu_bits_ctrl_MemWrite (io_from_idu_bits_ctrl_MemWrite),  .io_from_idu_bits_ctrl_ResSrc (io_from_idu_bits_ctrl_ResSrc),  .io_from_idu_bits_ctrl_fuSrc1Type (io_from_idu_bits_ctrl_fuSrc1Type),  .io_from_idu_bits_ctrl_fuSrc2Type (io_from_idu_bits_ctrl_fuSrc2Type),  .io_from_idu_bits_ctrl_fuType (io_from_idu_bits_ctrl_fuType),  .io_from_idu_bits_ctrl_fuOpType (io_from_idu_bits_ctrl_fuOpType),  .io_fr ... "
+  The following 32-bit expression is connected to 64-bit port 
+  "io_from_idu_bits_data_data_from_mem" of module "dut", instance "dut".
+  Expression: io_from_idu_bits_data_data_from_mem
+  	use +lint=PCWM for more details
+
+
+Warning-[PCWM-W] Port connection width mismatch
+testbench.sv, 105
+"dut dut( .clock (clock),  .reset (reset),  .io_from_idu_ready (io_from_idu_ready),  .io_from_idu_valid (io_from_idu_valid),  .io_from_idu_bits_cf_inst (io_from_idu_bits_cf_inst),  .io_from_idu_bits_cf_pc (io_from_idu_bits_cf_pc),  .io_from_idu_bits_cf_next_pc (io_from_idu_bits_cf_next_pc),  .io_from_idu_bits_cf_isBranch (io_from_idu_bits_cf_isBranch),  .io_from_idu_bits_ctrl_MemWrite (io_from_idu_bits_ctrl_MemWrite),  .io_from_idu_bits_ctrl_ResSrc (io_from_idu_bits_ctrl_ResSrc),  .io_from_idu_bits_ctrl_fuSrc1Type (io_from_idu_bits_ctrl_fuSrc1Type),  .io_from_idu_bits_ctrl_fuSrc2Type (io_from_idu_bits_ctrl_fuSrc2Type),  .io_from_idu_bits_ctrl_fuType (io_from_idu_bits_ctrl_fuType),  .io_from_idu_bits_ctrl_fuOpType (io_from_idu_bits_ctrl_fuOpType),  .io_fr ... "
+  The following 32-bit expression is connected to 64-bit port 
+  "io_from_idu_bits_data_csrRdata" of module "dut", instance "dut".
+  Expression: io_from_idu_bits_data_csrRdata
+  	use +lint=PCWM for more details
+
+
+Warning-[PCWM-W] Port connection width mismatch
+testbench.sv, 105
+"dut dut( .clock (clock),  .reset (reset),  .io_from_idu_ready (io_from_idu_ready),  .io_from_idu_valid (io_from_idu_valid),  .io_from_idu_bits_cf_inst (io_from_idu_bits_cf_inst),  .io_from_idu_bits_cf_pc (io_from_idu_bits_cf_pc),  .io_from_idu_bits_cf_next_pc (io_from_idu_bits_cf_next_pc),  .io_from_idu_bits_cf_isBranch (io_from_idu_bits_cf_isBranch),  .io_from_idu_bits_ctrl_MemWrite (io_from_idu_bits_ctrl_MemWrite),  .io_from_idu_bits_ctrl_ResSrc (io_from_idu_bits_ctrl_ResSrc),  .io_from_idu_bits_ctrl_fuSrc1Type (io_from_idu_bits_ctrl_fuSrc1Type),  .io_from_idu_bits_ctrl_fuSrc2Type (io_from_idu_bits_ctrl_fuSrc2Type),  .io_from_idu_bits_ctrl_fuType (io_from_idu_bits_ctrl_fuType),  .io_from_idu_bits_ctrl_fuOpType (io_from_idu_bits_ctrl_fuOpType),  .io_fr ... "
+  The following 32-bit expression is connected to 64-bit port 
+  "io_from_idu_bits_data_rfSrc1" of module "dut", instance "dut".
+  Expression: io_from_idu_bits_data_rfSrc1
+  	use +lint=PCWM for more details
+
+
+Warning-[PCWM-W] Port connection width mismatch
+testbench.sv, 105
+"dut dut( .clock (clock),  .reset (reset),  .io_from_idu_ready (io_from_idu_ready),  .io_from_idu_valid (io_from_idu_valid),  .io_from_idu_bits_cf_inst (io_from_idu_bits_cf_inst),  .io_from_idu_bits_cf_pc (io_from_idu_bits_cf_pc),  .io_from_idu_bits_cf_next_pc (io_from_idu_bits_cf_next_pc),  .io_from_idu_bits_cf_isBranch (io_from_idu_bits_cf_isBranch),  .io_from_idu_bits_ctrl_MemWrite (io_from_idu_bits_ctrl_MemWrite),  .io_from_idu_bits_ctrl_ResSrc (io_from_idu_bits_ctrl_ResSrc),  .io_from_idu_bits_ctrl_fuSrc1Type (io_from_idu_bits_ctrl_fuSrc1Type),  .io_from_idu_bits_ctrl_fuSrc2Type (io_from_idu_bits_ctrl_fuSrc2Type),  .io_from_idu_bits_ctrl_fuType (io_from_idu_bits_ctrl_fuType),  .io_from_idu_bits_ctrl_fuOpType (io_from_idu_bits_ctrl_fuOpType),  .io_fr ... "
+  The following 32-bit expression is connected to 64-bit port 
+  "io_from_idu_bits_data_rfSrc2" of module "dut", instance "dut".
+  Expression: io_from_idu_bits_data_rfSrc2
+  	use +lint=PCWM for more details
+
+
+Warning-[PCWM-W] Port connection width mismatch
+testbench.sv, 105
+"dut dut( .clock (clock),  .reset (reset),  .io_from_idu_ready (io_from_idu_ready),  .io_from_idu_valid (io_from_idu_valid),  .io_from_idu_bits_cf_inst (io_from_idu_bits_cf_inst),  .io_from_idu_bits_cf_pc (io_from_idu_bits_cf_pc),  .io_from_idu_bits_cf_next_pc (io_from_idu_bits_cf_next_pc),  .io_from_idu_bits_cf_isBranch (io_from_idu_bits_cf_isBranch),  .io_from_idu_bits_ctrl_MemWrite (io_from_idu_bits_ctrl_MemWrite),  .io_from_idu_bits_ctrl_ResSrc (io_from_idu_bits_ctrl_ResSrc),  .io_from_idu_bits_ctrl_fuSrc1Type (io_from_idu_bits_ctrl_fuSrc1Type),  .io_from_idu_bits_ctrl_fuSrc2Type (io_from_idu_bits_ctrl_fuSrc2Type),  .io_from_idu_bits_ctrl_fuType (io_from_idu_bits_ctrl_fuType),  .io_from_idu_bits_ctrl_fuOpType (io_from_idu_bits_ctrl_fuOpType),  .io_fr ... "
+  The following 32-bit expression is connected to 64-bit port 
+  "io_to_exu_bits_cf_pc" of module "dut", instance "dut".
+  Expression: dut_io_to_exu_bits_cf_pc
+  	use +lint=PCWM for more details
+
+
+Warning-[PCWM-W] Port connection width mismatch
+testbench.sv, 105
+"dut dut( .clock (clock),  .reset (reset),  .io_from_idu_ready (io_from_idu_ready),  .io_from_idu_valid (io_from_idu_valid),  .io_from_idu_bits_cf_inst (io_from_idu_bits_cf_inst),  .io_from_idu_bits_cf_pc (io_from_idu_bits_cf_pc),  .io_from_idu_bits_cf_next_pc (io_from_idu_bits_cf_next_pc),  .io_from_idu_bits_cf_isBranch (io_from_idu_bits_cf_isBranch),  .io_from_idu_bits_ctrl_MemWrite (io_from_idu_bits_ctrl_MemWrite),  .io_from_idu_bits_ctrl_ResSrc (io_from_idu_bits_ctrl_ResSrc),  .io_from_idu_bits_ctrl_fuSrc1Type (io_from_idu_bits_ctrl_fuSrc1Type),  .io_from_idu_bits_ctrl_fuSrc2Type (io_from_idu_bits_ctrl_fuSrc2Type),  .io_from_idu_bits_ctrl_fuType (io_from_idu_bits_ctrl_fuType),  .io_from_idu_bits_ctrl_fuOpType (io_from_idu_bits_ctrl_fuOpType),  .io_fr ... "
+  The following 32-bit expression is connected to 64-bit port 
+  "io_to_exu_bits_cf_next_pc" of module "dut", instance "dut".
+  Expression: dut_io_to_exu_bits_cf_next_pc
+  	use +lint=PCWM for more details
+
+
+Warning-[PCWM-W] Port connection width mismatch
+testbench.sv, 105
+"dut dut( .clock (clock),  .reset (reset),  .io_from_idu_ready (io_from_idu_ready),  .io_from_idu_valid (io_from_idu_valid),  .io_from_idu_bits_cf_inst (io_from_idu_bits_cf_inst),  .io_from_idu_bits_cf_pc (io_from_idu_bits_cf_pc),  .io_from_idu_bits_cf_next_pc (io_from_idu_bits_cf_next_pc),  .io_from_idu_bits_cf_isBranch (io_from_idu_bits_cf_isBranch),  .io_from_idu_bits_ctrl_MemWrite (io_from_idu_bits_ctrl_MemWrite),  .io_from_idu_bits_ctrl_ResSrc (io_from_idu_bits_ctrl_ResSrc),  .io_from_idu_bits_ctrl_fuSrc1Type (io_from_idu_bits_ctrl_fuSrc1Type),  .io_from_idu_bits_ctrl_fuSrc2Type (io_from_idu_bits_ctrl_fuSrc2Type),  .io_from_idu_bits_ctrl_fuType (io_from_idu_bits_ctrl_fuType),  .io_from_idu_bits_ctrl_fuOpType (io_from_idu_bits_ctrl_fuOpType),  .io_fr ... "
+  The following 4-bit expression is connected to 2-bit port 
+  "io_to_exu_bits_ctrl_ResSrc" of module "dut", instance "dut".
+  Expression: dut_io_to_exu_bits_ctrl_ResSrc
+  	use +lint=PCWM for more details
+
+
+Warning-[PCWM-W] Port connection width mismatch
+testbench.sv, 105
+"dut dut( .clock (clock),  .reset (reset),  .io_from_idu_ready (io_from_idu_ready),  .io_from_idu_valid (io_from_idu_valid),  .io_from_idu_bits_cf_inst (io_from_idu_bits_cf_inst),  .io_from_idu_bits_cf_pc (io_from_idu_bits_cf_pc),  .io_from_idu_bits_cf_next_pc (io_from_idu_bits_cf_next_pc),  .io_from_idu_bits_cf_isBranch (io_from_idu_bits_cf_isBranch),  .io_from_idu_bits_ctrl_MemWrite (io_from_idu_bits_ctrl_MemWrite),  .io_from_idu_bits_ctrl_ResSrc (io_from_idu_bits_ctrl_ResSrc),  .io_from_idu_bits_ctrl_fuSrc1Type (io_from_idu_bits_ctrl_fuSrc1Type),  .io_from_idu_bits_ctrl_fuSrc2Type (io_from_idu_bits_ctrl_fuSrc2Type),  .io_from_idu_bits_ctrl_fuType (io_from_idu_bits_ctrl_fuType),  .io_from_idu_bits_ctrl_fuOpType (io_from_idu_bits_ctrl_fuOpType),  .io_fr ... "
+  The following 3-bit expression is connected to 2-bit port 
+  "io_to_exu_bits_ctrl_fuSrc1Type" of module "dut", instance "dut".
+  Expression: dut_io_to_exu_bits_ctrl_fuSrc1Type
+  	use +lint=PCWM for more details
+
+
+Warning-[PCWM-W] Port connection width mismatch
+testbench.sv, 105
+"dut dut( .clock (clock),  .reset (reset),  .io_from_idu_ready (io_from_idu_ready),  .io_from_idu_valid (io_from_idu_valid),  .io_from_idu_bits_cf_inst (io_from_idu_bits_cf_inst),  .io_from_idu_bits_cf_pc (io_from_idu_bits_cf_pc),  .io_from_idu_bits_cf_next_pc (io_from_idu_bits_cf_next_pc),  .io_from_idu_bits_cf_isBranch (io_from_idu_bits_cf_isBranch),  .io_from_idu_bits_ctrl_MemWrite (io_from_idu_bits_ctrl_MemWrite),  .io_from_idu_bits_ctrl_ResSrc (io_from_idu_bits_ctrl_ResSrc),  .io_from_idu_bits_ctrl_fuSrc1Type (io_from_idu_bits_ctrl_fuSrc1Type),  .io_from_idu_bits_ctrl_fuSrc2Type (io_from_idu_bits_ctrl_fuSrc2Type),  .io_from_idu_bits_ctrl_fuType (io_from_idu_bits_ctrl_fuType),  .io_from_idu_bits_ctrl_fuOpType (io_from_idu_bits_ctrl_fuOpType),  .io_fr ... "
+  The following 3-bit expression is connected to 2-bit port 
+  "io_to_exu_bits_ctrl_fuSrc2Type" of module "dut", instance "dut".
+  Expression: dut_io_to_exu_bits_ctrl_fuSrc2Type
+  	use +lint=PCWM for more details
+
+
+Warning-[PCWM-W] Port connection width mismatch
+testbench.sv, 105
+"dut dut( .clock (clock),  .reset (reset),  .io_from_idu_ready (io_from_idu_ready),  .io_from_idu_valid (io_from_idu_valid),  .io_from_idu_bits_cf_inst (io_from_idu_bits_cf_inst),  .io_from_idu_bits_cf_pc (io_from_idu_bits_cf_pc),  .io_from_idu_bits_cf_next_pc (io_from_idu_bits_cf_next_pc),  .io_from_idu_bits_cf_isBranch (io_from_idu_bits_cf_isBranch),  .io_from_idu_bits_ctrl_MemWrite (io_from_idu_bits_ctrl_MemWrite),  .io_from_idu_bits_ctrl_ResSrc (io_from_idu_bits_ctrl_ResSrc),  .io_from_idu_bits_ctrl_fuSrc1Type (io_from_idu_bits_ctrl_fuSrc1Type),  .io_from_idu_bits_ctrl_fuSrc2Type (io_from_idu_bits_ctrl_fuSrc2Type),  .io_from_idu_bits_ctrl_fuType (io_from_idu_bits_ctrl_fuType),  .io_from_idu_bits_ctrl_fuOpType (io_from_idu_bits_ctrl_fuOpType),  .io_fr ... "
+  The following 3-bit expression is connected to 1-bit port 
+  "io_to_exu_bits_ctrl_fuType" of module "dut", instance "dut".
+  Expression: dut_io_to_exu_bits_ctrl_fuType
+  	use +lint=PCWM for more details
+
+
+Warning-[PCWM-W] Port connection width mismatch
+testbench.sv, 105
+"dut dut( .clock (clock),  .reset (reset),  .io_from_idu_ready (io_from_idu_ready),  .io_from_idu_valid (io_from_idu_valid),  .io_from_idu_bits_cf_inst (io_from_idu_bits_cf_inst),  .io_from_idu_bits_cf_pc (io_from_idu_bits_cf_pc),  .io_from_idu_bits_cf_next_pc (io_from_idu_bits_cf_next_pc),  .io_from_idu_bits_cf_isBranch (io_from_idu_bits_cf_isBranch),  .io_from_idu_bits_ctrl_MemWrite (io_from_idu_bits_ctrl_MemWrite),  .io_from_idu_bits_ctrl_ResSrc (io_from_idu_bits_ctrl_ResSrc),  .io_from_idu_bits_ctrl_fuSrc1Type (io_from_idu_bits_ctrl_fuSrc1Type),  .io_from_idu_bits_ctrl_fuSrc2Type (io_from_idu_bits_ctrl_fuSrc2Type),  .io_from_idu_bits_ctrl_fuType (io_from_idu_bits_ctrl_fuType),  .io_from_idu_bits_ctrl_fuOpType (io_from_idu_bits_ctrl_fuOpType),  .io_fr ... "
+  The following 7-bit expression is connected to 1-bit port 
+  "io_to_exu_bits_ctrl_fuOpType" of module "dut", instance "dut".
+  Expression: dut_io_to_exu_bits_ctrl_fuOpType
+  	use +lint=PCWM for more details
+
+
+Warning-[PCWM-W] Port connection width mismatch
+testbench.sv, 105
+"dut dut( .clock (clock),  .reset (reset),  .io_from_idu_ready (io_from_idu_ready),  .io_from_idu_valid (io_from_idu_valid),  .io_from_idu_bits_cf_inst (io_from_idu_bits_cf_inst),  .io_from_idu_bits_cf_pc (io_from_idu_bits_cf_pc),  .io_from_idu_bits_cf_next_pc (io_from_idu_bits_cf_next_pc),  .io_from_idu_bits_cf_isBranch (io_from_idu_bits_cf_isBranch),  .io_from_idu_bits_ctrl_MemWrite (io_from_idu_bits_ctrl_MemWrite),  .io_from_idu_bits_ctrl_ResSrc (io_from_idu_bits_ctrl_ResSrc),  .io_from_idu_bits_ctrl_fuSrc1Type (io_from_idu_bits_ctrl_fuSrc1Type),  .io_from_idu_bits_ctrl_fuSrc2Type (io_from_idu_bits_ctrl_fuSrc2Type),  .io_from_idu_bits_ctrl_fuType (io_from_idu_bits_ctrl_fuType),  .io_from_idu_bits_ctrl_fuOpType (io_from_idu_bits_ctrl_fuOpType),  .io_fr ... "
+  The following 32-bit expression is connected to 64-bit port 
+  "io_to_exu_bits_data_fuSrc1" of module "dut", instance "dut".
+  Expression: dut_io_to_exu_bits_data_fuSrc1
+  	use +lint=PCWM for more details
+
+
+Warning-[PCWM-W] Port connection width mismatch
+testbench.sv, 105
+"dut dut( .clock (clock),  .reset (reset),  .io_from_idu_ready (io_from_idu_ready),  .io_from_idu_valid (io_from_idu_valid),  .io_from_idu_bits_cf_inst (io_from_idu_bits_cf_inst),  .io_from_idu_bits_cf_pc (io_from_idu_bits_cf_pc),  .io_from_idu_bits_cf_next_pc (io_from_idu_bits_cf_next_pc),  .io_from_idu_bits_cf_isBranch (io_from_idu_bits_cf_isBranch),  .io_from_idu_bits_ctrl_MemWrite (io_from_idu_bits_ctrl_MemWrite),  .io_from_idu_bits_ctrl_ResSrc (io_from_idu_bits_ctrl_ResSrc),  .io_from_idu_bits_ctrl_fuSrc1Type (io_from_idu_bits_ctrl_fuSrc1Type),  .io_from_idu_bits_ctrl_fuSrc2Type (io_from_idu_bits_ctrl_fuSrc2Type),  .io_from_idu_bits_ctrl_fuType (io_from_idu_bits_ctrl_fuType),  .io_from_idu_bits_ctrl_fuOpType (io_from_idu_bits_ctrl_fuOpType),  .io_fr ... "
+  The following 32-bit expression is connected to 64-bit port 
+  "io_to_exu_bits_data_fuSrc2" of module "dut", instance "dut".
+  Expression: dut_io_to_exu_bits_data_fuSrc2
+  	use +lint=PCWM for more details
+
+
+Warning-[PCWM-W] Port connection width mismatch
+testbench.sv, 105
+"dut dut( .clock (clock),  .reset (reset),  .io_from_idu_ready (io_from_idu_ready),  .io_from_idu_valid (io_from_idu_valid),  .io_from_idu_bits_cf_inst (io_from_idu_bits_cf_inst),  .io_from_idu_bits_cf_pc (io_from_idu_bits_cf_pc),  .io_from_idu_bits_cf_next_pc (io_from_idu_bits_cf_next_pc),  .io_from_idu_bits_cf_isBranch (io_from_idu_bits_cf_isBranch),  .io_from_idu_bits_ctrl_MemWrite (io_from_idu_bits_ctrl_MemWrite),  .io_from_idu_bits_ctrl_ResSrc (io_from_idu_bits_ctrl_ResSrc),  .io_from_idu_bits_ctrl_fuSrc1Type (io_from_idu_bits_ctrl_fuSrc1Type),  .io_from_idu_bits_ctrl_fuSrc2Type (io_from_idu_bits_ctrl_fuSrc2Type),  .io_from_idu_bits_ctrl_fuType (io_from_idu_bits_ctrl_fuType),  .io_from_idu_bits_ctrl_fuOpType (io_from_idu_bits_ctrl_fuOpType),  .io_fr ... "
+  The following 32-bit expression is connected to 64-bit port 
+  "io_to_exu_bits_data_imm" of module "dut", instance "dut".
+  Expression: dut_io_to_exu_bits_data_imm
+  	use +lint=PCWM for more details
+
+
+Warning-[PCWM-W] Port connection width mismatch
+testbench.sv, 105
+"dut dut( .clock (clock),  .reset (reset),  .io_from_idu_ready (io_from_idu_ready),  .io_from_idu_valid (io_from_idu_valid),  .io_from_idu_bits_cf_inst (io_from_idu_bits_cf_inst),  .io_from_idu_bits_cf_pc (io_from_idu_bits_cf_pc),  .io_from_idu_bits_cf_next_pc (io_from_idu_bits_cf_next_pc),  .io_from_idu_bits_cf_isBranch (io_from_idu_bits_cf_isBranch),  .io_from_idu_bits_ctrl_MemWrite (io_from_idu_bits_ctrl_MemWrite),  .io_from_idu_bits_ctrl_ResSrc (io_from_idu_bits_ctrl_ResSrc),  .io_from_idu_bits_ctrl_fuSrc1Type (io_from_idu_bits_ctrl_fuSrc1Type),  .io_from_idu_bits_ctrl_fuSrc2Type (io_from_idu_bits_ctrl_fuSrc2Type),  .io_from_idu_bits_ctrl_fuType (io_from_idu_bits_ctrl_fuType),  .io_from_idu_bits_ctrl_fuOpType (io_from_idu_bits_ctrl_fuOpType),  .io_fr ... "
+  The following 32-bit expression is connected to 64-bit port 
+  "io_to_exu_bits_data_Alu0Res_bits" of module "dut", instance "dut".
+  Expression: dut_io_to_exu_bits_data_Alu0Res_bits
+  	use +lint=PCWM for more details
+
+
+Warning-[PCWM-W] Port connection width mismatch
+testbench.sv, 105
+"dut dut( .clock (clock),  .reset (reset),  .io_from_idu_ready (io_from_idu_ready),  .io_from_idu_valid (io_from_idu_valid),  .io_from_idu_bits_cf_inst (io_from_idu_bits_cf_inst),  .io_from_idu_bits_cf_pc (io_from_idu_bits_cf_pc),  .io_from_idu_bits_cf_next_pc (io_from_idu_bits_cf_next_pc),  .io_from_idu_bits_cf_isBranch (io_from_idu_bits_cf_isBranch),  .io_from_idu_bits_ctrl_MemWrite (io_from_idu_bits_ctrl_MemWrite),  .io_from_idu_bits_ctrl_ResSrc (io_from_idu_bits_ctrl_ResSrc),  .io_from_idu_bits_ctrl_fuSrc1Type (io_from_idu_bits_ctrl_fuSrc1Type),  .io_from_idu_bits_ctrl_fuSrc2Type (io_from_idu_bits_ctrl_fuSrc2Type),  .io_from_idu_bits_ctrl_fuType (io_from_idu_bits_ctrl_fuType),  .io_from_idu_bits_ctrl_fuOpType (io_from_idu_bits_ctrl_fuOpType),  .io_fr ... "
+  The following 32-bit expression is connected to 64-bit port 
+  "io_to_exu_bits_data_data_from_mem" of module "dut", instance "dut".
+  Expression: dut_io_to_exu_bits_data_data_from_mem
+  	use +lint=PCWM for more details
+
+
+Warning-[PCWM-W] Port connection width mismatch
+testbench.sv, 105
+"dut dut( .clock (clock),  .reset (reset),  .io_from_idu_ready (io_from_idu_ready),  .io_from_idu_valid (io_from_idu_valid),  .io_from_idu_bits_cf_inst (io_from_idu_bits_cf_inst),  .io_from_idu_bits_cf_pc (io_from_idu_bits_cf_pc),  .io_from_idu_bits_cf_next_pc (io_from_idu_bits_cf_next_pc),  .io_from_idu_bits_cf_isBranch (io_from_idu_bits_cf_isBranch),  .io_from_idu_bits_ctrl_MemWrite (io_from_idu_bits_ctrl_MemWrite),  .io_from_idu_bits_ctrl_ResSrc (io_from_idu_bits_ctrl_ResSrc),  .io_from_idu_bits_ctrl_fuSrc1Type (io_from_idu_bits_ctrl_fuSrc1Type),  .io_from_idu_bits_ctrl_fuSrc2Type (io_from_idu_bits_ctrl_fuSrc2Type),  .io_from_idu_bits_ctrl_fuType (io_from_idu_bits_ctrl_fuType),  .io_from_idu_bits_ctrl_fuOpType (io_from_idu_bits_ctrl_fuOpType),  .io_fr ... "
+  The following 32-bit expression is connected to 64-bit port 
+  "io_to_exu_bits_data_csrRdata" of module "dut", instance "dut".
+  Expression: dut_io_to_exu_bits_data_csrRdata
+  	use +lint=PCWM for more details
+
+
+Warning-[PCWM-W] Port connection width mismatch
+testbench.sv, 105
+"dut dut( .clock (clock),  .reset (reset),  .io_from_idu_ready (io_from_idu_ready),  .io_from_idu_valid (io_from_idu_valid),  .io_from_idu_bits_cf_inst (io_from_idu_bits_cf_inst),  .io_from_idu_bits_cf_pc (io_from_idu_bits_cf_pc),  .io_from_idu_bits_cf_next_pc (io_from_idu_bits_cf_next_pc),  .io_from_idu_bits_cf_isBranch (io_from_idu_bits_cf_isBranch),  .io_from_idu_bits_ctrl_MemWrite (io_from_idu_bits_ctrl_MemWrite),  .io_from_idu_bits_ctrl_ResSrc (io_from_idu_bits_ctrl_ResSrc),  .io_from_idu_bits_ctrl_fuSrc1Type (io_from_idu_bits_ctrl_fuSrc1Type),  .io_from_idu_bits_ctrl_fuSrc2Type (io_from_idu_bits_ctrl_fuSrc2Type),  .io_from_idu_bits_ctrl_fuType (io_from_idu_bits_ctrl_fuType),  .io_from_idu_bits_ctrl_fuOpType (io_from_idu_bits_ctrl_fuOpType),  .io_fr ... "
+  The following 32-bit expression is connected to 64-bit port 
+  "io_to_exu_bits_data_rfSrc1" of module "dut", instance "dut".
+  Expression: dut_io_to_exu_bits_data_rfSrc1
+  	use +lint=PCWM for more details
+
+
+Warning-[PCWM-W] Port connection width mismatch
+testbench.sv, 105
+"dut dut( .clock (clock),  .reset (reset),  .io_from_idu_ready (io_from_idu_ready),  .io_from_idu_valid (io_from_idu_valid),  .io_from_idu_bits_cf_inst (io_from_idu_bits_cf_inst),  .io_from_idu_bits_cf_pc (io_from_idu_bits_cf_pc),  .io_from_idu_bits_cf_next_pc (io_from_idu_bits_cf_next_pc),  .io_from_idu_bits_cf_isBranch (io_from_idu_bits_cf_isBranch),  .io_from_idu_bits_ctrl_MemWrite (io_from_idu_bits_ctrl_MemWrite),  .io_from_idu_bits_ctrl_ResSrc (io_from_idu_bits_ctrl_ResSrc),  .io_from_idu_bits_ctrl_fuSrc1Type (io_from_idu_bits_ctrl_fuSrc1Type),  .io_from_idu_bits_ctrl_fuSrc2Type (io_from_idu_bits_ctrl_fuSrc2Type),  .io_from_idu_bits_ctrl_fuType (io_from_idu_bits_ctrl_fuType),  .io_from_idu_bits_ctrl_fuOpType (io_from_idu_bits_ctrl_fuOpType),  .io_fr ... "
+  The following 32-bit expression is connected to 64-bit port 
+  "io_to_exu_bits_data_rfSrc2" of module "dut", instance "dut".
+  Expression: dut_io_to_exu_bits_data_rfSrc2
+  	use +lint=PCWM for more details
+
+
+Warning-[PCWM-W] Port connection width mismatch
+testbench.sv, 105
+"dut dut( .clock (clock),  .reset (reset),  .io_from_idu_ready (io_from_idu_ready),  .io_from_idu_valid (io_from_idu_valid),  .io_from_idu_bits_cf_inst (io_from_idu_bits_cf_inst),  .io_from_idu_bits_cf_pc (io_from_idu_bits_cf_pc),  .io_from_idu_bits_cf_next_pc (io_from_idu_bits_cf_next_pc),  .io_from_idu_bits_cf_isBranch (io_from_idu_bits_cf_isBranch),  .io_from_idu_bits_ctrl_MemWrite (io_from_idu_bits_ctrl_MemWrite),  .io_from_idu_bits_ctrl_ResSrc (io_from_idu_bits_ctrl_ResSrc),  .io_from_idu_bits_ctrl_fuSrc1Type (io_from_idu_bits_ctrl_fuSrc1Type),  .io_from_idu_bits_ctrl_fuSrc2Type (io_from_idu_bits_ctrl_fuSrc2Type),  .io_from_idu_bits_ctrl_fuType (io_from_idu_bits_ctrl_fuType),  .io_from_idu_bits_ctrl_fuOpType (io_from_idu_bits_ctrl_fuOpType),  .io_fr ... "
+  The following 32-bit expression is connected to 64-bit port "io_wb_Res" of 
+  module "dut", instance "dut".
+  Expression: io_wb_Res
+  	use +lint=PCWM for more details
+
+
+Warning-[PCWM-W] Port connection width mismatch
+testbench.sv, 105
+"dut dut( .clock (clock),  .reset (reset),  .io_from_idu_ready (io_from_idu_ready),  .io_from_idu_valid (io_from_idu_valid),  .io_from_idu_bits_cf_inst (io_from_idu_bits_cf_inst),  .io_from_idu_bits_cf_pc (io_from_idu_bits_cf_pc),  .io_from_idu_bits_cf_next_pc (io_from_idu_bits_cf_next_pc),  .io_from_idu_bits_cf_isBranch (io_from_idu_bits_cf_isBranch),  .io_from_idu_bits_ctrl_MemWrite (io_from_idu_bits_ctrl_MemWrite),  .io_from_idu_bits_ctrl_ResSrc (io_from_idu_bits_ctrl_ResSrc),  .io_from_idu_bits_ctrl_fuSrc1Type (io_from_idu_bits_ctrl_fuSrc1Type),  .io_from_idu_bits_ctrl_fuSrc2Type (io_from_idu_bits_ctrl_fuSrc2Type),  .io_from_idu_bits_ctrl_fuType (io_from_idu_bits_ctrl_fuType),  .io_from_idu_bits_ctrl_fuOpType (io_from_idu_bits_ctrl_fuOpType),  .io_fr ... "
+  The following 32-bit expression is connected to 64-bit port 
+  "io_from_reg_rfSrc1" of module "dut", instance "dut".
+  Expression: io_from_reg_rfSrc1
+  	use +lint=PCWM for more details
+
+
+Warning-[PCWM-W] Port connection width mismatch
+testbench.sv, 105
+"dut dut( .clock (clock),  .reset (reset),  .io_from_idu_ready (io_from_idu_ready),  .io_from_idu_valid (io_from_idu_valid),  .io_from_idu_bits_cf_inst (io_from_idu_bits_cf_inst),  .io_from_idu_bits_cf_pc (io_from_idu_bits_cf_pc),  .io_from_idu_bits_cf_next_pc (io_from_idu_bits_cf_next_pc),  .io_from_idu_bits_cf_isBranch (io_from_idu_bits_cf_isBranch),  .io_from_idu_bits_ctrl_MemWrite (io_from_idu_bits_ctrl_MemWrite),  .io_from_idu_bits_ctrl_ResSrc (io_from_idu_bits_ctrl_ResSrc),  .io_from_idu_bits_ctrl_fuSrc1Type (io_from_idu_bits_ctrl_fuSrc1Type),  .io_from_idu_bits_ctrl_fuSrc2Type (io_from_idu_bits_ctrl_fuSrc2Type),  .io_from_idu_bits_ctrl_fuType (io_from_idu_bits_ctrl_fuType),  .io_from_idu_bits_ctrl_fuOpType (io_from_idu_bits_ctrl_fuOpType),  .io_fr ... "
+  The following 32-bit expression is connected to 64-bit port 
+  "io_from_reg_rfSrc2" of module "dut", instance "dut".
+  Expression: io_from_reg_rfSrc2
+  	use +lint=PCWM for more details
+
+Starting vcs inline pass...
+2 modules and 0 UDP read.
+recompiling module tb_issue_golden
+recompiling module issue_golden
+Both modules done.

@@ -1,61 +1,63 @@
-// package multiplier
-
 import chisel3._
 import chisel3.util._
 
 class dut extends Module {
   val io = IO(new Bundle {
-    // Input ports
-    val mul_en_in = Input(Bool())
-    val mul_a = Input(UInt(8.W))
-    val mul_b = Input(UInt(8.W))
-    
-    // Output ports
+    val mul_en_in  = Input(Bool())
+    val mul_a      = Input(UInt(8.W))
+    val mul_b      = Input(UInt(8.W))
     val mul_en_out = Output(Bool())
-    val mul_out = Output(UInt(16.W))
+    val mul_out    = Output(UInt(16.W))
   })
 
-  // Pipeline registers for the enable signal (5 stages)
-  val mul_en_out_reg = RegInit(VecInit(Seq.fill(5)(false.B)))
-  
-  // Shift enable signal through the pipeline
-  mul_en_out_reg(0) := io.mul_en_in
-  for (i <- 1 until 5) {
-    mul_en_out_reg(i) := mul_en_out_reg(i-1)
+  // 5-bit enable pipeline
+  val mul_en_out_reg = RegInit(0.U(5.W))
+  mul_en_out_reg := Cat(mul_en_out_reg(3, 0), io.mul_en_in)
+
+  // Input registers (update only when input enable is asserted)
+  val mul_a_reg = RegInit(0.U(8.W))
+  val mul_b_reg = RegInit(0.U(8.W))
+  when(io.mul_en_in) {
+    mul_a_reg := io.mul_a
+    mul_b_reg := io.mul_b
   }
-  
-  // Connect output enable signal to the last stage register
-  io.mul_en_out := mul_en_out_reg(4)
 
-  // Input registers
-  val mul_a_reg = RegEnable(io.mul_a, 0.U(8.W), io.mul_en_in)
-  val mul_b_reg = RegEnable(io.mul_b, 0.U(8.W), io.mul_en_in)
-
-  // Stage 1: Generate partial products
-  val partial_products = Wire(Vec(8, UInt(16.W)))
+  // Partial products
+  val temp = Wire(Vec(8, UInt(16.W)))
   for (i <- 0 until 8) {
-    when (mul_b_reg(i)) {
-      partial_products(i) := (mul_a_reg << i).pad(16)
-    } .otherwise {
-      partial_products(i) := 0.U(16.W)
-    }
+    temp(i) := Mux(mul_b_reg(i), (mul_a_reg << i).asUInt, 0.U(16.W))
   }
 
-  // Stage 2: First level reduction (from 8 to 4 partial products)
-  val sum_level1 = Reg(Vec(4, UInt(16.W)))
-  sum_level1(0) := partial_products(0) + partial_products(1)
-  sum_level1(1) := partial_products(2) + partial_products(3)
-  sum_level1(2) := partial_products(4) + partial_products(5)
-  sum_level1(3) := partial_products(6) + partial_products(7)
+  // Stage 1 partial sums
+  val sum = RegInit(VecInit(Seq.fill(4)(0.U(16.W))))
+  when(mul_en_out_reg(0)) {
+    sum(0) := temp(0) + temp(1)
+    sum(1) := temp(2) + temp(3)
+    sum(2) := temp(4) + temp(5)
+    sum(3) := temp(6) + temp(7)
+  }
 
-  // Stage 3: Second level reduction (from 4 to 2 partial products)
-  val sum_level2 = Reg(Vec(2, UInt(16.W)))
-  sum_level2(0) := sum_level1(0) + sum_level1(1)
-  sum_level2(1) := sum_level1(2) + sum_level1(3)
+  // Stage 2 partial sums
+  val sum2_a = RegInit(0.U(16.W))
+  val sum2_b = RegInit(0.U(16.W))
+  when(mul_en_out_reg(1)) {
+    sum2_a := sum(0) + sum(1)
+    sum2_b := sum(2) + sum(3)
+  }
 
-  // Stage 4: Final sum
-  val mul_out_reg = RegNext(sum_level2(0) + sum_level2(1), 0.U(16.W))
+  // Stage 3 final accumulation
+  val sum3 = RegInit(0.U(16.W))
+  when(mul_en_out_reg(2)) {
+    sum3 := sum2_a + sum2_b
+  }
 
-  // Connect output
+  // Stage 4 output register
+  val mul_out_reg = RegInit(0.U(16.W))
+  when(mul_en_out_reg(3)) {
+    mul_out_reg := sum3
+  }
+
+  // Outputs
+  io.mul_en_out := mul_en_out_reg(4)
   io.mul_out := Mux(io.mul_en_out, mul_out_reg, 0.U(16.W))
 }

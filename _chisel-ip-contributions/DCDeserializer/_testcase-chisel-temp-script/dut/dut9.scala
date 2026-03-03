@@ -1,45 +1,41 @@
 import chisel3._
 import chisel3.util._
 
-class Deserializer[D <: Data](data: D, width: Int) extends Module {
+class dut[D <: Data](data: D, width: Int) extends Module {
+  require(width > 0, s"width must be > 0, got $width")
+
+  private val totalBits = data.getWidth
+  private val cycles    = (totalBits + width - 1) / width
+  private val cntWidth  = math.max(1, log2Ceil(cycles))
+
   val io = IO(new Bundle {
-    val dataIn = Flipped(Decoupled(UInt(width.W)))
+    val dataIn  = Flipped(Decoupled(UInt(width.W)))
     val dataOut = Decoupled(data.cloneType)
   })
 
-  // Calculate total number of cycles needed for deserialization
-  val dataWidth = data.getWidth
-  val cycles = (dataWidth + width - 1) / width  // Ceiling division
+  val cycleCount = RegInit(0.U(cntWidth.W))
+  val dataSelect = RegInit(VecInit(Seq.fill(cycles)(0.U(width.W))))
+  val dataValid  = RegInit(false.B)
 
-  // Registers for tracking state
-  val cycleCount = RegInit(0.U(log2Ceil(cycles).W))
-  val dataSelect = RegInit(0.U(dataWidth.W))
-  val dataValid = RegInit(false.B)
+  // Accept input only while current deserialized word is not pending on output.
+  io.dataIn.ready := !dataValid
 
-  // Default values
-  io.dataIn.ready := !dataValid || io.dataOut.ready
-  io.dataOut.valid := dataValid
-  io.dataOut.bits := dataSelect.asTypeOf(data.cloneType)
-
-  // Process incoming data when valid and ready
   when(io.dataIn.fire) {
-    // Store the current segment in the appropriate position
-    val shiftAmount = cycleCount * width.U
-    val mask = ((1.U << width.U) - 1.U) << shiftAmount
-    val shiftedData = io.dataIn.bits << shiftAmount
-    
-    dataSelect := (dataSelect & ~mask) | (shiftedData & mask)
-    
-    // Check if this is the last cycle
+    dataSelect(cycleCount) := io.dataIn.bits
+
     when(cycleCount === (cycles - 1).U) {
       cycleCount := 0.U
-      dataValid := true.B
+      dataValid  := true.B
     }.otherwise {
       cycleCount := cycleCount + 1.U
     }
   }
 
-  // Reset dataValid when output is consumed
+  // Reconstruct original width and cast back to type D.
+  val packed = dataSelect.asUInt
+  io.dataOut.bits  := packed(totalBits - 1, 0).asTypeOf(data.cloneType)
+  io.dataOut.valid := dataValid
+
   when(io.dataOut.fire) {
     dataValid := false.B
   }

@@ -1,134 +1,135 @@
-// package adder
-
 import chisel3._
 import chisel3.util._
 
 class dut extends Module {
   val io = IO(new Bundle {
-    // Input ports
-    val i_en = Input(Bool())
-    val adda = Input(UInt(64.W))
-    val addb = Input(UInt(64.W))
-    
-    // Output ports
+    val i_en   = Input(Bool())
+    val adda   = Input(UInt(64.W))
+    val addb   = Input(UInt(64.W))
     val result = Output(UInt(65.W))
-    val o_en = Output(Bool())
+    val o_en   = Output(Bool())
   })
-  
-  // Pipeline stage registers for enable signal
-  val en_reg1 = RegInit(false.B)
-  val en_reg2 = RegInit(false.B)
-  val en_reg3 = RegInit(false.B)
-  val en_reg4 = RegInit(false.B)
-  
-  // Pipeline registers for operands
-  val adda_reg = RegInit(0.U(64.W))
-  val addb_reg = RegInit(0.U(64.W))
-  
-  // Register input data when enabled
+
+  // -------------------------
+  // Stage valid pipeline
+  // -------------------------
+  val en0 = RegInit(false.B)
+  val en1 = RegInit(false.B)
+  val en2 = RegInit(false.B)
+  val en3 = RegInit(false.B)
+
+  en0 := io.i_en
+  en1 := en0
+  en2 := en1
+  en3 := en2
+
+  // -------------------------
+  // Stage 0: [15:0]
+  // -------------------------
+  val s0 = RegInit(0.U(16.W))
+  val c0 = RegInit(0.U(1.W))
+
+  val a1_0 = RegInit(0.U(16.W))
+  val b1_0 = RegInit(0.U(16.W))
+  val a2_0 = RegInit(0.U(16.W))
+  val b2_0 = RegInit(0.U(16.W))
+  val a3_0 = RegInit(0.U(16.W))
+  val b3_0 = RegInit(0.U(16.W))
+
   when(io.i_en) {
-    adda_reg := io.adda
-    addb_reg := io.addb
-    en_reg1 := true.B
-  }.otherwise {
-    en_reg1 := false.B
+    val add0 = io.adda(15, 0) +& io.addb(15, 0)
+    s0 := add0(15, 0)
+    c0 := add0(16)
+
+    a1_0 := io.adda(31, 16)
+    b1_0 := io.addb(31, 16)
+    a2_0 := io.adda(47, 32)
+    b2_0 := io.addb(47, 32)
+    a3_0 := io.adda(63, 48)
+    b3_0 := io.addb(63, 48)
   }
-  
-  // Divide the 64-bit addition into 4 parts (16 bits each)
-  val segment_width = 16
-  
-  // Stage 1 - First 16 bits
-  val sum1 = Wire(UInt(16.W))
-  val carry1 = Wire(Bool())
-  val stage1_result = Cat(carry1, sum1)
-  val stage1_value = adda_reg(15, 0) +& addb_reg(15, 0)
-  sum1 := stage1_value(15, 0)
-  carry1 := stage1_value(16)
-  
-  // Stage 1 pipeline registers
-  val stage1_reg = RegInit(0.U(17.W))
-  val adda_high1_reg = RegInit(0.U(48.W))
-  val addb_high1_reg = RegInit(0.U(48.W))
-  
-  when(en_reg1) {
-    stage1_reg := stage1_result
-    adda_high1_reg := adda_reg(63, 16)
-    addb_high1_reg := addb_reg(63, 16)
-    en_reg2 := true.B
-  }.otherwise {
-    en_reg2 := false.B
+
+  // -------------------------
+  // Stage 1: [31:16]
+  // -------------------------
+  val s1 = RegInit(0.U(16.W))
+  val c1 = RegInit(0.U(1.W))
+
+  val a2_1 = RegInit(0.U(16.W))
+  val b2_1 = RegInit(0.U(16.W))
+  val a3_1 = RegInit(0.U(16.W))
+  val b3_1 = RegInit(0.U(16.W))
+
+  val s0_d1 = RegInit(0.U(16.W))
+
+  when(en0) {
+    val add1 = a1_0 +& b1_0 + c0
+    s1 := add1(15, 0)
+    c1 := add1(16)
+
+    a2_1 := a2_0
+    b2_1 := b2_0
+    a3_1 := a3_0
+    b3_1 := b3_0
+
+    s0_d1 := s0
   }
-  
-  // Stage 2 - Second 16 bits
-  val sum2 = Wire(UInt(16.W))
-  val carry2 = Wire(Bool())
-  val stage2_result = Cat(carry2, sum2)
-  val stage2_value = adda_high1_reg(15, 0) +& addb_high1_reg(15, 0) + stage1_reg(16)
-  sum2 := stage2_value(15, 0)
-  carry2 := stage2_value(16)
-  
-  // Stage 2 pipeline registers
-  val stage1_2_reg = RegInit(0.U(16.W)) // Store sum1
-  val stage2_reg = RegInit(0.U(17.W))
-  val adda_high2_reg = RegInit(0.U(32.W))
-  val addb_high2_reg = RegInit(0.U(32.W))
-  
-  when(en_reg2) {
-    stage1_2_reg := stage1_reg(15, 0)
-    stage2_reg := stage2_result
-    adda_high2_reg := adda_high1_reg(47, 16)
-    addb_high2_reg := addb_high1_reg(47, 16)
-    en_reg3 := true.B
-  }.otherwise {
-    en_reg3 := false.B
+
+  // -------------------------
+  // Stage 2: [47:32]
+  // -------------------------
+  val s2 = RegInit(0.U(16.W))
+  val c2 = RegInit(0.U(1.W))
+
+  val a3_2 = RegInit(0.U(16.W))
+  val b3_2 = RegInit(0.U(16.W))
+
+  val s0_d2 = RegInit(0.U(16.W))
+  val s1_d1 = RegInit(0.U(16.W))
+
+  when(en1) {
+    val add2 = a2_1 +& b2_1 + c1
+    s2 := add2(15, 0)
+    c2 := add2(16)
+
+    a3_2 := a3_1
+    b3_2 := b3_1
+
+    s0_d2 := s0_d1
+    s1_d1 := s1
   }
-  
-  // Stage 3 - Third 16 bits
-  val sum3 = Wire(UInt(16.W))
-  val carry3 = Wire(Bool())
-  val stage3_result = Cat(carry3, sum3)
-  val stage3_value = adda_high2_reg(15, 0) +& addb_high2_reg(15, 0) + stage2_reg(16)
-  sum3 := stage3_value(15, 0)
-  carry3 := stage3_value(16)
-  
-  // Stage 3 pipeline registers
-  val stage1_3_reg = RegInit(0.U(16.W))
-  val stage2_3_reg = RegInit(0.U(16.W))
-  val stage3_reg = RegInit(0.U(17.W))
-  val adda_high3_reg = RegInit(0.U(16.W))
-  val addb_high3_reg = RegInit(0.U(16.W))
-  
-  when(en_reg3) {
-    stage1_3_reg := stage1_2_reg
-    stage2_3_reg := stage2_reg(15, 0)
-    stage3_reg := stage3_result
-    adda_high3_reg := adda_high2_reg(31, 16)
-    addb_high3_reg := addb_high2_reg(31, 16)
-    en_reg4 := true.B
-  }.otherwise {
-    en_reg4 := false.B
+
+  // -------------------------
+  // Stage 3: [63:48]
+  // -------------------------
+  val s3 = RegInit(0.U(16.W))
+  val c3 = RegInit(0.U(1.W))
+
+  val s0_d3 = RegInit(0.U(16.W))
+  val s1_d2 = RegInit(0.U(16.W))
+  val s2_d1 = RegInit(0.U(16.W))
+
+  when(en2) {
+    val add3 = a3_2 +& b3_2 + c2
+    s3 := add3(15, 0)
+    c3 := add3(16)
+
+    s0_d3 := s0_d2
+    s1_d2 := s1_d1
+    s2_d1 := s2
   }
-  
-  // Stage 4 - Fourth 16 bits
-  val sum4 = Wire(UInt(16.W))
-  val carry4 = Wire(Bool())
-  val stage4_result = Cat(carry4, sum4)
-  val stage4_value = adda_high3_reg +& addb_high3_reg + stage3_reg(16)
-  sum4 := stage4_value(15, 0)
-  carry4 := stage4_value(16)
-  
-  // Final result
-  val final_result = RegInit(0.U(65.W))
-  val o_en_reg = RegInit(false.B)
-  
-  when(en_reg4) {
-    final_result := Cat(stage4_result, stage3_reg(15, 0), stage2_3_reg, stage1_3_reg)
-    o_en_reg := true.B
-  }.otherwise {
-    o_en_reg := false.B
+
+  // -------------------------
+  // Output register stage
+  // -------------------------
+  val resultReg = RegInit(0.U(65.W))
+  val oEnReg    = RegInit(false.B)
+
+  oEnReg := en3
+  when(en3) {
+    resultReg := Cat(c3, s3, s2_d1, s1_d2, s0_d3)
   }
-  
-  // Connect output ports
-  io.result := final_result
-  io.o_en := o_en_reg
+
+  io.result := resultReg
+  io.o_en   := oEnReg
 }

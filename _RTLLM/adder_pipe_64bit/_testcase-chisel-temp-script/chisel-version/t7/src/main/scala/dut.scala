@@ -3,92 +3,117 @@ import chisel3.util._
 
 class dut extends Module {
   val io = IO(new Bundle {
-    // Input ports
-    val i_en = Input(Bool())
-    val adda = Input(UInt(64.W))
-    val addb = Input(UInt(64.W))
-    
-    // Output ports
+    val i_en   = Input(Bool())
+    val adda   = Input(UInt(64.W))
+    val addb   = Input(UInt(64.W))
     val result = Output(UInt(65.W))
-    val o_en = Output(Bool())
+    val o_en   = Output(Bool())
   })
-  
-  // Pipeline registers for enable signal
-  val en_reg = RegInit(false.B)
-  val en_reg2 = RegInit(false.B)
-  val en_reg3 = RegInit(false.B)
-  val en_reg4 = RegInit(false.B)
-  
-  // Update the pipeline registers for enable signal
-  en_reg := io.i_en
-  en_reg2 := en_reg
-  en_reg3 := en_reg2
-  en_reg4 := en_reg3
-  
-  // Assign output enable signal
-  io.o_en := en_reg4
-  
-  // Divide inputs into 16-bit segments
-  val adda_segments = Wire(Vec(4, UInt(16.W)))
-  val addb_segments = Wire(Vec(4, UInt(16.W)))
-  
-  for (i <- 0 until 4) {
-    adda_segments(i) := io.adda((i+1)*16-1, i*16)
-    addb_segments(i) := io.addb((i+1)*16-1, i*16)
-  }
-  
-  // Pipeline stage 1: First 16 bits
-  val sum1 = RegInit(0.U(16.W))
-  val carry1 = RegInit(0.U(1.W))
-  
-  when (io.i_en) {
-    val temp_sum = adda_segments(0) +& addb_segments(0)
-    sum1 := temp_sum(15, 0)
-    carry1 := temp_sum(16)
-  }
-  
-  // Pipeline stage 2: Second 16 bits
-  val sum2 = RegInit(0.U(16.W))
-  val carry2 = RegInit(0.U(1.W))
-  val sum1_reg = RegInit(0.U(16.W))
-  
-  when (en_reg) {
-    val temp_sum = adda_segments(1) +& addb_segments(1) + carry1
-    sum2 := temp_sum(15, 0)
-    carry2 := temp_sum(16)
-    sum1_reg := sum1
-  }
-  
-  // Pipeline stage 3: Third 16 bits
-  val sum3 = RegInit(0.U(16.W))
-  val carry3 = RegInit(0.U(1.W))
-  val sum2_reg = RegInit(0.U(16.W))
-  val sum1_reg2 = RegInit(0.U(16.W))
-  
-  when (en_reg2) {
-    val temp_sum = adda_segments(2) +& addb_segments(2) + carry2
-    sum3 := temp_sum(15, 0)
-    carry3 := temp_sum(16)
-    sum2_reg := sum2
-    sum1_reg2 := sum1_reg
-  }
-  
-  // Pipeline stage 4: Fourth 16 bits
-  val sum4 = RegInit(0.U(16.W))
-  val carry4 = RegInit(0.U(1.W))
-  val sum3_reg = RegInit(0.U(16.W))
-  val sum2_reg2 = RegInit(0.U(16.W))
-  val sum1_reg3 = RegInit(0.U(16.W))
-  
-  when (en_reg3) {
-    val temp_sum = adda_segments(3) +& addb_segments(3) + carry3
-    sum4 := temp_sum(15, 0)
-    carry4 := temp_sum(16)
-    sum3_reg := sum3
-    sum2_reg2 := sum2_reg
-    sum1_reg3 := sum1_reg2
-  }
-  
-  // Final result
-  io.result := Cat(carry4, sum4, sum3_reg, sum2_reg2, sum1_reg3)
+
+  // -----------------------------
+  // Valid pipeline (4 stages)
+  // -----------------------------
+  val v0 = RegInit(false.B)
+  val v1 = RegInit(false.B)
+  val v2 = RegInit(false.B)
+  val v3 = RegInit(false.B)
+
+  v0 := io.i_en
+  v1 := v0
+  v2 := v1
+  v3 := v2
+
+  io.o_en := v3
+
+  // -----------------------------
+  // Delay operand chunks to align with each stage
+  // -----------------------------
+  val a1_d1 = Reg(UInt(16.W))
+  val b1_d1 = Reg(UInt(16.W))
+
+  val a2_d1 = Reg(UInt(16.W))
+  val b2_d1 = Reg(UInt(16.W))
+  val a2_d2 = Reg(UInt(16.W))
+  val b2_d2 = Reg(UInt(16.W))
+
+  val a3_d1 = Reg(UInt(16.W))
+  val b3_d1 = Reg(UInt(16.W))
+  val a3_d2 = Reg(UInt(16.W))
+  val b3_d2 = Reg(UInt(16.W))
+  val a3_d3 = Reg(UInt(16.W))
+  val b3_d3 = Reg(UInt(16.W))
+
+  a1_d1 := io.adda(31, 16)
+  b1_d1 := io.addb(31, 16)
+
+  a2_d1 := io.adda(47, 32)
+  b2_d1 := io.addb(47, 32)
+  a2_d2 := a2_d1
+  b2_d2 := b2_d1
+
+  a3_d1 := io.adda(63, 48)
+  b3_d1 := io.addb(63, 48)
+  a3_d2 := a3_d1
+  b3_d2 := b3_d1
+  a3_d3 := a3_d2
+  b3_d3 := b3_d2
+
+  // -----------------------------
+  // Stage 0: bits [15:0]
+  // -----------------------------
+  val s0 = io.adda(15, 0) +& io.addb(15, 0) // 17-bit
+  val sum0_r   = Reg(UInt(16.W))
+  val carry0_r = Reg(UInt(1.W))
+  sum0_r   := s0(15, 0)
+  carry0_r := s0(16)
+
+  // -----------------------------
+  // Stage 1: bits [31:16]
+  // -----------------------------
+  val s1 = a1_d1 +& b1_d1 +& carry0_r
+  val sum1_r   = Reg(UInt(16.W))
+  val carry1_r = Reg(UInt(1.W))
+  sum1_r   := s1(15, 0)
+  carry1_r := s1(16)
+
+  // -----------------------------
+  // Stage 2: bits [47:32]
+  // -----------------------------
+  val s2 = a2_d2 +& b2_d2 +& carry1_r
+  val sum2_r   = Reg(UInt(16.W))
+  val carry2_r = Reg(UInt(1.W))
+  sum2_r   := s2(15, 0)
+  carry2_r := s2(16)
+
+  // -----------------------------
+  // Stage 3: bits [63:48]
+  // -----------------------------
+  val s3 = a3_d3 +& b3_d3 +& carry2_r
+  val sum3_r   = Reg(UInt(16.W))
+  val carry3_r = Reg(UInt(1.W))
+  sum3_r   := s3(15, 0)
+  carry3_r := s3(16)
+
+  // -----------------------------
+  // Align partial sums for final output
+  // -----------------------------
+  val sum0_d1 = Reg(UInt(16.W))
+  val sum0_d2 = Reg(UInt(16.W))
+  val sum0_d3 = Reg(UInt(16.W))
+
+  val sum1_d1 = Reg(UInt(16.W))
+  val sum1_d2 = Reg(UInt(16.W))
+
+  val sum2_d1 = Reg(UInt(16.W))
+
+  sum0_d1 := sum0_r
+  sum0_d2 := sum0_d1
+  sum0_d3 := sum0_d2
+
+  sum1_d1 := sum1_r
+  sum1_d2 := sum1_d1
+
+  sum2_d1 := sum2_r
+
+  io.result := Cat(carry3_r, sum3_r, sum2_d1, sum1_d2, sum0_d3)
 }

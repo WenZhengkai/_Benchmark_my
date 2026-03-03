@@ -1,353 +1,338 @@
-module Decode_golden (
-  input  wire         clock,
-  input  wire         reset,
-
-  // from_ifu: Decoupled(CtrlFlow)
-  input  wire         from_ifu_valid,
-  output wire         from_ifu_ready,
-  input  wire [31:0]  from_ifu_bits_inst,
-  input  wire [31:0]  from_ifu_bits_pc,
-  input  wire [31:0]  from_ifu_bits_next_pc,
-  input  wire         from_ifu_bits_isBranch,
-
-  // to_isu: Decoupled(DecodeIO)
-  output wire         to_isu_valid,
-  input  wire         to_isu_ready,
-
-  // to_isu.bits.cf
-  output wire [31:0]  to_isu_bits_cf_inst,
-  output wire [31:0]  to_isu_bits_cf_pc,
-  output wire [31:0]  to_isu_bits_cf_next_pc,
-  output wire         to_isu_bits_cf_isBranch,
-
-  // to_isu.bits.ctrl
-  output wire         to_isu_bits_ctrl_MemWrite,
-  output wire [31:0]  to_isu_bits_ctrl_ResSrc,     // matches Chisel UInt() (unsized). Using 32.
-  output wire [2:0]   to_isu_bits_ctrl_fuSrc1Type,
-  output wire [2:0]   to_isu_bits_ctrl_fuSrc2Type,
-  output wire [2:0]   to_isu_bits_ctrl_fuType,
-  output wire [6:0]   to_isu_bits_ctrl_fuOpType,
-  output wire [4:0]   to_isu_bits_ctrl_rs1,
-  output wire [4:0]   to_isu_bits_ctrl_rs2,
-  output wire         to_isu_bits_ctrl_rfWen,
-  output wire [4:0]   to_isu_bits_ctrl_rd,
-
-  // to_isu.bits.data
-  output wire [31:0]  to_isu_bits_data_fuSrc1,
-  output wire [31:0]  to_isu_bits_data_fuSrc2,
-  output wire [31:0]  to_isu_bits_data_imm,
-  output wire [31:0]  to_isu_bits_data_rfSrc1,
-  output wire [31:0]  to_isu_bits_data_rfSrc2,
-  output wire         to_isu_bits_data_Alu0Res_valid,
-  input  wire         to_isu_bits_data_Alu0Res_ready,
-  output wire [31:0]  to_isu_bits_data_Alu0Res_bits,
-  output wire [31:0]  to_isu_bits_data_data_from_mem,
-  output wire [31:0]  to_isu_bits_data_csrRdata
+module Decode_golden(
+  input         clock,
+  input         reset,
+  output        io_from_ifu_ready,
+  input         io_from_ifu_valid,
+  input  [31:0] io_from_ifu_bits_inst,
+  input  [31:0] io_from_ifu_bits_pc,
+  input  [31:0] io_from_ifu_bits_next_pc,
+  input         io_from_ifu_bits_isBranch,
+  input         io_to_isu_ready,
+  output        io_to_isu_valid,
+  output [31:0] io_to_isu_bits_cf_inst,
+  output [31:0] io_to_isu_bits_cf_pc,
+  output [31:0] io_to_isu_bits_cf_next_pc,
+  output        io_to_isu_bits_cf_isBranch,
+  output        io_to_isu_bits_ctrl_MemWrite,
+  output [1:0]  io_to_isu_bits_ctrl_ResSrc,
+  output [2:0]  io_to_isu_bits_ctrl_fuSrc1Type,
+  output [2:0]  io_to_isu_bits_ctrl_fuSrc2Type,
+  output [2:0]  io_to_isu_bits_ctrl_fuType,
+  output [6:0]  io_to_isu_bits_ctrl_fuOpType,
+  output [4:0]  io_to_isu_bits_ctrl_rs1,
+  output [4:0]  io_to_isu_bits_ctrl_rs2,
+  output        io_to_isu_bits_ctrl_rfWen,
+  output [4:0]  io_to_isu_bits_ctrl_rd,
+  output [31:0] io_to_isu_bits_data_fuSrc1,
+  output [31:0] io_to_isu_bits_data_fuSrc2,
+  output [31:0] io_to_isu_bits_data_imm,
+  output        io_to_isu_bits_data_Alu0Res_ready,
+  output        io_to_isu_bits_data_Alu0Res_valid,
+  output [31:0] io_to_isu_bits_data_Alu0Res_bits,
+  output [31:0] io_to_isu_bits_data_data_from_mem,
+  output [31:0] io_to_isu_bits_data_csrRdata,
+  output [31:0] io_to_isu_bits_data_rfSrc1,
+  output [31:0] io_to_isu_bits_data_rfSrc2
 );
-
-  localparam int XLEN = 32;
-
-  // =========================
-  // Handshake (HandShakeDeal)
-  // =========================
-  wire AnyInvalidCondition = 1'b0;
-  wire AnyStopCondition    = 1'b0;
-
-  // producer.fire == to_isu_valid && to_isu_ready
-  assign to_isu_valid   = from_ifu_valid && !AnyInvalidCondition;
-  assign from_ifu_ready = ((!from_ifu_valid) || (to_isu_valid && to_isu_ready)) && !AnyStopCondition;
-
-  // Pass-through CtrlFlow
-  assign to_isu_bits_cf_inst     = from_ifu_bits_inst;
-  assign to_isu_bits_cf_pc       = from_ifu_bits_pc;
-  assign to_isu_bits_cf_next_pc  = from_ifu_bits_next_pc;
-  assign to_isu_bits_cf_isBranch = from_ifu_bits_isBranch;
-
-  // =========================
-  // Encodings from your Chisel
-  // =========================
-  // TYPE_INST
-  localparam [3:0] TYPE_N = 4'b0000;
-  localparam [3:0] TYPE_I = 4'b0100;
-  localparam [3:0] TYPE_R = 4'b0101;
-  localparam [3:0] TYPE_S = 4'b0010;
-  localparam [3:0] TYPE_B = 4'b0001;
-  localparam [3:0] TYPE_U = 4'b0110;
-  localparam [3:0] TYPE_J = 4'b0111;
-
-  // FuType (IndependentBru=false => bru == alu)
-  localparam [2:0] FUT_ALU = 3'b000;
-  localparam [2:0] FUT_LSU = 3'b001;
-  localparam [2:0] FUT_MDU = 3'b010;
-  localparam [2:0] FUT_CSR = 3'b011;
-  localparam [2:0] FUT_MOU = 3'b100;
-  localparam [2:0] FUT_BRU = FUT_ALU;
-
-  // FuSrcType
-  localparam [2:0] SRC_RF1  = 3'b000;
-  localparam [2:0] SRC_RF2  = 3'b001;
-  localparam [2:0] SRC_PC   = 3'b010;
-  localparam [2:0] SRC_IMM  = 3'b011;
-  localparam [2:0] SRC_ZERO = 3'b100;
-  localparam [2:0] SRC_FOUR = 3'b101;
-
-  // ALUOpType (subset used here)
-  localparam [6:0] ALU_ADD  = 7'b1000000;
-  localparam [6:0] ALU_SLL  = 7'b0000001;
-  localparam [6:0] ALU_SLT  = 7'b0000010;
-  localparam [6:0] ALU_SLTU = 7'b0000011;
-  localparam [6:0] ALU_XOR  = 7'b0000100;
-  localparam [6:0] ALU_SRL  = 7'b0000101;
-  localparam [6:0] ALU_OR   = 7'b0000110;
-  localparam [6:0] ALU_AND  = 7'b0000111;
-  localparam [6:0] ALU_SUB  = 7'b0001000;
-  localparam [6:0] ALU_SRA  = 7'b0001101;
-
-  localparam [6:0] ALU_BEQ  = 7'b0010000;
-  localparam [6:0] ALU_BNE  = 7'b0010001;
-  localparam [6:0] ALU_BLT  = 7'b0010100;
-  localparam [6:0] ALU_BGE  = 7'b0010101;
-  localparam [6:0] ALU_BLTU = 7'b0010110;
-  localparam [6:0] ALU_BGEU = 7'b0010111;
-
-  // LSUOpType (subset)
-  localparam [6:0] LSU_LB  = 7'b0000000;
-  localparam [6:0] LSU_LH  = 7'b0000001;
-  localparam [6:0] LSU_LW  = 7'b0000010;
-  localparam [6:0] LSU_LBU = 7'b0000100;
-  localparam [6:0] LSU_LHU = 7'b0000101;
-  localparam [6:0] LSU_SB  = 7'b0001000;
-  localparam [6:0] LSU_SH  = 7'b0001001;
-  localparam [6:0] LSU_SW  = 7'b0001010;
-
-  // CSROpType used
-  localparam [6:0] CSR_JMP = 7'b0000000; // we pack to 7b for fuOpType bus
-  localparam [6:0] CSR_WRT = 7'b0000001;
-  localparam [6:0] CSR_SET = 7'b0000010;
-
-  // ==============
-  // Field extracts
-  // ==============
-  wire [31:0] inst = from_ifu_bits_inst;
-  wire [6:0]  opcode = inst[6:0];
-  wire [2:0]  funct3 = inst[14:12];
-  wire [6:0]  funct7 = inst[31:25];
-
-  assign to_isu_bits_ctrl_rd  = inst[11:7];
-  assign to_isu_bits_ctrl_rs1 = inst[19:15];
-  assign to_isu_bits_ctrl_rs2 = inst[24:20];
-
-  // =========================
-  // Decode (ListLookup/table)
-  // =========================
-  reg [3:0] instType;
-  reg [2:0] fuType;
-  reg [6:0] fuOpType;
-  reg [2:0] fuSrc1Type;
-  reg [2:0] fuSrc2Type;
-
-  always @(*) begin
-    // Defaults = Instructions.DecodeDefault
-    instType   = TYPE_N;
-    fuType     = FUT_ALU;
-    fuOpType   = ALU_SLL;
-    fuSrc1Type = SRC_ZERO;
-    fuSrc2Type = SRC_ZERO;
-
-    // ---- RV32I ALU immediate (0010011) ----
-    if (opcode == 7'b0010011) begin
-      instType   = TYPE_I;
-      fuType     = FUT_ALU;
-      fuSrc1Type = SRC_RF1;
-      fuSrc2Type = SRC_IMM;
-      case (funct3)
-        3'b000: fuOpType = ALU_ADD; // ADDI
-        3'b001: fuOpType = ALU_SLL; // SLLI (ignoring funct7 check like typical decode)
-        3'b010: fuOpType = ALU_SLT; // SLTI
-        3'b011: fuOpType = ALU_SLTU;// SLTIU
-        3'b100: fuOpType = ALU_XOR; // XORI
-        3'b101: fuOpType = (funct7 == 7'b0100000) ? ALU_SRA : ALU_SRL; // SRAI/SRLI
-        3'b110: fuOpType = ALU_OR;  // ORI
-        3'b111: fuOpType = ALU_AND; // ANDI
-        default: ;
-      endcase
-    end
-
-    // ---- RV32I ALU reg-reg (0110011) ----
-    else if (opcode == 7'b0110011) begin
-      instType   = TYPE_R;
-      fuType     = FUT_ALU;
-      fuSrc1Type = SRC_RF1;
-      fuSrc2Type = SRC_RF2;
-      case (funct3)
-        3'b000: fuOpType = (funct7 == 7'b0100000) ? ALU_SUB : ALU_ADD; // SUB/ADD
-        3'b001: fuOpType = ALU_SLL;
-        3'b010: fuOpType = ALU_SLT;
-        3'b011: fuOpType = ALU_SLTU;
-        3'b100: fuOpType = ALU_XOR;
-        3'b101: fuOpType = (funct7 == 7'b0100000) ? ALU_SRA : ALU_SRL;
-        3'b110: fuOpType = ALU_OR;
-        3'b111: fuOpType = ALU_AND;
-        default: ;
-      endcase
-    end
-
-    // ---- LUI (0110111) ----
-    else if (opcode == 7'b0110111) begin
-      instType   = TYPE_U;
-      fuType     = FUT_ALU;
-      fuOpType   = ALU_ADD;
-      fuSrc1Type = SRC_ZERO;
-      fuSrc2Type = SRC_IMM;
-    end
-
-    // ---- AUIPC (0010111) ----
-    else if (opcode == 7'b0010111) begin
-      instType   = TYPE_U;
-      fuType     = FUT_ALU;
-      fuOpType   = ALU_ADD;
-      fuSrc1Type = SRC_PC;
-      fuSrc2Type = SRC_IMM;
-    end
-
-    // ---- Branches (1100011) ----
-    else if (opcode == 7'b1100011) begin
-      instType   = TYPE_B;
-      fuType     = FUT_BRU;
-      fuSrc1Type = SRC_RF1;
-      fuSrc2Type = SRC_RF2;
-      case (funct3)
-        3'b000: fuOpType = ALU_BEQ;
-        3'b001: fuOpType = ALU_BNE;
-        3'b100: fuOpType = ALU_BLT;
-        3'b101: fuOpType = ALU_BGE;
-        3'b110: fuOpType = ALU_BLTU;
-        3'b111: fuOpType = ALU_BGEU;
-        default: ;
-      endcase
-    end
-
-    // ---- JAL (1101111) ----
-    else if (opcode == 7'b1101111) begin
-      instType   = TYPE_J;
-      fuType     = FUT_ALU;
-      fuOpType   = ALU_ADD;
-      fuSrc1Type = SRC_PC;
-      fuSrc2Type = SRC_FOUR;
-    end
-
-    // ---- JALR (1100111) ----
-    else if (opcode == 7'b1100111 && funct3 == 3'b000) begin
-      instType   = TYPE_I;
-      fuType     = FUT_ALU;
-      fuOpType   = ALU_ADD;
-      fuSrc1Type = SRC_PC;
-      fuSrc2Type = SRC_FOUR;
-    end
-
-    // ---- Loads (0000011) ----
-    else if (opcode == 7'b0000011) begin
-      instType   = TYPE_I;
-      fuType     = FUT_LSU;
-      fuSrc1Type = SRC_RF1;
-      fuSrc2Type = SRC_IMM;
-      case (funct3)
-        3'b000: fuOpType = LSU_LB;
-        3'b001: fuOpType = LSU_LH;
-        3'b010: fuOpType = LSU_LW;
-        3'b100: fuOpType = LSU_LBU;
-        3'b101: fuOpType = LSU_LHU;
-        default: ;
-      endcase
-    end
-
-    // ---- Stores (0100011) ----
-    else if (opcode == 7'b0100011) begin
-      instType   = TYPE_S;
-      fuType     = FUT_LSU;
-      fuSrc1Type = SRC_RF1;
-      fuSrc2Type = SRC_IMM;
-      case (funct3)
-        3'b000: fuOpType = LSU_SB;
-        3'b001: fuOpType = LSU_SH;
-        3'b010: fuOpType = LSU_SW;
-        default: ;
-      endcase
-    end
-
-    // ---- Zicsr / Privileged subset (1110011) ----
-    else if (opcode == 7'b1110011) begin
-      // Privileged exact patterns: ECALL/EBREAK/MRET -> jmp
-      if (inst == 32'h00000073 || inst == 32'h00100073 || inst == 32'h30200073) begin
-        instType   = (inst == 32'h30200073) ? TYPE_R : TYPE_I;
-        fuType     = FUT_CSR;
-        fuOpType   = CSR_JMP;
-        fuSrc1Type = SRC_RF1;
-        fuSrc2Type = (inst == 32'h30200073) ? SRC_RF2 : SRC_IMM;
-      end
-      else begin
-        // CSR ops (only CSRRW, CSRRS included like your table)
-        if (funct3 == 3'b001) begin // CSRRW
-          instType   = TYPE_I;
-          fuType     = FUT_CSR;
-          fuOpType   = CSR_WRT;
-          fuSrc1Type = SRC_RF1;
-          fuSrc2Type = SRC_IMM;
-        end else if (funct3 == 3'b010) begin // CSRRS
-          instType   = TYPE_I;
-          fuType     = FUT_CSR;
-          fuOpType   = CSR_SET;
-          fuSrc1Type = SRC_RF1;
-          fuSrc2Type = SRC_IMM;
-        end
-      end
-    end
-  end
-
-  // Drive ctrl outputs
-  assign to_isu_bits_ctrl_fuOpType   = fuOpType;
-  assign to_isu_bits_ctrl_fuType     = fuType;
-  assign to_isu_bits_ctrl_fuSrc1Type = fuSrc1Type;
-  assign to_isu_bits_ctrl_fuSrc2Type = fuSrc2Type;
-
-  // RegWrite := isRegWrite(instType) where isRegWrite = instType(2)==1
-  assign to_isu_bits_ctrl_rfWen = instType[2];
-
-  // MemWrite := (instType == TYPE_S)
-  assign to_isu_bits_ctrl_MemWrite = (instType == TYPE_S);
-
-  // ResSrc := load ? 1 : csr ? 2 : 0
-  wire [31:0] ResSrc =
-      (opcode == 7'b0000011) ? 32'd1 :
-      (opcode == 7'b1110011) ? 32'd2 :
-                              32'd0;
-  assign to_isu_bits_ctrl_ResSrc = ResSrc;
-
-  // =========================
-  // Immediate extension (ImmExt)
-  // =========================
-  reg [31:0] immExt;
-  always @(*) begin
-    immExt = 32'b0;
-    case (instType)
-      TYPE_I: immExt = {{20{inst[31]}}, inst[31:20]};
-      TYPE_U: immExt = {inst[31:12], 12'b0};
-      TYPE_J: immExt = {{11{inst[31]}}, inst[31], inst[19:12], inst[20], inst[30:21], 1'b0};
-      TYPE_S: immExt = {{20{inst[31]}}, inst[31:25], inst[11:7]};
-      TYPE_B: immExt = {{19{inst[31]}}, inst[31], inst[7], inst[30:25], inst[11:8], 1'b0};
-      default: immExt = 32'b0;
-    endcase
-  end
-
-  // Drive data outputs (Chisel sets most to DontCare)
-  assign to_isu_bits_data_imm          = immExt;
-  assign to_isu_bits_data_fuSrc1       = 32'b0;
-  assign to_isu_bits_data_fuSrc2       = 32'b0;
-  assign to_isu_bits_data_rfSrc1       = 32'b0;
-  assign to_isu_bits_data_rfSrc2       = 32'b0;
-  assign to_isu_bits_data_Alu0Res_valid= 1'b0;
-  assign to_isu_bits_data_Alu0Res_bits = 32'b0;
-  assign to_isu_bits_data_data_from_mem= 32'b0;
-  assign to_isu_bits_data_csrRdata     = 32'b0;
-
+  wire  _io_from_ifu_ready_T_1 = io_to_isu_ready & io_to_isu_valid; // @[Decoupled.scala 51:35]
+  wire [31:0] _decodelist_T = io_from_ifu_bits_inst & 32'h707f; // @[Lookup.scala 31:38]
+  wire  _decodelist_T_1 = 32'h13 == _decodelist_T; // @[Lookup.scala 31:38]
+  wire [31:0] _decodelist_T_2 = io_from_ifu_bits_inst & 32'hfe00707f; // @[Lookup.scala 31:38]
+  wire  _decodelist_T_3 = 32'h1013 == _decodelist_T_2; // @[Lookup.scala 31:38]
+  wire  _decodelist_T_5 = 32'h2013 == _decodelist_T; // @[Lookup.scala 31:38]
+  wire  _decodelist_T_7 = 32'h3013 == _decodelist_T; // @[Lookup.scala 31:38]
+  wire  _decodelist_T_9 = 32'h4013 == _decodelist_T; // @[Lookup.scala 31:38]
+  wire  _decodelist_T_11 = 32'h5013 == _decodelist_T_2; // @[Lookup.scala 31:38]
+  wire  _decodelist_T_13 = 32'h6013 == _decodelist_T; // @[Lookup.scala 31:38]
+  wire  _decodelist_T_15 = 32'h7013 == _decodelist_T; // @[Lookup.scala 31:38]
+  wire  _decodelist_T_17 = 32'h40005013 == _decodelist_T_2; // @[Lookup.scala 31:38]
+  wire  _decodelist_T_19 = 32'h33 == _decodelist_T_2; // @[Lookup.scala 31:38]
+  wire  _decodelist_T_21 = 32'h1033 == _decodelist_T_2; // @[Lookup.scala 31:38]
+  wire  _decodelist_T_23 = 32'h2033 == _decodelist_T_2; // @[Lookup.scala 31:38]
+  wire  _decodelist_T_25 = 32'h3033 == _decodelist_T_2; // @[Lookup.scala 31:38]
+  wire  _decodelist_T_27 = 32'h4033 == _decodelist_T_2; // @[Lookup.scala 31:38]
+  wire  _decodelist_T_29 = 32'h5033 == _decodelist_T_2; // @[Lookup.scala 31:38]
+  wire  _decodelist_T_31 = 32'h6033 == _decodelist_T_2; // @[Lookup.scala 31:38]
+  wire  _decodelist_T_33 = 32'h7033 == _decodelist_T_2; // @[Lookup.scala 31:38]
+  wire  _decodelist_T_35 = 32'h40000033 == _decodelist_T_2; // @[Lookup.scala 31:38]
+  wire  _decodelist_T_37 = 32'h40005033 == _decodelist_T_2; // @[Lookup.scala 31:38]
+  wire [31:0] _decodelist_T_38 = io_from_ifu_bits_inst & 32'h7f; // @[Lookup.scala 31:38]
+  wire  _decodelist_T_39 = 32'h17 == _decodelist_T_38; // @[Lookup.scala 31:38]
+  wire  _decodelist_T_41 = 32'h37 == _decodelist_T_38; // @[Lookup.scala 31:38]
+  wire  _decodelist_T_43 = 32'h6f == _decodelist_T_38; // @[Lookup.scala 31:38]
+  wire  _decodelist_T_45 = 32'h67 == _decodelist_T; // @[Lookup.scala 31:38]
+  wire  _decodelist_T_47 = 32'h63 == _decodelist_T; // @[Lookup.scala 31:38]
+  wire  _decodelist_T_49 = 32'h1063 == _decodelist_T; // @[Lookup.scala 31:38]
+  wire  _decodelist_T_51 = 32'h4063 == _decodelist_T; // @[Lookup.scala 31:38]
+  wire  _decodelist_T_53 = 32'h5063 == _decodelist_T; // @[Lookup.scala 31:38]
+  wire  _decodelist_T_55 = 32'h6063 == _decodelist_T; // @[Lookup.scala 31:38]
+  wire  _decodelist_T_57 = 32'h7063 == _decodelist_T; // @[Lookup.scala 31:38]
+  wire  _decodelist_T_59 = 32'h23 == _decodelist_T; // @[Lookup.scala 31:38]
+  wire  _decodelist_T_61 = 32'h1023 == _decodelist_T; // @[Lookup.scala 31:38]
+  wire  _decodelist_T_63 = 32'h2023 == _decodelist_T; // @[Lookup.scala 31:38]
+  wire  _decodelist_T_65 = 32'h3 == _decodelist_T; // @[Lookup.scala 31:38]
+  wire  _decodelist_T_67 = 32'h1003 == _decodelist_T; // @[Lookup.scala 31:38]
+  wire  _decodelist_T_69 = 32'h2003 == _decodelist_T; // @[Lookup.scala 31:38]
+  wire  _decodelist_T_71 = 32'h4003 == _decodelist_T; // @[Lookup.scala 31:38]
+  wire  _decodelist_T_73 = 32'h5003 == _decodelist_T; // @[Lookup.scala 31:38]
+  wire  _decodelist_T_75 = 32'h1073 == _decodelist_T; // @[Lookup.scala 31:38]
+  wire  _decodelist_T_77 = 32'h2073 == _decodelist_T; // @[Lookup.scala 31:38]
+  wire  _decodelist_T_79 = 32'h73 == io_from_ifu_bits_inst; // @[Lookup.scala 31:38]
+  wire  _decodelist_T_81 = 32'h100073 == io_from_ifu_bits_inst; // @[Lookup.scala 31:38]
+  wire  _decodelist_T_83 = 32'h30200073 == io_from_ifu_bits_inst; // @[Lookup.scala 31:38]
+  wire [2:0] _decodelist_T_84 = _decodelist_T_83 ? 3'h5 : 3'h0; // @[Lookup.scala 34:39]
+  wire [2:0] _decodelist_T_85 = _decodelist_T_81 ? 3'h4 : _decodelist_T_84; // @[Lookup.scala 34:39]
+  wire [2:0] _decodelist_T_86 = _decodelist_T_79 ? 3'h4 : _decodelist_T_85; // @[Lookup.scala 34:39]
+  wire [2:0] _decodelist_T_87 = _decodelist_T_77 ? 3'h4 : _decodelist_T_86; // @[Lookup.scala 34:39]
+  wire [2:0] _decodelist_T_88 = _decodelist_T_75 ? 3'h4 : _decodelist_T_87; // @[Lookup.scala 34:39]
+  wire [2:0] _decodelist_T_89 = _decodelist_T_73 ? 3'h4 : _decodelist_T_88; // @[Lookup.scala 34:39]
+  wire [2:0] _decodelist_T_90 = _decodelist_T_71 ? 3'h4 : _decodelist_T_89; // @[Lookup.scala 34:39]
+  wire [2:0] _decodelist_T_91 = _decodelist_T_69 ? 3'h4 : _decodelist_T_90; // @[Lookup.scala 34:39]
+  wire [2:0] _decodelist_T_92 = _decodelist_T_67 ? 3'h4 : _decodelist_T_91; // @[Lookup.scala 34:39]
+  wire [2:0] _decodelist_T_93 = _decodelist_T_65 ? 3'h4 : _decodelist_T_92; // @[Lookup.scala 34:39]
+  wire [2:0] _decodelist_T_94 = _decodelist_T_63 ? 3'h2 : _decodelist_T_93; // @[Lookup.scala 34:39]
+  wire [2:0] _decodelist_T_95 = _decodelist_T_61 ? 3'h2 : _decodelist_T_94; // @[Lookup.scala 34:39]
+  wire [2:0] _decodelist_T_96 = _decodelist_T_59 ? 3'h2 : _decodelist_T_95; // @[Lookup.scala 34:39]
+  wire [2:0] _decodelist_T_97 = _decodelist_T_57 ? 3'h1 : _decodelist_T_96; // @[Lookup.scala 34:39]
+  wire [2:0] _decodelist_T_98 = _decodelist_T_55 ? 3'h1 : _decodelist_T_97; // @[Lookup.scala 34:39]
+  wire [2:0] _decodelist_T_99 = _decodelist_T_53 ? 3'h1 : _decodelist_T_98; // @[Lookup.scala 34:39]
+  wire [2:0] _decodelist_T_100 = _decodelist_T_51 ? 3'h1 : _decodelist_T_99; // @[Lookup.scala 34:39]
+  wire [2:0] _decodelist_T_101 = _decodelist_T_49 ? 3'h1 : _decodelist_T_100; // @[Lookup.scala 34:39]
+  wire [2:0] _decodelist_T_102 = _decodelist_T_47 ? 3'h1 : _decodelist_T_101; // @[Lookup.scala 34:39]
+  wire [2:0] _decodelist_T_103 = _decodelist_T_45 ? 3'h4 : _decodelist_T_102; // @[Lookup.scala 34:39]
+  wire [2:0] _decodelist_T_104 = _decodelist_T_43 ? 3'h7 : _decodelist_T_103; // @[Lookup.scala 34:39]
+  wire [2:0] _decodelist_T_105 = _decodelist_T_41 ? 3'h6 : _decodelist_T_104; // @[Lookup.scala 34:39]
+  wire [2:0] _decodelist_T_106 = _decodelist_T_39 ? 3'h6 : _decodelist_T_105; // @[Lookup.scala 34:39]
+  wire [2:0] _decodelist_T_107 = _decodelist_T_37 ? 3'h5 : _decodelist_T_106; // @[Lookup.scala 34:39]
+  wire [2:0] _decodelist_T_108 = _decodelist_T_35 ? 3'h5 : _decodelist_T_107; // @[Lookup.scala 34:39]
+  wire [2:0] _decodelist_T_109 = _decodelist_T_33 ? 3'h5 : _decodelist_T_108; // @[Lookup.scala 34:39]
+  wire [2:0] _decodelist_T_110 = _decodelist_T_31 ? 3'h5 : _decodelist_T_109; // @[Lookup.scala 34:39]
+  wire [2:0] _decodelist_T_111 = _decodelist_T_29 ? 3'h5 : _decodelist_T_110; // @[Lookup.scala 34:39]
+  wire [2:0] _decodelist_T_112 = _decodelist_T_27 ? 3'h5 : _decodelist_T_111; // @[Lookup.scala 34:39]
+  wire [2:0] _decodelist_T_113 = _decodelist_T_25 ? 3'h5 : _decodelist_T_112; // @[Lookup.scala 34:39]
+  wire [2:0] _decodelist_T_114 = _decodelist_T_23 ? 3'h5 : _decodelist_T_113; // @[Lookup.scala 34:39]
+  wire [2:0] _decodelist_T_115 = _decodelist_T_21 ? 3'h5 : _decodelist_T_114; // @[Lookup.scala 34:39]
+  wire [2:0] _decodelist_T_116 = _decodelist_T_19 ? 3'h5 : _decodelist_T_115; // @[Lookup.scala 34:39]
+  wire [2:0] _decodelist_T_117 = _decodelist_T_17 ? 3'h4 : _decodelist_T_116; // @[Lookup.scala 34:39]
+  wire [2:0] _decodelist_T_118 = _decodelist_T_15 ? 3'h4 : _decodelist_T_117; // @[Lookup.scala 34:39]
+  wire [2:0] _decodelist_T_119 = _decodelist_T_13 ? 3'h4 : _decodelist_T_118; // @[Lookup.scala 34:39]
+  wire [2:0] _decodelist_T_120 = _decodelist_T_11 ? 3'h4 : _decodelist_T_119; // @[Lookup.scala 34:39]
+  wire [2:0] _decodelist_T_121 = _decodelist_T_9 ? 3'h4 : _decodelist_T_120; // @[Lookup.scala 34:39]
+  wire [2:0] _decodelist_T_122 = _decodelist_T_7 ? 3'h4 : _decodelist_T_121; // @[Lookup.scala 34:39]
+  wire [2:0] _decodelist_T_123 = _decodelist_T_5 ? 3'h4 : _decodelist_T_122; // @[Lookup.scala 34:39]
+  wire [2:0] _decodelist_T_124 = _decodelist_T_3 ? 3'h4 : _decodelist_T_123; // @[Lookup.scala 34:39]
+  wire [2:0] decodelist_0 = _decodelist_T_1 ? 3'h4 : _decodelist_T_124; // @[Lookup.scala 34:39]
+  wire [1:0] _decodelist_T_125 = _decodelist_T_83 ? 2'h3 : 2'h0; // @[Lookup.scala 34:39]
+  wire [1:0] _decodelist_T_126 = _decodelist_T_81 ? 2'h3 : _decodelist_T_125; // @[Lookup.scala 34:39]
+  wire [1:0] _decodelist_T_127 = _decodelist_T_79 ? 2'h3 : _decodelist_T_126; // @[Lookup.scala 34:39]
+  wire [1:0] _decodelist_T_128 = _decodelist_T_77 ? 2'h3 : _decodelist_T_127; // @[Lookup.scala 34:39]
+  wire [1:0] _decodelist_T_129 = _decodelist_T_75 ? 2'h3 : _decodelist_T_128; // @[Lookup.scala 34:39]
+  wire [1:0] _decodelist_T_130 = _decodelist_T_73 ? 2'h1 : _decodelist_T_129; // @[Lookup.scala 34:39]
+  wire [1:0] _decodelist_T_131 = _decodelist_T_71 ? 2'h1 : _decodelist_T_130; // @[Lookup.scala 34:39]
+  wire [1:0] _decodelist_T_132 = _decodelist_T_69 ? 2'h1 : _decodelist_T_131; // @[Lookup.scala 34:39]
+  wire [1:0] _decodelist_T_133 = _decodelist_T_67 ? 2'h1 : _decodelist_T_132; // @[Lookup.scala 34:39]
+  wire [1:0] _decodelist_T_134 = _decodelist_T_65 ? 2'h1 : _decodelist_T_133; // @[Lookup.scala 34:39]
+  wire [1:0] _decodelist_T_135 = _decodelist_T_63 ? 2'h1 : _decodelist_T_134; // @[Lookup.scala 34:39]
+  wire [1:0] _decodelist_T_136 = _decodelist_T_61 ? 2'h1 : _decodelist_T_135; // @[Lookup.scala 34:39]
+  wire [1:0] _decodelist_T_137 = _decodelist_T_59 ? 2'h1 : _decodelist_T_136; // @[Lookup.scala 34:39]
+  wire [1:0] _decodelist_T_138 = _decodelist_T_57 ? 2'h0 : _decodelist_T_137; // @[Lookup.scala 34:39]
+  wire [1:0] _decodelist_T_139 = _decodelist_T_55 ? 2'h0 : _decodelist_T_138; // @[Lookup.scala 34:39]
+  wire [1:0] _decodelist_T_140 = _decodelist_T_53 ? 2'h0 : _decodelist_T_139; // @[Lookup.scala 34:39]
+  wire [1:0] _decodelist_T_141 = _decodelist_T_51 ? 2'h0 : _decodelist_T_140; // @[Lookup.scala 34:39]
+  wire [1:0] _decodelist_T_142 = _decodelist_T_49 ? 2'h0 : _decodelist_T_141; // @[Lookup.scala 34:39]
+  wire [1:0] _decodelist_T_143 = _decodelist_T_47 ? 2'h0 : _decodelist_T_142; // @[Lookup.scala 34:39]
+  wire [1:0] _decodelist_T_144 = _decodelist_T_45 ? 2'h0 : _decodelist_T_143; // @[Lookup.scala 34:39]
+  wire [1:0] _decodelist_T_145 = _decodelist_T_43 ? 2'h0 : _decodelist_T_144; // @[Lookup.scala 34:39]
+  wire [1:0] _decodelist_T_146 = _decodelist_T_41 ? 2'h0 : _decodelist_T_145; // @[Lookup.scala 34:39]
+  wire [1:0] _decodelist_T_147 = _decodelist_T_39 ? 2'h0 : _decodelist_T_146; // @[Lookup.scala 34:39]
+  wire [1:0] _decodelist_T_148 = _decodelist_T_37 ? 2'h0 : _decodelist_T_147; // @[Lookup.scala 34:39]
+  wire [1:0] _decodelist_T_149 = _decodelist_T_35 ? 2'h0 : _decodelist_T_148; // @[Lookup.scala 34:39]
+  wire [1:0] _decodelist_T_150 = _decodelist_T_33 ? 2'h0 : _decodelist_T_149; // @[Lookup.scala 34:39]
+  wire [1:0] _decodelist_T_151 = _decodelist_T_31 ? 2'h0 : _decodelist_T_150; // @[Lookup.scala 34:39]
+  wire [1:0] _decodelist_T_152 = _decodelist_T_29 ? 2'h0 : _decodelist_T_151; // @[Lookup.scala 34:39]
+  wire [1:0] _decodelist_T_153 = _decodelist_T_27 ? 2'h0 : _decodelist_T_152; // @[Lookup.scala 34:39]
+  wire [1:0] _decodelist_T_154 = _decodelist_T_25 ? 2'h0 : _decodelist_T_153; // @[Lookup.scala 34:39]
+  wire [1:0] _decodelist_T_155 = _decodelist_T_23 ? 2'h0 : _decodelist_T_154; // @[Lookup.scala 34:39]
+  wire [1:0] _decodelist_T_156 = _decodelist_T_21 ? 2'h0 : _decodelist_T_155; // @[Lookup.scala 34:39]
+  wire [1:0] _decodelist_T_157 = _decodelist_T_19 ? 2'h0 : _decodelist_T_156; // @[Lookup.scala 34:39]
+  wire [1:0] _decodelist_T_158 = _decodelist_T_17 ? 2'h0 : _decodelist_T_157; // @[Lookup.scala 34:39]
+  wire [1:0] _decodelist_T_159 = _decodelist_T_15 ? 2'h0 : _decodelist_T_158; // @[Lookup.scala 34:39]
+  wire [1:0] _decodelist_T_160 = _decodelist_T_13 ? 2'h0 : _decodelist_T_159; // @[Lookup.scala 34:39]
+  wire [1:0] _decodelist_T_161 = _decodelist_T_11 ? 2'h0 : _decodelist_T_160; // @[Lookup.scala 34:39]
+  wire [1:0] _decodelist_T_162 = _decodelist_T_9 ? 2'h0 : _decodelist_T_161; // @[Lookup.scala 34:39]
+  wire [1:0] _decodelist_T_163 = _decodelist_T_7 ? 2'h0 : _decodelist_T_162; // @[Lookup.scala 34:39]
+  wire [1:0] _decodelist_T_164 = _decodelist_T_5 ? 2'h0 : _decodelist_T_163; // @[Lookup.scala 34:39]
+  wire [1:0] _decodelist_T_165 = _decodelist_T_3 ? 2'h0 : _decodelist_T_164; // @[Lookup.scala 34:39]
+  wire [1:0] decodelist_1 = _decodelist_T_1 ? 2'h0 : _decodelist_T_165; // @[Lookup.scala 34:39]
+  wire  _decodelist_T_166 = _decodelist_T_83 ? 1'h0 : 1'h1; // @[Lookup.scala 34:39]
+  wire  _decodelist_T_167 = _decodelist_T_81 ? 1'h0 : _decodelist_T_166; // @[Lookup.scala 34:39]
+  wire  _decodelist_T_168 = _decodelist_T_79 ? 1'h0 : _decodelist_T_167; // @[Lookup.scala 34:39]
+  wire [1:0] _decodelist_T_169 = _decodelist_T_77 ? 2'h2 : {{1'd0}, _decodelist_T_168}; // @[Lookup.scala 34:39]
+  wire [1:0] _decodelist_T_170 = _decodelist_T_75 ? 2'h1 : _decodelist_T_169; // @[Lookup.scala 34:39]
+  wire [2:0] _decodelist_T_171 = _decodelist_T_73 ? 3'h5 : {{1'd0}, _decodelist_T_170}; // @[Lookup.scala 34:39]
+  wire [2:0] _decodelist_T_172 = _decodelist_T_71 ? 3'h4 : _decodelist_T_171; // @[Lookup.scala 34:39]
+  wire [2:0] _decodelist_T_173 = _decodelist_T_69 ? 3'h2 : _decodelist_T_172; // @[Lookup.scala 34:39]
+  wire [2:0] _decodelist_T_174 = _decodelist_T_67 ? 3'h1 : _decodelist_T_173; // @[Lookup.scala 34:39]
+  wire [2:0] _decodelist_T_175 = _decodelist_T_65 ? 3'h0 : _decodelist_T_174; // @[Lookup.scala 34:39]
+  wire [3:0] _decodelist_T_176 = _decodelist_T_63 ? 4'ha : {{1'd0}, _decodelist_T_175}; // @[Lookup.scala 34:39]
+  wire [3:0] _decodelist_T_177 = _decodelist_T_61 ? 4'h9 : _decodelist_T_176; // @[Lookup.scala 34:39]
+  wire [3:0] _decodelist_T_178 = _decodelist_T_59 ? 4'h8 : _decodelist_T_177; // @[Lookup.scala 34:39]
+  wire [4:0] _decodelist_T_179 = _decodelist_T_57 ? 5'h17 : {{1'd0}, _decodelist_T_178}; // @[Lookup.scala 34:39]
+  wire [4:0] _decodelist_T_180 = _decodelist_T_55 ? 5'h16 : _decodelist_T_179; // @[Lookup.scala 34:39]
+  wire [4:0] _decodelist_T_181 = _decodelist_T_53 ? 5'h15 : _decodelist_T_180; // @[Lookup.scala 34:39]
+  wire [4:0] _decodelist_T_182 = _decodelist_T_51 ? 5'h14 : _decodelist_T_181; // @[Lookup.scala 34:39]
+  wire [4:0] _decodelist_T_183 = _decodelist_T_49 ? 5'h11 : _decodelist_T_182; // @[Lookup.scala 34:39]
+  wire [4:0] _decodelist_T_184 = _decodelist_T_47 ? 5'h10 : _decodelist_T_183; // @[Lookup.scala 34:39]
+  wire [6:0] _decodelist_T_185 = _decodelist_T_45 ? 7'h40 : {{2'd0}, _decodelist_T_184}; // @[Lookup.scala 34:39]
+  wire [6:0] _decodelist_T_186 = _decodelist_T_43 ? 7'h40 : _decodelist_T_185; // @[Lookup.scala 34:39]
+  wire [6:0] _decodelist_T_187 = _decodelist_T_41 ? 7'h40 : _decodelist_T_186; // @[Lookup.scala 34:39]
+  wire [6:0] _decodelist_T_188 = _decodelist_T_39 ? 7'h40 : _decodelist_T_187; // @[Lookup.scala 34:39]
+  wire [6:0] _decodelist_T_189 = _decodelist_T_37 ? 7'hd : _decodelist_T_188; // @[Lookup.scala 34:39]
+  wire [6:0] _decodelist_T_190 = _decodelist_T_35 ? 7'h8 : _decodelist_T_189; // @[Lookup.scala 34:39]
+  wire [6:0] _decodelist_T_191 = _decodelist_T_33 ? 7'h7 : _decodelist_T_190; // @[Lookup.scala 34:39]
+  wire [6:0] _decodelist_T_192 = _decodelist_T_31 ? 7'h6 : _decodelist_T_191; // @[Lookup.scala 34:39]
+  wire [6:0] _decodelist_T_193 = _decodelist_T_29 ? 7'h5 : _decodelist_T_192; // @[Lookup.scala 34:39]
+  wire [6:0] _decodelist_T_194 = _decodelist_T_27 ? 7'h4 : _decodelist_T_193; // @[Lookup.scala 34:39]
+  wire [6:0] _decodelist_T_195 = _decodelist_T_25 ? 7'h3 : _decodelist_T_194; // @[Lookup.scala 34:39]
+  wire [6:0] _decodelist_T_196 = _decodelist_T_23 ? 7'h2 : _decodelist_T_195; // @[Lookup.scala 34:39]
+  wire [6:0] _decodelist_T_197 = _decodelist_T_21 ? 7'h1 : _decodelist_T_196; // @[Lookup.scala 34:39]
+  wire [6:0] _decodelist_T_198 = _decodelist_T_19 ? 7'h40 : _decodelist_T_197; // @[Lookup.scala 34:39]
+  wire [6:0] _decodelist_T_199 = _decodelist_T_17 ? 7'hd : _decodelist_T_198; // @[Lookup.scala 34:39]
+  wire [6:0] _decodelist_T_200 = _decodelist_T_15 ? 7'h7 : _decodelist_T_199; // @[Lookup.scala 34:39]
+  wire [6:0] _decodelist_T_201 = _decodelist_T_13 ? 7'h6 : _decodelist_T_200; // @[Lookup.scala 34:39]
+  wire [6:0] _decodelist_T_202 = _decodelist_T_11 ? 7'h5 : _decodelist_T_201; // @[Lookup.scala 34:39]
+  wire [6:0] _decodelist_T_203 = _decodelist_T_9 ? 7'h4 : _decodelist_T_202; // @[Lookup.scala 34:39]
+  wire [6:0] _decodelist_T_204 = _decodelist_T_7 ? 7'h3 : _decodelist_T_203; // @[Lookup.scala 34:39]
+  wire [6:0] _decodelist_T_205 = _decodelist_T_5 ? 7'h2 : _decodelist_T_204; // @[Lookup.scala 34:39]
+  wire [6:0] _decodelist_T_206 = _decodelist_T_3 ? 7'h1 : _decodelist_T_205; // @[Lookup.scala 34:39]
+  wire [2:0] _decodelist_T_207 = _decodelist_T_83 ? 3'h0 : 3'h4; // @[Lookup.scala 34:39]
+  wire [2:0] _decodelist_T_208 = _decodelist_T_81 ? 3'h0 : _decodelist_T_207; // @[Lookup.scala 34:39]
+  wire [2:0] _decodelist_T_209 = _decodelist_T_79 ? 3'h0 : _decodelist_T_208; // @[Lookup.scala 34:39]
+  wire [2:0] _decodelist_T_210 = _decodelist_T_77 ? 3'h0 : _decodelist_T_209; // @[Lookup.scala 34:39]
+  wire [2:0] _decodelist_T_211 = _decodelist_T_75 ? 3'h0 : _decodelist_T_210; // @[Lookup.scala 34:39]
+  wire [2:0] _decodelist_T_212 = _decodelist_T_73 ? 3'h0 : _decodelist_T_211; // @[Lookup.scala 34:39]
+  wire [2:0] _decodelist_T_213 = _decodelist_T_71 ? 3'h0 : _decodelist_T_212; // @[Lookup.scala 34:39]
+  wire [2:0] _decodelist_T_214 = _decodelist_T_69 ? 3'h0 : _decodelist_T_213; // @[Lookup.scala 34:39]
+  wire [2:0] _decodelist_T_215 = _decodelist_T_67 ? 3'h0 : _decodelist_T_214; // @[Lookup.scala 34:39]
+  wire [2:0] _decodelist_T_216 = _decodelist_T_65 ? 3'h0 : _decodelist_T_215; // @[Lookup.scala 34:39]
+  wire [2:0] _decodelist_T_217 = _decodelist_T_63 ? 3'h0 : _decodelist_T_216; // @[Lookup.scala 34:39]
+  wire [2:0] _decodelist_T_218 = _decodelist_T_61 ? 3'h0 : _decodelist_T_217; // @[Lookup.scala 34:39]
+  wire [2:0] _decodelist_T_219 = _decodelist_T_59 ? 3'h0 : _decodelist_T_218; // @[Lookup.scala 34:39]
+  wire [2:0] _decodelist_T_220 = _decodelist_T_57 ? 3'h0 : _decodelist_T_219; // @[Lookup.scala 34:39]
+  wire [2:0] _decodelist_T_221 = _decodelist_T_55 ? 3'h0 : _decodelist_T_220; // @[Lookup.scala 34:39]
+  wire [2:0] _decodelist_T_222 = _decodelist_T_53 ? 3'h0 : _decodelist_T_221; // @[Lookup.scala 34:39]
+  wire [2:0] _decodelist_T_223 = _decodelist_T_51 ? 3'h0 : _decodelist_T_222; // @[Lookup.scala 34:39]
+  wire [2:0] _decodelist_T_224 = _decodelist_T_49 ? 3'h0 : _decodelist_T_223; // @[Lookup.scala 34:39]
+  wire [2:0] _decodelist_T_225 = _decodelist_T_47 ? 3'h0 : _decodelist_T_224; // @[Lookup.scala 34:39]
+  wire [2:0] _decodelist_T_226 = _decodelist_T_45 ? 3'h2 : _decodelist_T_225; // @[Lookup.scala 34:39]
+  wire [2:0] _decodelist_T_227 = _decodelist_T_43 ? 3'h2 : _decodelist_T_226; // @[Lookup.scala 34:39]
+  wire [2:0] _decodelist_T_228 = _decodelist_T_41 ? 3'h4 : _decodelist_T_227; // @[Lookup.scala 34:39]
+  wire [2:0] _decodelist_T_229 = _decodelist_T_39 ? 3'h2 : _decodelist_T_228; // @[Lookup.scala 34:39]
+  wire [2:0] _decodelist_T_230 = _decodelist_T_37 ? 3'h0 : _decodelist_T_229; // @[Lookup.scala 34:39]
+  wire [2:0] _decodelist_T_231 = _decodelist_T_35 ? 3'h0 : _decodelist_T_230; // @[Lookup.scala 34:39]
+  wire [2:0] _decodelist_T_232 = _decodelist_T_33 ? 3'h0 : _decodelist_T_231; // @[Lookup.scala 34:39]
+  wire [2:0] _decodelist_T_233 = _decodelist_T_31 ? 3'h0 : _decodelist_T_232; // @[Lookup.scala 34:39]
+  wire [2:0] _decodelist_T_234 = _decodelist_T_29 ? 3'h0 : _decodelist_T_233; // @[Lookup.scala 34:39]
+  wire [2:0] _decodelist_T_235 = _decodelist_T_27 ? 3'h0 : _decodelist_T_234; // @[Lookup.scala 34:39]
+  wire [2:0] _decodelist_T_236 = _decodelist_T_25 ? 3'h0 : _decodelist_T_235; // @[Lookup.scala 34:39]
+  wire [2:0] _decodelist_T_237 = _decodelist_T_23 ? 3'h0 : _decodelist_T_236; // @[Lookup.scala 34:39]
+  wire [2:0] _decodelist_T_238 = _decodelist_T_21 ? 3'h0 : _decodelist_T_237; // @[Lookup.scala 34:39]
+  wire [2:0] _decodelist_T_239 = _decodelist_T_19 ? 3'h0 : _decodelist_T_238; // @[Lookup.scala 34:39]
+  wire [2:0] _decodelist_T_240 = _decodelist_T_17 ? 3'h0 : _decodelist_T_239; // @[Lookup.scala 34:39]
+  wire [2:0] _decodelist_T_241 = _decodelist_T_15 ? 3'h0 : _decodelist_T_240; // @[Lookup.scala 34:39]
+  wire [2:0] _decodelist_T_242 = _decodelist_T_13 ? 3'h0 : _decodelist_T_241; // @[Lookup.scala 34:39]
+  wire [2:0] _decodelist_T_243 = _decodelist_T_11 ? 3'h0 : _decodelist_T_242; // @[Lookup.scala 34:39]
+  wire [2:0] _decodelist_T_244 = _decodelist_T_9 ? 3'h0 : _decodelist_T_243; // @[Lookup.scala 34:39]
+  wire [2:0] _decodelist_T_245 = _decodelist_T_7 ? 3'h0 : _decodelist_T_244; // @[Lookup.scala 34:39]
+  wire [2:0] _decodelist_T_246 = _decodelist_T_5 ? 3'h0 : _decodelist_T_245; // @[Lookup.scala 34:39]
+  wire [2:0] _decodelist_T_247 = _decodelist_T_3 ? 3'h0 : _decodelist_T_246; // @[Lookup.scala 34:39]
+  wire [2:0] _decodelist_T_248 = _decodelist_T_83 ? 3'h1 : 3'h4; // @[Lookup.scala 34:39]
+  wire [2:0] _decodelist_T_249 = _decodelist_T_81 ? 3'h3 : _decodelist_T_248; // @[Lookup.scala 34:39]
+  wire [2:0] _decodelist_T_250 = _decodelist_T_79 ? 3'h3 : _decodelist_T_249; // @[Lookup.scala 34:39]
+  wire [2:0] _decodelist_T_251 = _decodelist_T_77 ? 3'h3 : _decodelist_T_250; // @[Lookup.scala 34:39]
+  wire [2:0] _decodelist_T_252 = _decodelist_T_75 ? 3'h3 : _decodelist_T_251; // @[Lookup.scala 34:39]
+  wire [2:0] _decodelist_T_253 = _decodelist_T_73 ? 3'h3 : _decodelist_T_252; // @[Lookup.scala 34:39]
+  wire [2:0] _decodelist_T_254 = _decodelist_T_71 ? 3'h3 : _decodelist_T_253; // @[Lookup.scala 34:39]
+  wire [2:0] _decodelist_T_255 = _decodelist_T_69 ? 3'h3 : _decodelist_T_254; // @[Lookup.scala 34:39]
+  wire [2:0] _decodelist_T_256 = _decodelist_T_67 ? 3'h3 : _decodelist_T_255; // @[Lookup.scala 34:39]
+  wire [2:0] _decodelist_T_257 = _decodelist_T_65 ? 3'h3 : _decodelist_T_256; // @[Lookup.scala 34:39]
+  wire [2:0] _decodelist_T_258 = _decodelist_T_63 ? 3'h3 : _decodelist_T_257; // @[Lookup.scala 34:39]
+  wire [2:0] _decodelist_T_259 = _decodelist_T_61 ? 3'h3 : _decodelist_T_258; // @[Lookup.scala 34:39]
+  wire [2:0] _decodelist_T_260 = _decodelist_T_59 ? 3'h3 : _decodelist_T_259; // @[Lookup.scala 34:39]
+  wire [2:0] _decodelist_T_261 = _decodelist_T_57 ? 3'h1 : _decodelist_T_260; // @[Lookup.scala 34:39]
+  wire [2:0] _decodelist_T_262 = _decodelist_T_55 ? 3'h1 : _decodelist_T_261; // @[Lookup.scala 34:39]
+  wire [2:0] _decodelist_T_263 = _decodelist_T_53 ? 3'h1 : _decodelist_T_262; // @[Lookup.scala 34:39]
+  wire [2:0] _decodelist_T_264 = _decodelist_T_51 ? 3'h1 : _decodelist_T_263; // @[Lookup.scala 34:39]
+  wire [2:0] _decodelist_T_265 = _decodelist_T_49 ? 3'h1 : _decodelist_T_264; // @[Lookup.scala 34:39]
+  wire [2:0] _decodelist_T_266 = _decodelist_T_47 ? 3'h1 : _decodelist_T_265; // @[Lookup.scala 34:39]
+  wire [2:0] _decodelist_T_267 = _decodelist_T_45 ? 3'h5 : _decodelist_T_266; // @[Lookup.scala 34:39]
+  wire [2:0] _decodelist_T_268 = _decodelist_T_43 ? 3'h5 : _decodelist_T_267; // @[Lookup.scala 34:39]
+  wire [2:0] _decodelist_T_269 = _decodelist_T_41 ? 3'h3 : _decodelist_T_268; // @[Lookup.scala 34:39]
+  wire [2:0] _decodelist_T_270 = _decodelist_T_39 ? 3'h3 : _decodelist_T_269; // @[Lookup.scala 34:39]
+  wire [2:0] _decodelist_T_271 = _decodelist_T_37 ? 3'h1 : _decodelist_T_270; // @[Lookup.scala 34:39]
+  wire [2:0] _decodelist_T_272 = _decodelist_T_35 ? 3'h1 : _decodelist_T_271; // @[Lookup.scala 34:39]
+  wire [2:0] _decodelist_T_273 = _decodelist_T_33 ? 3'h1 : _decodelist_T_272; // @[Lookup.scala 34:39]
+  wire [2:0] _decodelist_T_274 = _decodelist_T_31 ? 3'h1 : _decodelist_T_273; // @[Lookup.scala 34:39]
+  wire [2:0] _decodelist_T_275 = _decodelist_T_29 ? 3'h1 : _decodelist_T_274; // @[Lookup.scala 34:39]
+  wire [2:0] _decodelist_T_276 = _decodelist_T_27 ? 3'h1 : _decodelist_T_275; // @[Lookup.scala 34:39]
+  wire [2:0] _decodelist_T_277 = _decodelist_T_25 ? 3'h1 : _decodelist_T_276; // @[Lookup.scala 34:39]
+  wire [2:0] _decodelist_T_278 = _decodelist_T_23 ? 3'h1 : _decodelist_T_277; // @[Lookup.scala 34:39]
+  wire [2:0] _decodelist_T_279 = _decodelist_T_21 ? 3'h1 : _decodelist_T_278; // @[Lookup.scala 34:39]
+  wire [2:0] _decodelist_T_280 = _decodelist_T_19 ? 3'h1 : _decodelist_T_279; // @[Lookup.scala 34:39]
+  wire [2:0] _decodelist_T_281 = _decodelist_T_17 ? 3'h3 : _decodelist_T_280; // @[Lookup.scala 34:39]
+  wire [2:0] _decodelist_T_282 = _decodelist_T_15 ? 3'h3 : _decodelist_T_281; // @[Lookup.scala 34:39]
+  wire [2:0] _decodelist_T_283 = _decodelist_T_13 ? 3'h3 : _decodelist_T_282; // @[Lookup.scala 34:39]
+  wire [2:0] _decodelist_T_284 = _decodelist_T_11 ? 3'h3 : _decodelist_T_283; // @[Lookup.scala 34:39]
+  wire [2:0] _decodelist_T_285 = _decodelist_T_9 ? 3'h3 : _decodelist_T_284; // @[Lookup.scala 34:39]
+  wire [2:0] _decodelist_T_286 = _decodelist_T_7 ? 3'h3 : _decodelist_T_285; // @[Lookup.scala 34:39]
+  wire [2:0] _decodelist_T_287 = _decodelist_T_5 ? 3'h3 : _decodelist_T_286; // @[Lookup.scala 34:39]
+  wire [2:0] _decodelist_T_288 = _decodelist_T_3 ? 3'h3 : _decodelist_T_287; // @[Lookup.scala 34:39]
+  wire  _ResSrc_T_1 = io_from_ifu_bits_inst[6:0] == 7'h3; // @[dut.scala 269:20]
+  wire  _ResSrc_T_3 = io_from_ifu_bits_inst[6:0] == 7'h73; // @[dut.scala 270:20]
+  wire [1:0] _ResSrc_T_4 = _ResSrc_T_3 ? 2'h2 : 2'h0; // @[Mux.scala 101:16]
+  wire [19:0] _ImmExt_T_2 = io_from_ifu_bits_inst[31] ? 20'hfffff : 20'h0; // @[Bitwise.scala 77:12]
+  wire [31:0] _ImmExt_T_4 = {_ImmExt_T_2,io_from_ifu_bits_inst[31:20]}; // @[Cat.scala 33:92]
+  wire [11:0] _ImmExt_T_7 = io_from_ifu_bits_inst[31] ? 12'hfff : 12'h0; // @[Bitwise.scala 77:12]
+  wire [31:0] _ImmExt_T_9 = {_ImmExt_T_7,io_from_ifu_bits_inst[31:12]}; // @[Cat.scala 33:92]
+  wire [43:0] _ImmExt_T_10 = {_ImmExt_T_9, 12'h0}; // @[dut.scala 277:65]
+  wire [10:0] _ImmExt_T_14 = io_from_ifu_bits_inst[31] ? 11'h7ff : 11'h0; // @[Bitwise.scala 77:12]
+  wire [31:0] _ImmExt_T_19 = {_ImmExt_T_14,io_from_ifu_bits_inst[31],io_from_ifu_bits_inst[19:12],io_from_ifu_bits_inst[
+    20],io_from_ifu_bits_inst[30:21],1'h0}; // @[Cat.scala 33:92]
+  wire [31:0] _ImmExt_T_25 = {_ImmExt_T_2,io_from_ifu_bits_inst[31:25],io_from_ifu_bits_inst[11:7]}; // @[Cat.scala 33:92]
+  wire [12:0] _ImmExt_T_30 = {io_from_ifu_bits_inst[31],io_from_ifu_bits_inst[7],io_from_ifu_bits_inst[30:25],
+    io_from_ifu_bits_inst[11:8],1'h0}; // @[Cat.scala 33:92]
+  wire  ImmExt_signBit = _ImmExt_T_30[12]; // @[driver.scala 119:20]
+  wire [18:0] _ImmExt_T_32 = ImmExt_signBit ? 19'h7ffff : 19'h0; // @[Bitwise.scala 77:12]
+  wire [31:0] _ImmExt_T_33 = {_ImmExt_T_32,io_from_ifu_bits_inst[31],io_from_ifu_bits_inst[7],io_from_ifu_bits_inst[30:
+    25],io_from_ifu_bits_inst[11:8],1'h0}; // @[Cat.scala 33:92]
+  wire [31:0] _ImmExt_T_35 = 3'h4 == decodelist_0 ? _ImmExt_T_4 : 32'h0; // @[Mux.scala 81:58]
+  wire [31:0] _ImmExt_T_37 = 3'h6 == decodelist_0 ? _ImmExt_T_10[31:0] : _ImmExt_T_35; // @[Mux.scala 81:58]
+  wire [31:0] _ImmExt_T_39 = 3'h7 == decodelist_0 ? _ImmExt_T_19 : _ImmExt_T_37; // @[Mux.scala 81:58]
+  wire [31:0] _ImmExt_T_41 = 3'h2 == decodelist_0 ? _ImmExt_T_25 : _ImmExt_T_39; // @[Mux.scala 81:58]
+  assign io_from_ifu_ready = ~io_from_ifu_valid | _io_from_ifu_ready_T_1; // @[driver.scala 143:56]
+  assign io_to_isu_valid = io_from_ifu_valid; // @[driver.scala 144:40]
+  assign io_to_isu_bits_cf_inst = io_from_ifu_bits_inst; // @[dut.scala 250:8]
+  assign io_to_isu_bits_cf_pc = io_from_ifu_bits_pc; // @[dut.scala 250:8]
+  assign io_to_isu_bits_cf_next_pc = io_from_ifu_bits_next_pc; // @[dut.scala 250:8]
+  assign io_to_isu_bits_cf_isBranch = io_from_ifu_bits_isBranch; // @[dut.scala 250:8]
+  assign io_to_isu_bits_ctrl_MemWrite = decodelist_0 == 3'h2; // @[dut.scala 265:19]
+  assign io_to_isu_bits_ctrl_ResSrc = _ResSrc_T_1 ? 2'h1 : _ResSrc_T_4; // @[Mux.scala 101:16]
+  assign io_to_isu_bits_ctrl_fuSrc1Type = _decodelist_T_1 ? 3'h0 : _decodelist_T_247; // @[Lookup.scala 34:39]
+  assign io_to_isu_bits_ctrl_fuSrc2Type = _decodelist_T_1 ? 3'h3 : _decodelist_T_288; // @[Lookup.scala 34:39]
+  assign io_to_isu_bits_ctrl_fuType = {{1'd0}, decodelist_1}; // @[dut.scala 259:17]
+  assign io_to_isu_bits_ctrl_fuOpType = _decodelist_T_1 ? 7'h40 : _decodelist_T_206; // @[Lookup.scala 34:39]
+  assign io_to_isu_bits_ctrl_rs1 = io_from_ifu_bits_inst[19:15]; // @[dut.scala 245:21]
+  assign io_to_isu_bits_ctrl_rs2 = io_from_ifu_bits_inst[24:20]; // @[dut.scala 246:21]
+  assign io_to_isu_bits_ctrl_rfWen = decodelist_0[2]; // @[driver.scala 163:54]
+  assign io_to_isu_bits_ctrl_rd = io_from_ifu_bits_inst[11:7]; // @[dut.scala 244:20]
+  assign io_to_isu_bits_data_fuSrc1 = 32'h0;
+  assign io_to_isu_bits_data_fuSrc2 = 32'h0;
+  assign io_to_isu_bits_data_imm = 3'h1 == decodelist_0 ? _ImmExt_T_33 : _ImmExt_T_41; // @[Mux.scala 81:58]
+  assign io_to_isu_bits_data_Alu0Res_ready = 1'h0;
+  assign io_to_isu_bits_data_Alu0Res_valid = 1'h0;
+  assign io_to_isu_bits_data_Alu0Res_bits = 32'h0;
+  assign io_to_isu_bits_data_data_from_mem = 32'h0;
+  assign io_to_isu_bits_data_csrRdata = 32'h0;
+  assign io_to_isu_bits_data_rfSrc1 = 32'h0;
+  assign io_to_isu_bits_data_rfSrc2 = 32'h0;
 endmodule

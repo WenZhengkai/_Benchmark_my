@@ -1,59 +1,50 @@
 import chisel3._
 import chisel3.util._
 
-/** Serial to Parallel converter that reconstructs serialized data
-  * 
-  * @param data The Chisel data type to be reconstructed
-  * @param width The width of the serialized data channel in bits
-  */
-class SerialToParallel[D <: Data](data: D, width: Int) extends Module {
+class dut[D <: Data](gen: D, width: Int) extends Module {
+  require(width > 0, "Serialized channel width must be > 0")
+
   val io = IO(new Bundle {
-    // Input serialized data stream
-    val dataIn = Flipped(Decoupled(UInt(width.W)))
-    // Output deserialized data
-    val dataOut = Decoupled(data.cloneType)
+    val dataIn  = Flipped(Decoupled(UInt(width.W)))
+    val dataOut = Decoupled(gen.cloneType)
   })
 
-  // Calculate the total number of bits in the data type
-  val dataWidth = data.getWidth
-  
-  // Calculate the number of cycles needed to deserialize the data
-  val cycles = (dataWidth + width - 1) / width  // Ceiling division
-  
-  // Register to track the current cycle in the deserialization process
-  val cycleCount = RegInit(0.U(log2Ceil(cycles).W))
-  
-  // Register to store the accumulated serialized data segments
-  val dataSelect = RegInit(0.U(dataWidth.W))
-  
-  // Register to track if deserialized data is valid and ready to be output
-  val dataValid = RegInit(false.B)
+  private val totalBits = gen.getWidth
+  require(totalBits > 0, "Data type width must be known and > 0")
 
-  // Default values
+  private val cycles = (totalBits + width - 1) / width
+  private val cntW   = math.max(1, log2Ceil(cycles))
+
+  val cycleCount = RegInit(0.U(cntW.W))
+  val dataSelect = RegInit(VecInit(Seq.fill(cycles)(0.U(width.W))))
+  val dataValid  = RegInit(false.B)
+
+  // Allow new input when no completed word is pending, or when output is consumed this cycle.
+  io.dataIn.ready  := !dataValid || io.dataOut.ready
   io.dataOut.valid := dataValid
-  io.dataOut.bits := dataSelect.asTypeOf(data.cloneType)
-  io.dataIn.ready := !dataValid || io.dataOut.ready
 
-  // Process incoming serialized data
-  when(io.dataIn.fire) {
-    // Store incoming data segment at the appropriate position based on current cycle
-    dataSelect := Cat(
-      dataSelect(dataWidth - 1, (cycleCount + 1.U) * width.U),
-      io.dataIn.bits,
-      dataSelect((cycleCount * width.U) - 1.U, 0.U)
-    )
+  // Pack received chunks and cast back to target type.
+  val packed = dataSelect.asUInt
+  io.dataOut.bits := packed(totalBits - 1, 0).asTypeOf(gen.cloneType)
 
-    // Increment cycle count or reset if this is the last cycle
-    when(cycleCount === (cycles - 1).U) {
-      cycleCount := 0.U
-      dataValid := true.B
-    }.otherwise {
-      cycleCount := cycleCount + 1.U
-    }
-  }
-
-  // Reset data valid flag when output is consumed
+  // If output fires, clear valid (may be set again below if an input beat also completes a word).
   when(io.dataOut.fire) {
     dataValid := false.B
+  }
+
+  when(io.dataIn.fire) {
+    dataSelect(cycleCount) := io.dataIn.bits
+
+    if (cycles == 1) {
+      dataValid  := true.B
+      cycleCount := 0.U
+    } else {
+      when(cycleCount === (cycles - 1).U) {
+        dataValid  := true.B
+        cycleCount := 0.U
+      }.otherwise {
+        cycleCount := cycleCount + 1.U
+      }
+    }
   }
 }

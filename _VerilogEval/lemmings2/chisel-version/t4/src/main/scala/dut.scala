@@ -3,56 +3,61 @@ import chisel3.util._
 
 class dut extends Module {
   val io = IO(new Bundle {
-    val bump_left = Input(Bool())
+    val bump_left  = Input(Bool())
     val bump_right = Input(Bool())
-    val ground = Input(Bool())
-    val walk_left = Output(Bool())
+    val ground     = Input(Bool())
+    val walk_left  = Output(Bool())
     val walk_right = Output(Bool())
-    val aaah = Output(Bool())
+    val aaah       = Output(Bool())
   })
 
-  // States definition
-  object State extends ChiselEnum {
-    val WALK_LEFT, WALK_RIGHT, FALL_LEFT, FALL_RIGHT = Value
-  }
-  import State._
+  // Moore FSM states
+  val sWalkLeft :: sWalkRight :: sFallLeft :: sFallRight :: Nil = Enum(4)
 
-  // State register with async reset to WALK_LEFT
-  val state = RegInit(WALK_LEFT)
-  
-  // State transition logic
-  switch (state) {
-    is (WALK_LEFT) {
-      when (!io.ground) {
-        state := FALL_LEFT
-      }.elsewhen (io.bump_left) {
-        state := WALK_RIGHT
+  // Asynchronous reset to walking left
+  val state = withReset(reset.asAsyncReset) { RegInit(sWalkLeft) }
+
+  // Next-state logic
+  switch(state) {
+    is(sWalkLeft) {
+      when(!io.ground) {
+        state := sFallLeft                  // ground disappears: start falling, ignore bumps
+      }.elsewhen(io.bump_left) {
+        state := sWalkRight                 // hit obstacle on left while walking left
+      }.otherwise {
+        state := sWalkLeft
       }
     }
-    
-    is (WALK_RIGHT) {
-      when (!io.ground) {
-        state := FALL_RIGHT
-      }.elsewhen (io.bump_right) {
-        state := WALK_LEFT
+
+    is(sWalkRight) {
+      when(!io.ground) {
+        state := sFallRight                 // ground disappears: start falling, ignore bumps
+      }.elsewhen(io.bump_right) {
+        state := sWalkLeft                  // hit obstacle on right while walking right
+      }.otherwise {
+        state := sWalkRight
       }
     }
-    
-    is (FALL_LEFT) {
-      when (io.ground) {
-        state := WALK_LEFT
+
+    is(sFallLeft) {
+      when(io.ground) {
+        state := sWalkLeft                  // resume previous direction after fall
+      }.otherwise {
+        state := sFallLeft
       }
     }
-    
-    is (FALL_RIGHT) {
-      when (io.ground) {
-        state := WALK_RIGHT
+
+    is(sFallRight) {
+      when(io.ground) {
+        state := sWalkRight                 // resume previous direction after fall
+      }.otherwise {
+        state := sFallRight
       }
     }
   }
-  
-  // Output logic (Moore machine)
-  io.walk_left := (state === WALK_LEFT)
-  io.walk_right := (state === WALK_RIGHT)
-  io.aaah := (state === FALL_LEFT || state === FALL_RIGHT)
+
+  // Moore outputs
+  io.walk_left  := (state === sWalkLeft)
+  io.walk_right := (state === sWalkRight)
+  io.aaah       := (state === sFallLeft) || (state === sFallRight)
 }

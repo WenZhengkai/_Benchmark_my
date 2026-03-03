@@ -1,45 +1,44 @@
 import chisel3._
 import chisel3.util._
 
-class Deserializer[D <: Data](data: D, width: Int) extends Module {
+class dut[D <: Data](data: D, width: Int) extends Module {
+  require(width > 0, "Serialized channel width must be > 0")
+  private val dataWidth = data.getWidth
+  require(dataWidth > 0, "Data type must have a known, positive width")
+
+  private val cycles = (dataWidth + width - 1) / width
+  private val countWidth = math.max(1, log2Ceil(cycles))
+
   val io = IO(new Bundle {
-    val dataIn = Flipped(Decoupled(UInt(width.W)))
+    val dataIn  = Flipped(Decoupled(UInt(width.W)))
     val dataOut = Decoupled(data.cloneType)
   })
 
-  // Calculate number of cycles needed to deserialize the data
-  val dataWidth = data.getWidth
-  val cycles = (dataWidth + width - 1) / width  // Ceiling division
-  
-  // Create registers for tracking deserialization state
-  val cycleCount = RegInit(0.U(log2Ceil(cycles).W))
-  val dataSelect = RegInit(0.U(dataWidth.W))
-  val dataValid = RegInit(false.B)
+  val cycleCount = RegInit(0.U(countWidth.W))
+  val dataSelect = Reg(Vec(cycles, UInt(width.W)))
+  val dataValid  = RegInit(false.B)
 
-  // Default values
-  io.dataIn.ready := !dataValid || io.dataOut.ready
+  // Output reconstruction
+  val assembled = dataSelect.asUInt
+  io.dataOut.bits  := assembled(dataWidth - 1, 0).asTypeOf(data)
   io.dataOut.valid := dataValid
-  io.dataOut.bits := dataSelect.asTypeOf(data.cloneType)
 
-  // Deserialization process
+  // Input flow control:
+  // - accept serialized words while collecting (dataValid == false)
+  // - optionally allow immediate restart when output is consumed
+  io.dataIn.ready := !dataValid || (io.dataOut.valid && io.dataOut.ready)
+
   when(io.dataIn.fire) {
-    // Store incoming data segment in the appropriate position in dataSelect
-    val shiftAmount = cycleCount * width.U
-    dataSelect := dataSelect | (io.dataIn.bits << shiftAmount)
-    
+    dataSelect(cycleCount) := io.dataIn.bits
     when(cycleCount === (cycles - 1).U) {
-      // Last segment received
       cycleCount := 0.U
-      dataValid := true.B
+      dataValid  := true.B
     }.otherwise {
-      // More segments to receive
       cycleCount := cycleCount + 1.U
     }
   }
 
-  // Reset data when output is accepted
   when(io.dataOut.fire) {
     dataValid := false.B
-    dataSelect := 0.U
   }
 }

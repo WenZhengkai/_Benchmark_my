@@ -1,28 +1,27 @@
-// package circuit
-
 import chisel3._
 import chisel3.util._
 
 class dut[D <: Data](data: D) extends Module {
   val io = IO(new Bundle {
-    val enq = Flipped(DecoupledIO(data.cloneType))
-    val deq = DecoupledIO(data.cloneType)
+    val enq = Flipped(Decoupled(data.cloneType))
+    val deq = Decoupled(data.cloneType)
   })
 
-  // Internal state
   val pValid = RegInit(false.B)
-  val pData = Reg(data.cloneType)
+  val pData  = Reg(chiselTypeOf(io.enq.bits))
 
-  // Default values
-  io.enq.ready := !pValid
-  io.deq.valid := pValid
-  io.deq.bits := pData
-
-  // Control logic
-  when (io.enq.valid && !pValid) {
-    pValid := true.B
+  // Enqueue when empty.
+  when(!pValid && io.enq.valid) {
     pData := io.enq.bits
-  }.elsewhen (io.deq.ready && pValid) {
+    pValid := true.B
+  }
+
+  // Dequeue when full and consumer is ready.
+  when(pValid && io.deq.ready) {
     pValid := false.B
   }
+
+  io.enq.ready := !pValid
+  io.deq.valid := pValid
+  io.deq.bits  := pData
 }

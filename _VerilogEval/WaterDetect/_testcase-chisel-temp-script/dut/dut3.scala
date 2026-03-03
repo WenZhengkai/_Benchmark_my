@@ -1,87 +1,76 @@
 import chisel3._
 import chisel3.util._
 
-class dut extends Module {
+class dut extends Module with RequireSyncReset {
   val io = IO(new Bundle {
-    val s = Input(UInt(3.W))  // 3 sensors, s[3], s[2], s[1]
-    val reset = Input(Bool()) // Active-high synchronous reset
-    val fr3 = Output(Bool())  // Flow rate control output
-    val fr2 = Output(Bool())  // Flow rate control output
-    val fr1 = Output(Bool())  // Flow rate control output
-    val dfr = Output(Bool())  // Supplemental flow valve control output
+    val s   = Input(UInt(3.W)) // s[3:1] mapped to bits [2:0]
+    val fr3 = Output(Bool())
+    val fr2 = Output(Bool())
+    val fr1 = Output(Bool())
+    val dfr = Output(Bool())
   })
 
-  // Define states for water level
-  val sAboveS3 :: sBetweenS3S2 :: sBetweenS2S1 :: sBelowS1 :: Nil = Enum(4)
-  
-  // State register for current water level
-  val currentState = RegInit(sBelowS1)
-  
-  // Register to track the previous state for trend detection
-  val previousState = RegInit(sBelowS1)
-  
-  // Update previous state on every state change
-  when(currentState =/= RegNext(currentState)) {
-    previousState := RegNext(currentState)
+  // Valid physical sensor combinations:
+  // 000 (below s1), 001 (between s2 and s1), 011 (between s3 and s2), 111 (above s3)
+  private def decodeLevel(s: UInt): UInt = {
+    MuxLookup(
+      s,
+      0.U(2.W), // safe default: treat invalid combos as "low"
+      Seq(
+        "b000".U -> 0.U(2.W),
+        "b001".U -> 1.U(2.W),
+        "b011".U -> 2.U(2.W),
+        "b111".U -> 3.U(2.W)
+      )
+    )
   }
 
-  // Determine current water level based on sensors
-  val newState = Wire(UInt(2.W))
-  when(io.s(2) && io.s(1) && io.s(0)) {
-    newState := sAboveS3
-  }.elsewhen(io.s(1) && io.s(0) && !io.s(2)) {
-    newState := sBetweenS3S2
-  }.elsewhen(io.s(0) && !io.s(1) && !io.s(2)) {
-    newState := sBetweenS2S1
-  }.otherwise {
-    newState := sBelowS1
+  val currLevel = decodeLevel(io.s)
+
+  // Track previous level and last transition direction.
+  // cameFromLower = 1 means previous level was lower than current level.
+  val lastLevel     = RegInit(0.U(2.W)) // reset equivalent: low for long time
+  val cameFromLower = RegInit(true.B)
+
+  when(currLevel =/= lastLevel) {
+    cameFromLower := lastLevel < currLevel
+    lastLevel := currLevel
   }
-  
-  // Update current state
-  when(io.reset) {
-    currentState := sBelowS1
-    previousState := sBelowS1
-  }.otherwise {
-    currentState := newState
-  }
-  
-  // Determine if the water level was rising (for supplemental flow control)
-  val wasRising = Wire(Bool())
-  wasRising := (previousState < currentState)
-  
-  // Set output flow rates based on current water level and trend
-  // Initialize all outputs to false
+
+  // Default outputs
   io.fr1 := false.B
   io.fr2 := false.B
   io.fr3 := false.B
   io.dfr := false.B
-  
-  when(io.reset) {
-    // Reset condition: equivalent to low water level for long time
+
+  // Nominal flow + supplemental logic
+  switch(currLevel) {
+    is(0.U) { // Below s1
+      io.fr1 := true.B
+      io.fr2 := true.B
+      io.fr3 := true.B
+      io.dfr := true.B // maximum flow includes supplemental valve
+    }
+    is(1.U) { // Between s2 and s1
+      io.fr1 := true.B
+      io.fr2 := true.B
+      io.dfr := cameFromLower
+    }
+    is(2.U) { // Between s3 and s2
+      io.fr1 := true.B
+      io.dfr := cameFromLower
+    }
+    is(3.U) { // Above s3
+      // all outputs remain 0
+    }
+  }
+
+  // Active-high synchronous reset behavior:
+  // force state/output equivalent to "low for a long time".
+  when(reset.asBool) {
     io.fr1 := true.B
     io.fr2 := true.B
     io.fr3 := true.B
     io.dfr := true.B
-  }.otherwise {
-    switch(currentState) {
-      is(sAboveS3) {
-        // No flow rate needed when water level is above s[3]
-      }
-      is(sBetweenS3S2) {
-        io.fr1 := true.B
-        io.dfr := wasRising
-      }
-      is(sBetweenS2S1) {
-        io.fr1 := true.B
-        io.fr2 := true.B
-        io.dfr := wasRising
-      }
-      is(sBelowS1) {
-        io.fr1 := true.B
-        io.fr2 := true.B
-        io.fr3 := true.B
-        io.dfr := wasRising
-      }
-    }
   }
 }

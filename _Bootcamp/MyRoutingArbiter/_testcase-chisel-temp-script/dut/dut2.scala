@@ -1,25 +1,27 @@
 import chisel3._
 import chisel3.util._
 
-class dut(numChannels: Int) extends Module {
+class dut(val numChannels: Int) extends Module {
+  require(numChannels > 0, "numChannels must be > 0")
+
   val io = IO(new Bundle {
-    val in = Vec(numChannels, Flipped(Decoupled(UInt(8.W))))
+    val in  = Flipped(Vec(numChannels, Decoupled(UInt(8.W))))
     val out = Decoupled(UInt(8.W))
   })
-  
-  // Output is valid if at least one input is valid
+
+  // True when any input channel is valid
   io.out.valid := io.in.map(_.valid).reduce(_ || _)
-  
-  // Priority selection logic - choose the first valid channel
-  val validInputs = io.in.map(_.valid)
-  val selectedChannel = PriorityEncoder(validInputs)
-  
-  // Route the data from the selected channel to the output
-  io.out.bits := io.in(selectedChannel).bits
-  
-  // Set ready signals for input channels
-  // Only the selected channel is ready when the output is ready
+
+  // Index of the first valid input channel (lowest index has highest priority)
+  val selectedIdx = PriorityMux(
+    (0 until numChannels).map(i => io.in(i).valid -> i.U(log2Ceil(numChannels).W))
+  )
+
+  // Route selected input data to output
+  io.out.bits := Mux(io.out.valid, io.in(selectedIdx).bits, 0.U)
+
+  // Only selected input is ready when output is ready
   for (i <- 0 until numChannels) {
-    io.in(i).ready := io.out.ready && (i.U === selectedChannel)
+    io.in(i).ready := io.out.ready && io.out.valid && (selectedIdx === i.U)
   }
 }

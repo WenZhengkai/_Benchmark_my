@@ -1,0 +1,39 @@
+import chisel3._
+import chisel3.util._
+import scala.math.pow
+
+class dut(bitwidth: Int) extends Module {
+  val io = IO(new Bundle {
+    val in = Input(UInt(bitwidth.W))
+    val encode = Input(Bool())
+    val out = Output(UInt(bitwidth.W))
+  })
+
+  when(io.encode) {
+    // Encoding Mode: Binary to Gray code
+    io.out := io.in ^ (io.in >> 1.U)
+  } .otherwise {
+    // Decoding Mode: Gray code to Binary
+    val numIterations = log2Ceil(bitwidth)
+    val intermediates = Wire(Vec(numIterations + 1, UInt(bitwidth.W)))
+    
+    // Initialize first intermediate value with input
+    intermediates(0) := io.in
+    
+    // Perform iterative XOR operations
+    for (i <- 0 until numIterations) {
+      val shiftAmount = pow(2, i).toInt
+      intermediates(i + 1) := intermediates(i) ^ (intermediates(i) >> shiftAmount.U)
+    }
+    
+    // Output is the last intermediate value
+    io.out := intermediates(numIterations)
+  }
+}
+
+// Object to generate Verilog
+/*
+object dut extends App {
+  (new chisel3.stage.ChiselStage).emitVerilog(new dut(8), Array("--target-dir", "generated"))
+}
+*/
